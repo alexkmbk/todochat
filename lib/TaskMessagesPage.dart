@@ -1,0 +1,257 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'MainMenu.dart';
+import 'utils.dart';
+import 'package:provider/provider.dart';
+import 'package:web_socket_channel/io.dart';
+import 'LoginPage.dart';
+import 'MsgList.dart';
+import 'main.dart';
+//import 'dart:io';
+import 'dart:convert';
+import 'TasksPage.dart';
+
+//import 'package:web_socket_channel/web_socket_channel.dart';
+//import 'package:web_socket_channel/status.dart' as status;
+
+class TaskMessagesPage extends StatefulWidget {
+  final Task task;
+
+  const TaskMessagesPage({Key? key, required this.task}) : super(key: key);
+
+  @override
+  State<TaskMessagesPage> createState() => _TaskMessagesPageState();
+}
+
+class _TaskMessagesPageState extends State<TaskMessagesPage> {
+  late MsgListProvider _msgListProvider;
+
+  final _messageInputController = TextEditingController();
+  IOWebSocketChannel ws =
+      IOWebSocketChannel.connect('ws://' + server + "/initMessagesWS");
+
+  final ScrollController _scrollController = ScrollController();
+
+// This is what you're looking for!
+  void _scrollDown() {
+    _scrollController.jumpTo(_scrollController.position.minScrollExtent);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
+    ws.sink.add(sessionID);
+    ws.stream.listen((messageJson) {
+      var data = jsonDecode(messageJson);
+      var message = Message.fromJson(data);
+      if (message.taskID == widget.task.ID) {
+        _msgListProvider.addItem(message);
+        //_scrollDown();
+      }
+    });
+
+    _scrollController.addListener(() {
+      if (!_msgListProvider.loading &&
+          _scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent) {
+        requestMessages();
+      }
+    });
+
+    requestMessages();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _msgListProvider.clear();
+    ws.sink.close();
+    _scrollController.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+          //backgroundColor: Colors.black,
+          title: Row(children: [
+            TextButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: Icon(
+                  Icons.keyboard_arrow_left,
+                  color: Colors.white,
+                ),
+                label: Text(
+                  widget.task.Description,
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                )),
+          ]),
+          leading: MainMenu()),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            /* SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text(widget.task.Description),
+                )),*/
+            Consumer<MsgListProvider>(builder: (context, provider, child) {
+              return InifiniteMsgList(
+                scrollController: _scrollController,
+                onDelete: deleteMesage,
+              );
+            }),
+            Row(children: [
+              Expanded(
+                  child: CallbackShortcuts(
+                bindings: {
+                  const SingleActivator(LogicalKeyboardKey.enter,
+                      control: false): () {
+                    createMessage(_messageInputController.text);
+                    _messageInputController.text = "";
+                  },
+                },
+                child: Focus(
+                  autofocus: true,
+                  child: TextField(
+                    autofocus: true,
+                    controller: _messageInputController,
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Message',
+                    ),
+                  ),
+                ),
+              )),
+              FloatingActionButton(
+                onPressed: () {
+                  createMessage(_messageInputController.text);
+                  _messageInputController.text = "";
+                },
+                tooltip: 'New message',
+                child: const Icon(Icons.message),
+              )
+            ])
+          ],
+        ),
+      ), /*Center(
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text('Go back!'),
+        ),
+      ),*/
+    );
+  }
+
+  Future<void> requestMessages() async {
+    List<Message> res = [];
+
+    if (sessionID == "" || !mounted) {
+      return;
+    }
+
+    Map<String, String> headers = Map<String, String>();
+    headers["sessionID"] = sessionID;
+    //headers["offset"] = _msgListProvider.offset.toString();
+    headers["lastID"] = _msgListProvider.lastID.toString();
+    headers["limit"] = "30";
+    headers["taskID"] = widget.task.ID.toString();
+
+    _msgListProvider.loading = true;
+
+    var response;
+    try {
+      response =
+          await httpClient.get(Uri.http(server, '/messages'), headers: headers);
+    } catch (e) {
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+
+      _msgListProvider.offset = _msgListProvider.offset + data.length;
+
+      for (var e in data) {
+        res.add(Message.fromJson(e));
+      }
+      if (data.length > 0)
+        _msgListProvider.lastID = data[data.length - 1]["ID"];
+    }
+
+    _msgListProvider.loading = false;
+
+    if (res.isEmpty) {
+      return;
+    }
+    setState(
+        () => _msgListProvider.items = [..._msgListProvider.items, ...res]);
+  }
+
+  Future<bool> createMessage(String text) async {
+    if (sessionID == "") {
+      return false;
+    }
+
+    Message message = Message(task: widget.task, text: text);
+    String body = jsonEncode(message);
+
+    Map<String, String> headers = Map<String, String>();
+    headers["sessionID"] = sessionID;
+    headers["content-type"] = "application/json; charset=utf-8";
+
+    var response;
+    try {
+      response = await httpClient.post(Uri.http(server, '/createMessage'),
+          body: body, headers: headers);
+    } catch (e) {
+      return false;
+    }
+    //request.headers.contentLength = utf8.encode(body).length;
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body) as Map<String, dynamic>;
+      message.ID = data["ID"];
+      message.userID = data["UserID"];
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<bool> deleteMesage(int messageID) async {
+    if (sessionID == "") {
+      return false;
+    }
+
+    Map<String, String> headers = Map<String, String>();
+    headers["sessionID"] = sessionID;
+
+    var response;
+
+    try {
+      response = await httpClient.delete(
+          Uri.http(server, '/deleteMessage/' + messageID.toString()),
+          headers: headers);
+    } catch (e) {
+      return false;
+    }
+
+    if (response.statusCode == 200) {
+      return true;
+    }
+
+    return false;
+  }
+}
