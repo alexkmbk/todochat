@@ -161,15 +161,8 @@ class _ProjectsPageState extends State<ProjectsPage> {
             await deleteProject(project.ID);
           },
           child: ListTile(
-            shape: RoundedRectangleBorder(
-              side: BorderSide(color: Colors.grey),
-            ),
+            shape: const Border(bottom: BorderSide(color: Colors.grey)),
             onTap: () => onTap(project),
-            dense: true,
-            minVerticalPadding: 0,
-            minLeadingWidth: 0,
-            contentPadding: EdgeInsets.zero,
-            //contentPadding: EdgeInsets.only(bottom: 0.0, top: 0.0),
             title: Text(project.Description),
             trailing: Icon(Icons.keyboard_arrow_right),
           )
