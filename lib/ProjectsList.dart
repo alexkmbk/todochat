@@ -165,25 +165,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
             onTap: () => onTap(project),
             title: Text(project.Description),
             trailing: Icon(Icons.keyboard_arrow_right),
-          )
-          /* Container(
-            //margin: EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.grey,
-                width: 1,
-              ),
-              //borderRadius: BorderRadius.circular(10)
-            ),
-            child: ListTile(
-              shape: RoundedRectangleBorder(side: BorderSide(color: Colors.black, width: 1), borderRadius: BorderRadius.circular(5)),
-              onTap: () => onTap(project),
-              dense: true,
-              title: Text(project.Description),
-              trailing: Icon(Icons.keyboard_arrow_right),
-            ),
-          )*/
-          );
+          ));
     }
   }
 

@@ -8,6 +8,11 @@
 .buildlog/
 .history
 .svn/
+*.exe
+gorm.db
+*.crt
+*.csr
+*.key
 
 # IntelliJ related
 *.iml
@@ -30,6 +35,8 @@
 .pub-cache/
 .pub/
 /build/
+/server/keys/
+
 
 # Web related
 lib/generated_plugin_registrant.dart
