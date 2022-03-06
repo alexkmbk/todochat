@@ -1,5 +1,7 @@
 import 'dart:convert';
-import 'dart:io';
+//import 'dart:html';
+import 'dart:io' as io;
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -25,7 +27,7 @@ void ExitApp() {
     SystemChannels.platform.invokeMethod('SystemNavigator.pop');
     // running on the web!
   } else {
-    exit(0);
+    io.exit(0);
   }
 
   /*if (Platform.isAndroid) {
@@ -55,8 +57,16 @@ Future<bool?> confirmDimissDlg(String queryText, BuildContext context) {
   );
 }
 
-String toBase64(String str) {
+/*String toBase64(String str) {
   return base64.encode(utf8.encode(str));
+}*/
+
+String toBase64<T>(T data) {
+  if (T == String) {
+    return base64.encode(utf8.encode(data as String));
+  } else {
+    return base64.encode(data as List<int>);
+  }
 }
 
 //?param1=one&param2=two
@@ -73,4 +83,20 @@ String toUrlParams(Map<String, String> params) {
   }
 
   return res;
+}
+
+Future<Uint8List> readFile(String? path) async {
+  if (path == null || path.isEmpty) return Uint8List(0);
+
+  if (kIsWeb) {
+    /*File file = File([], path);
+    FileReader fileReader = FileReader();
+    fileReader.readAsArrayBuffer(file);
+    await fileReader.onLoad.first;
+    var data = fileReader.result;*/
+    return Uint8List(0);
+  } else {
+    io.File file = io.File(path);
+    return await file.readAsBytes();
+  }
 }

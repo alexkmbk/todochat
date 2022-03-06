@@ -1,5 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart';
+import 'package:http/http.dart';
 import 'MainMenu.dart';
 import 'utils.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +14,7 @@ import 'main.dart';
 //import 'dart:io';
 import 'dart:convert';
 import 'TasksPage.dart';
+import 'package:file_picker/file_picker.dart';
 
 //import 'package:web_socket_channel/web_socket_channel.dart';
 //import 'package:web_socket_channel/status.dart' as status;
@@ -114,7 +119,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                 bindings: {
                   const SingleActivator(LogicalKeyboardKey.enter,
                       control: false): () {
-                    createMessage(_messageInputController.text);
+                    createMessage(text: _messageInputController.text);
                     _messageInputController.text = "";
                   },
                 },
@@ -134,11 +139,30 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
               )),
               FloatingActionButton(
                 onPressed: () {
-                  createMessage(_messageInputController.text);
+                  createMessage(text: _messageInputController.text);
                   _messageInputController.text = "";
                 },
                 tooltip: 'New message',
                 child: const Icon(Icons.message),
+              ),
+              IconButton(
+                onPressed: () async {
+                  FilePickerResult? result =
+                      await FilePicker.platform.pickFiles();
+
+                  if (result != null && result.files.single.path != null) {
+                    //File file = File([], result.files.single.path as String);
+                    var fileName = result.files.single.path;
+                    var res = await readFile(result.files.single.path);
+                    createMessage(
+                        text: _messageInputController.text,
+                        fileData: res,
+                        fileName: fileName == null ? "" : fileName);
+                    _messageInputController.text = "";
+                  }
+                },
+                tooltip: 'Add file',
+                icon: const Icon(Icons.attach_file),
               )
             ])
           ],
@@ -199,12 +223,48 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
         () => _msgListProvider.items = [..._msgListProvider.items, ...res]);
   }
 
-  Future<bool> createMessage(String text) async {
+  Future<bool> createMessage(
+      {required String text,
+      Uint8List? fileData,
+      String fileName = "",
+      bool isPicture = false}) async {
     if (sessionID == "") {
       return false;
     }
 
-    Message message = Message(task: widget.task, text: text);
+    MultipartRequest request =
+        MultipartRequest('POST', Uri.http(server, '/createMessage'));
+
+    request.headers["sessionID"] = sessionID;
+    request.headers["content-type"] = "application/json; charset=utf-8";
+
+    Message message =
+        Message(task: widget.task, text: text, fileName: fileName);
+
+    request.fields["Message"] = jsonEncode(message);
+
+    if (fileData != null) {
+      request.files
+          .add(MultipartFile.fromBytes("File", fileData, filename: fileName));
+    }
+
+    var streamedResponse = await request.send();
+    if (streamedResponse.statusCode == 200) {
+      /*Response response = await Response.fromStream(streamedResponse);
+      var data = jsonDecode(response.body) as Map<String, dynamic>;
+      message.ID = data["ID"];
+      message.userID = data["UserID"];*/
+      return true;
+    }
+    return false;
+  }
+
+  /*Future<bool> createMessage(String text, [Uint8List? image]) async {
+    if (sessionID == "") {
+      return false;
+    }
+
+    Message message = Message(task: widget.task, text: text, image: image);
     String body = jsonEncode(message);
 
     Map<String, String> headers = Map<String, String>();
@@ -228,7 +288,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     }
 
     return false;
-  }
+  }*/
 
   Future<bool> deleteMesage(int messageID) async {
     if (sessionID == "") {

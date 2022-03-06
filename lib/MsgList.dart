@@ -1,6 +1,7 @@
 //import 'dart:ffi';
 
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -45,12 +46,19 @@ class Message {
   DateTime? created_at;
   String text = "";
   int userID = 0;
+  Uint8List? fileData;
+  String fileName = "";
+  bool isPicture = false;
+
   Message(
       {required this.task,
       this.text = "",
       this.created_at,
       this.ID = 0,
-      this.userID = 0});
+      this.userID = 0,
+      this.fileData,
+      this.fileName = "",
+      this.isPicture = false});
 
   Map<String, dynamic> toJson() {
     return {
@@ -58,7 +66,10 @@ class Message {
       'taskID': task?.ID,
       'created_at': created_at,
       'text': text,
-      'userID': userID
+      'userID': userID,
+      'fileName': fileName,
+      'isPicture': isPicture,
+      //'image': toBase64(image),
     };
   }
 
@@ -68,7 +79,8 @@ class Message {
         created_at = DateTime.tryParse(json['Created_at']),
         text = json['Text'],
         taskID = json['TaskID'],
-        userID = json['UserID'];
+        userID = json['UserID'],
+        isPicture = json['IsPicture'];
 }
 
 typedef Future<bool> OnDeleteFn(int messageID);
