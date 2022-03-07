@@ -42,6 +42,7 @@ dependencies:
   shared_preferences: ^2.0.13
   scrollable_positioned_list: ^0.2.3
   file_picker: ^4.5.0
+  mime: ^1.0.1
 
 dev_dependencies:
   flutter_test:

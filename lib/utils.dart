@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mime/mime.dart';
 
 void toast(String? msg, BuildContext context) {
   if (msg == null) return;
@@ -57,16 +58,16 @@ Future<bool?> confirmDimissDlg(String queryText, BuildContext context) {
   );
 }
 
-/*String toBase64(String str) {
-  return base64.encode(utf8.encode(str));
-}*/
-
 String toBase64<T>(T data) {
   if (T == String) {
     return base64.encode(utf8.encode(data as String));
   } else {
     return base64.encode(data as List<int>);
   }
+}
+
+Uint8List? fromBase64(String str) {
+  return base64Decode(str);
 }
 
 //?param1=one&param2=two
@@ -83,6 +84,18 @@ String toUrlParams(Map<String, String> params) {
   }
 
   return res;
+}
+
+bool isImageFile(String? fileName) {
+  if (fileName == null) return false;
+  String? mimeStr = lookupMimeType(fileName);
+  if (mimeStr != null) {
+    var fileType = mimeStr.split('/');
+    if (fileType.isNotEmpty) {
+      return fileType[0] == "image";
+    }
+  }
+  return false;
 }
 
 Future<Uint8List> readFile(String? path) async {

@@ -31,11 +31,14 @@ type Message struct {
 	TaskID          int `gorm:"index"`
 	ParentMessageID int
 	//ParentMessage   *Message `gorm:"foreignKey:ParentMessageID"`
-	Text             string
-	UserID           int64
-	Image            string `gorm:"-"`
-	PictureLocalPath string
-	Created_at       time.Time
+	Text                string
+	UserID              int64
+	SmallImageBase64    string `gorm:"-"`
+	FileName            string
+	FileLocalPath       string
+	SmallImageLocalPath string
+	IsImage             bool
+	Created_at          time.Time
 }
 
 /*type Message struct {

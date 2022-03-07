@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
-import 'package:http/http.dart';
 import 'MainMenu.dart';
 import 'utils.dart';
 import 'package:provider/provider.dart';
@@ -238,8 +237,11 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     request.headers["sessionID"] = sessionID;
     request.headers["content-type"] = "application/json; charset=utf-8";
 
-    Message message =
-        Message(task: widget.task, text: text, fileName: fileName);
+    Message message = Message(
+        task: widget.task,
+        text: text,
+        fileName: fileName,
+        isImage: isImageFile(fileName));
 
     request.fields["Message"] = jsonEncode(message);
 

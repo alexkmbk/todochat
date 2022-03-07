@@ -49,7 +49,7 @@ func InitMessagesWS(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func SendWSMessage(message Message) {
+func SendWSMessage(message *Message) {
 	for key, conn := range WSConnections {
 		if SessionIDExists(key) {
 			conn.WriteJSON(message)

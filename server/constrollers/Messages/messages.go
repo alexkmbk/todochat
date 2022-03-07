@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	//"github.com/gorilla/mux"
 
@@ -16,7 +17,9 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
+	. "todochat_server/App"
 	. "todochat_server/DB"
+	WS "todochat_server/constrollers/WebSocked"
 )
 
 func GetMessages(w http.ResponseWriter, r *http.Request) {
@@ -57,6 +60,13 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
+	for i := range messages {
+		data, err_read := os.ReadFile(filepath.Join(FileStoragePath, messages[i].SmallImageLocalPath))
+		if err_read == nil {
+			messages[i].SmallImageBase64 = ToBase64(data)
+		}
+
+	}
 	json.NewEncoder(w).Encode(messages)
 }
 
@@ -115,6 +125,10 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var message Message
+	var fileName string
+	var smallImageFileName string
+	var fileData []byte
+	var smallImageData []byte
 
 	for {
 		part, err_part := read_form.NextPart()
@@ -123,14 +137,25 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 		}
 		if part.FormName() == "File" {
 			ext := filepath.Ext(part.FileName())
-			data, _ := ioutil.ReadAll(part)
-			fileName := uuid.New().String() + ext
+			fileData, _ = ioutil.ReadAll(part)
+			fileName = uuid.New().String() + ext
 
-			err = os.WriteFile(fileName, data, 0644)
+			err = os.WriteFile(filepath.Join(FileStoragePath, fileName), fileData, 0644)
 			if err != nil {
-				return
+				fileName = ""
 			}
 
+			if message.IsImage {
+				smallImageData, err = ResizeImageByHeight(fileData, 200)
+
+				if err == nil {
+					smallImageFileName = uuid.New().String() + ext
+					err = os.WriteFile(filepath.Join(FileStoragePath, smallImageFileName), smallImageData, 0644)
+					if err != nil {
+						smallImageFileName = ""
+					}
+				}
+			}
 			//buf := new(bytes.Buffer)
 			//buf.ReadFrom(part)
 			//log.Println("delete is: ", buf.String())
@@ -144,6 +169,18 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+
+	message.FileLocalPath = fileName
+	message.SmallImageLocalPath = smallImageFileName
+	message.Created_at = time.Now()
+	message.UserID = userID
+
+	if smallImageFileName != "" {
+		message.SmallImageBase64 = ToBase64(smallImageData)
+	}
+
+	DB.Create(&message)
+	WS.SendWSMessage(&message)
 
 	/*fmt.Println(r.FormValue("delete"))
 	decoder := json.NewDecoder(r.Body)

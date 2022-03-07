@@ -1,7 +1,11 @@
 package DB
 
 import (
+	"path/filepath"
+
 	log "github.com/sirupsen/logrus"
+
+	. "todochat_server/App"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -14,7 +18,8 @@ var DB *gorm.DB
 func InitDB() {
 
 	var err error
-	DB, err = gorm.Open(sqlite.Open("E:\\DEV\\Go\\todo\\server\\gorm.db"), &gorm.Config{})
+	DBPAth := filepath.Join(GetCurrentDir(), "gorm.db")
+	DB, err = gorm.Open(sqlite.Open(DBPAth), &gorm.Config{})
 	if err != nil {
 		log.Println(err)
 		return

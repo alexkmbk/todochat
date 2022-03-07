@@ -18,6 +18,8 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
+	github.com/h2non/bimg v1.1.7
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	golang.org/x/sys v0.0.0-20191026070338-33540a1f6037 // indirect
 	gorm.io/driver/sqlite v1.2.6
 )

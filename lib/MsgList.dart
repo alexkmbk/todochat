@@ -46,9 +46,9 @@ class Message {
   DateTime? created_at;
   String text = "";
   int userID = 0;
-  Uint8List? fileData;
+  Uint8List? smallImageData;
   String fileName = "";
-  bool isPicture = false;
+  bool isImage = false;
 
   Message(
       {required this.task,
@@ -56,9 +56,9 @@ class Message {
       this.created_at,
       this.ID = 0,
       this.userID = 0,
-      this.fileData,
+      this.smallImageData,
       this.fileName = "",
-      this.isPicture = false});
+      this.isImage = false});
 
   Map<String, dynamic> toJson() {
     return {
@@ -68,7 +68,7 @@ class Message {
       'text': text,
       'userID': userID,
       'fileName': fileName,
-      'isPicture': isPicture,
+      'isImage': isImage,
       //'image': toBase64(image),
     };
   }
@@ -80,7 +80,9 @@ class Message {
         text = json['Text'],
         taskID = json['TaskID'],
         userID = json['UserID'],
-        isPicture = json['IsPicture'];
+        isImage = json['IsImage'],
+        fileName = json['FileName'],
+        smallImageData = fromBase64(json['SmallImageBase64']);
 }
 
 typedef Future<bool> OnDeleteFn(int messageID);
@@ -147,7 +149,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
           var item = _msgListProvider.items[index];
           return ChatBubble(
             isCurrentUser: item.userID == currentUserID,
-            text: item.text,
+            message: item,
             onDismissed: (direction) async {
               if (await widget.onDelete(item.ID)) {
                 _msgListProvider.deleteItem(item.ID);
@@ -173,14 +175,19 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
 }
 
 class ChatBubble extends StatelessWidget {
-  const ChatBubble({
-    Key? key,
-    required this.text,
-    required this.isCurrentUser,
-    required this.onDismissed,
-  }) : super(key: key);
-  final String text;
+  const ChatBubble(
+      {Key? key,
+      required this.message,
+      required this.onDismissed,
+      required this.isCurrentUser})
+      : super(key: key);
+  final Message message;
   final bool isCurrentUser;
+
+  /*final String text;
+  final String isImage = false;
+  final Uint8List? smallImageData;
+  final bool isCurrentUser;*/
   final DismissDirectionCallback onDismissed;
 
   @override
@@ -202,25 +209,38 @@ class ChatBubble extends StatelessWidget {
             4,
           ),
           child: Align(
-            // align the child within the container
-            alignment:
-                isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
-            child: DecoratedBox(
-              // chat bubble decoration
-              decoration: BoxDecoration(
-                color: isCurrentUser ? Colors.blue : Colors.grey[300],
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: SelectableText(
-                  text,
-                  style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                      color: isCurrentUser ? Colors.white : Colors.black87),
-                ),
-              ),
-            ),
-          ),
+              // align the child within the container
+              alignment:
+                  isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
+              child: drawBubble(context)),
         ));
+  }
+
+  Widget drawBubble(BuildContext context) {
+    if (message.fileName.isEmpty) {
+      return DecoratedBox(
+        // chat bubble decoration
+        decoration: BoxDecoration(
+          color: isCurrentUser ? Colors.blue : Colors.grey[300],
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: SelectableText(
+            message.text,
+            style: Theme.of(context)
+                .textTheme
+                .bodyText1!
+                .copyWith(color: isCurrentUser ? Colors.white : Colors.black87),
+          ),
+        ),
+      );
+    } else {
+      if (message.isImage && message.smallImageData != null && message.smallImageData!.isNotEmpty) {
+        return Image.memory(message.smallImageData!);
+      } else {
+        return Text(message.fileName);
+      }
+    }
   }
 }
