@@ -10,7 +10,7 @@ import 'package:web_socket_channel/io.dart';
 import 'LoginPage.dart';
 import 'MsgList.dart';
 import 'main.dart';
-//import 'dart:io';
+import 'dart:io';
 import 'dart:convert';
 import 'TasksPage.dart';
 import 'package:file_picker/file_picker.dart';
@@ -27,12 +27,14 @@ class TaskMessagesPage extends StatefulWidget {
   State<TaskMessagesPage> createState() => _TaskMessagesPageState();
 }
 
+/*IOWebSocketChannel InitSocket() {
+  return IOWebSocketChannel.connect('ws://' + server + "/initMessagesWS");
+}*/
+
 class _TaskMessagesPageState extends State<TaskMessagesPage> {
   late MsgListProvider _msgListProvider;
 
   final _messageInputController = TextEditingController();
-  IOWebSocketChannel ws =
-      IOWebSocketChannel.connect('ws://' + server + "/initMessagesWS");
 
   final ScrollController _scrollController = ScrollController();
 
@@ -45,15 +47,24 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
   void initState() {
     super.initState();
     _msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
-    ws.sink.add(sessionID);
+    _msgListProvider.taskID = widget.task.ID;
+
+/*    var query = strMap("command", "init");
+    query["sessionID"] = sessionID;
+
+    ws.sink.add(jsonEncode(query));
     ws.stream.listen((messageJson) {
-      var data = jsonDecode(messageJson);
-      var message = Message.fromJson(data);
-      if (message.taskID == widget.task.ID) {
-        _msgListProvider.addItem(message);
-        //_scrollDown();
+      WSMessage wsMsg = WSMessage.fromJson(messageJson);
+      if (wsMsg.command == "getMessages") {
+        _msgListProvider.addItems(wsMsg.data, widget.task.ID);
+      } else if (wsMsg.command == "createMessage") {
+        var message = Message.fromJson(wsMsg.data);
+        if (message.taskID == widget.task.ID) {
+          _msgListProvider.addItem(message);
+          //_scrollDown();
+        }
       }
-    });
+    });*/
 
     _scrollController.addListener(() {
       if (!_msgListProvider.loading &&
@@ -70,7 +81,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
   void dispose() {
     super.dispose();
     _msgListProvider.clear();
-    ws.sink.close();
+    //ws.sink.close();
     _scrollController.dispose();
   }
 
@@ -178,48 +189,20 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
   }
 
   Future<void> requestMessages() async {
-    List<Message> res = [];
+    //List<Message> res = [];
 
     if (sessionID == "" || !mounted) {
       return;
     }
 
-    Map<String, String> headers = Map<String, String>();
-    headers["sessionID"] = sessionID;
-    //headers["offset"] = _msgListProvider.offset.toString();
-    headers["lastID"] = _msgListProvider.lastID.toString();
-    headers["limit"] = "30";
-    headers["taskID"] = widget.task.ID.toString();
+    var query = strMap("command", "getMessages");
+    query["sessionID"] = sessionID;
+    query["lastID"] = _msgListProvider.lastID.toString();
+    query["limit"] = "30";
+    query["taskID"] = widget.task.ID.toString();
 
     _msgListProvider.loading = true;
-
-    var response;
-    try {
-      response =
-          await httpClient.get(Uri.http(server, '/messages'), headers: headers);
-    } catch (e) {
-      return;
-    }
-
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-
-      _msgListProvider.offset = _msgListProvider.offset + data.length;
-
-      for (var e in data) {
-        res.add(Message.fromJson(e));
-      }
-      if (data.length > 0)
-        _msgListProvider.lastID = data[data.length - 1]["ID"];
-    }
-
-    _msgListProvider.loading = false;
-
-    if (res.isEmpty) {
-      return;
-    }
-    setState(
-        () => _msgListProvider.items = [..._msgListProvider.items, ...res]);
+    ws.sink.add(jsonEncode(query));
   }
 
   Future<bool> createMessage(
@@ -261,36 +244,74 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     return false;
   }
 
-  /*Future<bool> createMessage(String text, [Uint8List? image]) async {
-    if (sessionID == "") {
-      return false;
+  Future<void> requestMessages_() async {
+    List<Message> res = [];
+
+    if (sessionID == "" || !mounted) {
+      return;
     }
 
-    Message message = Message(task: widget.task, text: text, image: image);
-    String body = jsonEncode(message);
-
-    Map<String, String> headers = Map<String, String>();
+    /* Map<String, String> headers = Map<String, String>();
     headers["sessionID"] = sessionID;
-    headers["content-type"] = "application/json; charset=utf-8";
+    //headers["offset"] = _msgListProvider.offset.toString();
+    headers["lastID"] = _msgListProvider.lastID.toString();
+    headers["limit"] = "30";
+    headers["taskID"] = widget.task.ID.toString();
+    headers["content-type"] = "application/json; charset=utf-8";*/
+
+    _msgListProvider.loading = true;
 
     var response;
-    try {
-      response = await httpClient.post(Uri.http(server, '/createMessage'),
-          body: body, headers: headers);
+    Stopwatch stopwatch = new Stopwatch()..start();
+    var client = HttpClient();
+
+    MultipartRequest request =
+        MultipartRequest('GET', Uri.http(server, '/messages'));
+
+    request.headers["sessionID"] = sessionID;
+    request.headers["lastID"] = _msgListProvider.lastID.toString();
+    request.headers["limit"] = "30";
+    request.headers["taskID"] = widget.task.ID.toString();
+
+    request.headers["content-type"] = "application/json; charset=utf-8";
+
+    var streamedResponse = await request.send();
+
+    /*try {
+      response =
+          await httpClient.get(Uri.http(server, '/messages'), headers: headers);
     } catch (e) {
-      return false;
-    }
-    //request.headers.contentLength = utf8.encode(body).length;
+      return;
+    }*/
 
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body) as Map<String, dynamic>;
-      message.ID = data["ID"];
-      message.userID = data["UserID"];
-      return true;
+    if (streamedResponse.statusCode == 200) {
+      var response = await Response.fromStream(streamedResponse);
+      var a = 1; // it is just a binary data, not a list of files
+      toast('doSomething() executed in ${stopwatch.elapsed.inMilliseconds}',
+          context);
     }
 
-    return false;
-  }*/
+    /*if (response.statusCode == 200) {
+      
+      var data = jsonDecode(response.body);
+
+      _msgListProvider.offset = _msgListProvider.offset + data.length;
+
+      for (var e in data) {
+        res.add(Message.fromJson(e));
+      }
+      if (data.length > 0)
+        _msgListProvider.lastID = data[data.length - 1]["ID"];
+    }*/
+
+    _msgListProvider.loading = false;
+
+    if (res.isEmpty) {
+      return;
+    }
+    setState(
+        () => _msgListProvider.items = [..._msgListProvider.items, ...res]);
+  }
 
   Future<bool> deleteMesage(int messageID) async {
     if (sessionID == "") {

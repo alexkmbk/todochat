@@ -17,16 +17,33 @@ class MsgListProvider extends ChangeNotifier {
   num offset = 0;
   int lastID = 0;
   bool loading = false;
+  int taskID = 0;
 
   void clear() {
     items.clear();
     offset = 0;
     lastID = 0;
+    taskID = 0;
+  }
+
+  void addItems(dynamic data) {
+    for (var item in data) {
+      var message = Message.fromJson(item);
+      if (message.taskID == taskID) {
+        items.add(message);
+      }
+    }
+    if (data.length > 0) lastID = data[data.length - 1]["ID"];
+    loading = false;
+    notifyListeners();
   }
 
   void addItem(Message message) {
-    offset++;
+    //offset++;
     //lastID = message.ID;
+    if (message.taskID != taskID) {
+      return;
+    }
     items.insert(0, message);
     notifyListeners();
   }
@@ -236,7 +253,9 @@ class ChatBubble extends StatelessWidget {
         ),
       );
     } else {
-      if (message.isImage && message.smallImageData != null && message.smallImageData!.isNotEmpty) {
+      if (message.isImage &&
+          message.smallImageData != null &&
+          message.smallImageData!.isNotEmpty) {
         return Image.memory(message.smallImageData!);
       } else {
         return Text(message.fileName);

@@ -16,7 +16,7 @@ type User struct {
 
 // Task ...idk
 type Task struct {
-	ID        int   `gorm:"primary_key"`
+	ID        int64 `gorm:"primary_key"`
 	ProjectID int64 `gorm:"index"`
 	//Project     *Project `gorm:"foreignKey:ID"`
 	Description string
@@ -27,8 +27,8 @@ type Task struct {
 }
 
 type Message struct {
-	ID              int `gorm:"primary_key"`
-	TaskID          int `gorm:"index"`
+	ID              int64 `gorm:"primary_key"`
+	TaskID          int64 `gorm:"index"`
 	ParentMessageID int
 	//ParentMessage   *Message `gorm:"foreignKey:ParentMessageID"`
 	Text                string

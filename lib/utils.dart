@@ -9,6 +9,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mime/mime.dart';
 
+class WSMessage {
+  String command = "";
+  dynamic data;
+  WSMessage.fromJson(String json) {
+    var map = jsonDecode(json);
+    command = map["Command"];
+    data = map["Data"];
+  }
+}
+
 void toast(String? msg, BuildContext context) {
   if (msg == null) return;
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -112,4 +122,13 @@ Future<Uint8List> readFile(String? path) async {
     io.File file = io.File(path);
     return await file.readAsBytes();
   }
+}
+
+Map<String, String> strMap([String? key, String? value]) {
+  if (key != null && value != null) {
+    var res = Map<String, String>();
+    res[key] = value;
+    return res;
+  }
+  return <String, String>{};
 }

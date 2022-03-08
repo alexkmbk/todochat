@@ -1,9 +1,12 @@
 package Messages
 
 import (
+	"bufio"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -22,7 +25,9 @@ import (
 	WS "todochat_server/constrollers/WebSocked"
 )
 
-func GetMessages(w http.ResponseWriter, r *http.Request) {
+func GetMessages__(w http.ResponseWriter, r *http.Request) {
+
+	start := time.Now()
 
 	log.Info("Get Messages")
 
@@ -50,7 +55,96 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var messages []Message
+	var messages []*Message
+	//DB.Where("task_id = ?", taskID).Order("created_at desc").Offset(offset).Limit(limit).Find(&messages)
+	if lastID == 0 {
+		DB.Order("ID desc").Where("task_id = ?", taskID).Limit(limit).Find(&messages)
+	} else {
+		DB.Order("ID desc").Where("task_id = ? AND ID < ?", taskID, lastID).Limit(limit).Find(&messages)
+	}
+
+	//	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	/*mediatype, _, err := mime.ParseMediaType(r.Header.Get("Accept"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotAcceptable)
+		return
+	}
+	if mediatype != "multipart/form-data" {
+		http.Error(w, "set Accept: multipart/form-data", http.StatusMultipleChoices)
+		return
+	}*/
+	mw := multipart.NewWriter(w)
+	w.Header().Set("Content-Type", mw.FormDataContentType())
+
+	for _, message := range messages {
+
+		data, err_read := os.ReadFile(filepath.Join(FileStoragePath, message.SmallImageLocalPath))
+		if err_read == nil {
+			fw, err := mw.CreateFormFile("SmallImageData", message.FileName+".jpg")
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			if _, err := fw.Write(data); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+		_, err_field := mw.CreateFormField("Message")
+		if err_field != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		json, _ := json.Marshal(message)
+		if err := mw.WriteField("Message", string(json)); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+	}
+
+	if err := mw.Close(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//json.NewEncoder(w).Encode(messages)
+	//log.Info("Get Messages - finish")
+	elapsed := time.Since(start)
+	log.Printf("Get messages took %s", elapsed)
+}
+
+func GetMessages(w http.ResponseWriter, r *http.Request) {
+
+	start := time.Now()
+	log.Info("Get Messages")
+
+	if !CheckSessionID(w, r) {
+		return
+	}
+
+	lastID, err := strconv.Atoi(r.Header.Get("lastID"))
+	if err != nil {
+		return
+	}
+
+	/*offset, err := strconv.Atoi(r.Header.Get("offset"))
+	if err != nil {
+		offset = 0
+	}*/
+
+	limit, err := strconv.Atoi(r.Header.Get("limit"))
+	if err != nil {
+		return
+	}
+
+	taskID, err := strconv.Atoi(r.Header.Get("taskID"))
+	if err != nil {
+		return
+	}
+
+	var messages []*Message
 	//DB.Where("task_id = ?", taskID).Order("created_at desc").Offset(offset).Limit(limit).Find(&messages)
 	if lastID == 0 {
 		DB.Order("ID desc").Where("task_id = ?", taskID).Limit(limit).Find(&messages)
@@ -67,7 +161,32 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
-	json.NewEncoder(w).Encode(messages)
+
+	pw := bufio.NewWriterSize(w, 100000) // Bigger writer of 10kb
+	fmt.Println("Buffer size", pw.Size())
+
+	res, _ := json.Marshal(messages)
+	pw.Write(res)
+	//_, err := io.WriteString(pw, )
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	if pw.Buffered() > 0 {
+		fmt.Println("Bufferred", pw.Buffered())
+		pw.Flush() // Important step read my note following this code snippet
+	}
+
+	length := strconv.Itoa(len(res))
+	w.Header().Set("Content-Length", length)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	//json.NewEncoder(w).Encode(messages)
+	//log.Info("Get Messages - finish")
+	elapsed := time.Since(start)
+	log.Printf("Get messages took %s", elapsed.Seconds())
+
 }
 
 /*func CreateMessage(w http.ResponseWriter, r *http.Request) {
