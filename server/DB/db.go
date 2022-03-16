@@ -36,6 +36,13 @@ func InitDB() {
 	DB.AutoMigrate(&Task{})
 	DB.AutoMigrate(&Message{})
 
+	var count int64
+	DB.Model(&Project{}).Count(&count)
+	if count == 0 {
+		var project Project
+		project.Description = "Default project"
+		DB.Create(&project)
+	}
 	/*var messages []*Message
 	DB.Find(&messages)
 

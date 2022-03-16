@@ -54,7 +54,8 @@ func GetRoutesHandler() http.Handler {
 	router.HandleFunc("/registerNewUser", Users.RegisterNewUser).Methods("POST")
 
 	router.HandleFunc("/initMessagesWS", WS.InitMessagesWS).Methods("GET")
-	router.HandleFunc("/echo", WS.Echo).Methods("GET")
+	//router.HandleFunc("/echo", WS.Echo).Methods("GET")
+	router.HandleFunc("/getFile", Messages.GetFile).Methods("GET")
 
 	//router.PathPrefix("/").Handler(http.FileServer(http.Dir("./FileStorage")))
 	fs := http.StripPrefix("/FileStorage/", http.FileServer(http.Dir("./FileStorage")))

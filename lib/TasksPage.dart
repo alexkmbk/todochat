@@ -74,7 +74,15 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Future<bool> initBeforeBuild(BuildContext context) async {
-    if (tasksListProvider.projectID != null) {
+    if (tasksListProvider.projectID == null) {
+      tasksListProvider.project = await requestFirstItem();
+      if (tasksListProvider.project != null) {
+        tasksListProvider.projectID = tasksListProvider.project!.ID;
+      }
+    }
+
+    if (tasksListProvider.projectID != null &&
+        tasksListProvider.project == null) {
       tasksListProvider.project = await getProject(tasksListProvider.projectID);
     }
     return true;

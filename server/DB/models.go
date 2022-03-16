@@ -35,7 +35,8 @@ type Message struct {
 	UserID           int64
 	SmallImageBase64 string `gorm:"-"`
 	FileName         string
-	FileLocalPath    string
+	LocalFileName    string
+	FileSize         int64
 	SmallImageName   string
 	IsImage          bool
 	Created_at       time.Time

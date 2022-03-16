@@ -106,37 +106,28 @@ func GetItem(w http.ResponseWriter, r *http.Request) {
 
 func GetItems(w http.ResponseWriter, r *http.Request) {
 
-	log.Info("Get Tasks")
+	log.Info("Get projects")
 
 	if !CheckSessionID(w, r) {
 		w.WriteHeader(401)
 		w.Write([]byte("Unauthorised.\n User was not found. \n"))
 		return
 	}
+
+	limit, err := strconv.Atoi(r.Header.Get("limit"))
+	if err != nil {
+		limit = 0
+	}
+
 	var items []Project
-	DB.Order("Description asc").Find(&items)
+	if limit != 0 {
+		DB.Order("Description asc").Limit(limit).Find(&items)
+	} else {
+		DB.Order("Description asc").Find(&items)
+	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	m := make(map[string]interface{})
 	m["items"] = items
 	json.NewEncoder(w).Encode(m)
-
-	//lastItem := r.Header.Get("lastItem")
-
-	//DB.Where("completed = ?", false)
-
-	//orderby := strings.Split(string(r.Header.Get("orderby")), ",")
-
-	//filter := r.Header.Get("filter")
-
-	//fmt.Sprintf()
-	/*rows, err := DB.Raw("select TodoItem.Description from TodoItem where TodoItem.Description > &Description", sql.Named("Description", lastItem)).Rows()
-
-	if err == nil {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		json.NewEncoder(w).Encode(rows)
-	}*/
-
-	//var todos []TodoItem
-	//DB.Where("completed = ?", false).Find(&todos)
 }

@@ -25,6 +25,17 @@ import (
 	WS "todochat_server/constrollers/WebSocked"
 )
 
+func GetFile(w http.ResponseWriter, r *http.Request) {
+	fileName := r.Header.Get("fileName")
+
+	data, err := os.ReadFile(filepath.Join(FileStoragePath, fileName))
+	if err == nil {
+		return
+	}
+	w.Write(data)
+	//	json.NewEncoder(w).Encode(ToBase64(data))
+}
+
 func GetMessages__(w http.ResponseWriter, r *http.Request) {
 
 	start := time.Now()
@@ -248,7 +259,7 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 	var smallImageFileName string
 	var fileData []byte
 	var smallImageData []byte
-
+	var fileSize int64
 	for {
 		part, err_part := read_form.NextPart()
 		if err_part == io.EOF {
@@ -258,7 +269,7 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 			ext := filepath.Ext(part.FileName())
 			fileData, _ = ioutil.ReadAll(part)
 			fileName = uuid.New().String() + ext
-
+			fileSize = int64(len(fileData))
 			err = os.WriteFile(filepath.Join(FileStoragePath, fileName), fileData, 0644)
 			if err != nil {
 				fileName = ""
@@ -289,54 +300,14 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	message.FileLocalPath = fileName
+	message.LocalFileName = fileName
 	message.SmallImageName = smallImageFileName
 	message.Created_at = time.Now()
 	message.UserID = userID
-
-	/*if smallImageFileName != "" {
-		message.SmallImageBase64 = ToBase64(smallImageData)
-	}*/
+	message.FileSize = fileSize
 
 	DB.Create(&message)
 	WS.SendWSMessage(&message)
-
-	/*fmt.Println(r.FormValue("delete"))
-	decoder := json.NewDecoder(r.Body)
-	var message Message
-
-	err = decoder.Decode(&message)
-	if err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		io.WriteString(w, `{"error": "Record Not Found"}`)
-	} else {
-		text := message.Text
-		log.WithFields(log.Fields{"text": text}).Info("Add new Message. Saving to database.")
-		//message := &Message{Description: description, Completed: false, Creation_date: time.Now()}
-		message.Created_at = time.Now()
-		message.UserID = userID
-		if message.Image != "" {
-			fileData, err := FromBase64(message.Image)
-			if err != nil {
-				w.Header().Set("Content-Type", "application/json; charset=utf-8")
-				io.WriteString(w, `{"error": "Image parse error"}`)
-				return
-			}
-			imageFileName := uuid.New().String() + ".jpg"
-
-			err = os.WriteFile(imageFileName, fileData, 0644)
-			if err != nil {
-				// handle error
-			}
-		}
-		message.PictureLocalPath = ""
-		DB.Create(&message)
-		//DB.Last(&todo)
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		//io.WriteString(w, `{result: true}`)
-		json.NewEncoder(w).Encode(message)
-		WS.SendWSMessage(message)
-	}*/
 }
 
 func getItemByID(ID int) (*Message, bool) {

@@ -300,6 +300,36 @@ class _ProjectsPageState extends State<ProjectsPage> {
   }*/
 }
 
+Future<Project?> requestFirstItem() async {
+  if (sessionID == "") {
+    return null;
+  }
+
+  Map<String, String> headers = Map<String, String>();
+  headers["sessionID"] = sessionID;
+  headers["limit"] = "1";
+
+  var response;
+  try {
+    response =
+        await httpClient.get(Uri.http(server, '/projects'), headers: headers);
+  } catch (e) {
+    return null;
+  }
+
+  if (response.statusCode == 200) {
+    var data = jsonDecode(response.body);
+
+    var items = data["items"];
+
+    if (items == null || items.length == 0) {
+      return null;
+    }
+    return Project.fromJson(items[0]);
+  }
+  return null;
+}
+
 Future<Project?> getProject(int? projectID) async {
   if (sessionID == "") {
     return null;

@@ -261,19 +261,31 @@ class ChatBubble extends StatelessWidget {
       if (message.isImage &&
           message.smallImageName != null &&
           message.smallImageName.isNotEmpty) {
-        return Image.network(
-            'http://' + server + "/FileStorage/" + message.smallImageName,
-            headers: strMap("sessionID", sessionID), errorBuilder:
-                (BuildContext context, Object exception,
-                    StackTrace? stackTrace) {
-          return const Placeholder(
-            fallbackHeight: 40,
-            fallbackWidth: 40,
-          );
-        }, loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return const CircularProgressIndicator();
-        });
+        return GestureDetector(
+            onTap: () {},
+            child: Image.network(
+              'http://' + server + "/FileStorage/" + message.smallImageName,
+              headers: strMap("sessionID", sessionID),
+              errorBuilder: (BuildContext context, Object exception,
+                  StackTrace? stackTrace) {
+                return const Placeholder(
+                  fallbackHeight: 40,
+                  fallbackWidth: 40,
+                );
+              },
+              loadingBuilder: (BuildContext context, Widget child,
+                  ImageChunkEvent? loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                        : null,
+                  ),
+                );
+              },
+            ));
       } else {
         return DecoratedBox(
           // chat bubble decoration
