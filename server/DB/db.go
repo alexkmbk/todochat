@@ -1,7 +1,6 @@
 package DB
 
 import (
-	"os"
 	"path/filepath"
 	"time"
 
@@ -36,6 +35,15 @@ func InitDB() {
 	DB.AutoMigrate(&Project{})
 	DB.AutoMigrate(&Task{})
 	DB.AutoMigrate(&Message{})
+
+	/*var messages []*Message
+	DB.Find(&messages)
+
+	for i := range messages {
+		messages[i].SmallImageName = messages[i].SmallImageLocalPath
+	}
+
+	DB.Save(&messages)*/
 
 	/*var tasks []Task
 	DB.Find(&tasks)
@@ -72,13 +80,13 @@ func GetMessagesDB(lastID int64, limit int64, taskID int64) []*Message {
 		DB.Order("ID desc").Where("task_id = ? AND ID < ?", taskID, lastID).Limit(int(limit)).Find(&messages)
 	}
 
-	for i := range messages {
+	/*for i := range messages {
 		data, err_read := os.ReadFile(filepath.Join(FileStoragePath, messages[i].SmallImageLocalPath))
 		if err_read == nil {
 			messages[i].SmallImageBase64 = ToBase64(data)
 		}
 
-	}
+	}*/
 	/*res, err := json.Marshal(messages)
 
 	if err != nil {

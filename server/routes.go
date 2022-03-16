@@ -25,6 +25,12 @@ func FileServer(fs http.Handler) http.HandlerFunc {
 	}
 }
 
+func WebClient(fs http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fs.ServeHTTP(w, r)
+	}
+}
+
 //GetRoutesHandler inits router
 func GetRoutesHandler() http.Handler {
 	router := mux.NewRouter()
@@ -50,10 +56,14 @@ func GetRoutesHandler() http.Handler {
 	router.HandleFunc("/initMessagesWS", WS.InitMessagesWS).Methods("GET")
 	router.HandleFunc("/echo", WS.Echo).Methods("GET")
 
-	//router.PathPrefix("/").Handler(http.FileServer(http.Dir("E:\\DEV\\Go\\todo\\")))
+	//router.PathPrefix("/").Handler(http.FileServer(http.Dir("./FileStorage")))
+	fs := http.StripPrefix("/FileStorage/", http.FileServer(http.Dir("./FileStorage")))
 	//fs := http.FileServer(http.Dir("./FileStorage"))
-	fs := http.FileServer(http.Dir(http.Dir("E:\\DEV\\Go\\todo\\")))
-	router.Handle("/", FileServer(fs))
+	router.PathPrefix("/FileStorage/").Handler(FileServer(fs))
+	//router.Handle("/", WebClient(http.FileServer(http.Dir("E:\\DEV\\Go\\todo\\"))))
+
+	//router.Handle("/", http.FileServer(http.Dir("./WebServer")))
+	//router.Handle("/FileStorage", FileServer(fs))
 
 	handler := cors.New(cors.Options{
 		AllowedHeaders:   []string{"Accept", "content-type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"},

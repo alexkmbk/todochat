@@ -14,6 +14,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'TasksPage.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as path;
 
 //import 'package:web_socket_channel/web_socket_channel.dart';
 //import 'package:web_socket_channel/status.dart' as status;
@@ -223,7 +224,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     Message message = Message(
         task: widget.task,
         text: text,
-        fileName: fileName,
+        fileName: path.basename(fileName),
         isImage: isImageFile(fileName));
 
     request.fields["Message"] = jsonEncode(message);

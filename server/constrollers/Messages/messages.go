@@ -79,7 +79,7 @@ func GetMessages__(w http.ResponseWriter, r *http.Request) {
 
 	for _, message := range messages {
 
-		data, err_read := os.ReadFile(filepath.Join(FileStoragePath, message.SmallImageLocalPath))
+		data, err_read := os.ReadFile(filepath.Join(FileStoragePath, message.SmallImageName))
 		if err_read == nil {
 			fw, err := mw.CreateFormFile("SmallImageData", message.FileName+".jpg")
 			if err != nil {
@@ -155,7 +155,7 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	for i := range messages {
-		data, err_read := os.ReadFile(filepath.Join(FileStoragePath, messages[i].SmallImageLocalPath))
+		data, err_read := os.ReadFile(filepath.Join(FileStoragePath, messages[i].SmallImageName))
 		if err_read == nil {
 			messages[i].SmallImageBase64 = ToBase64(data)
 		}
@@ -290,13 +290,13 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	message.FileLocalPath = fileName
-	message.SmallImageLocalPath = smallImageFileName
+	message.SmallImageName = smallImageFileName
 	message.Created_at = time.Now()
 	message.UserID = userID
 
-	if smallImageFileName != "" {
+	/*if smallImageFileName != "" {
 		message.SmallImageBase64 = ToBase64(smallImageData)
-	}
+	}*/
 
 	DB.Create(&message)
 	WS.SendWSMessage(&message)

@@ -63,8 +63,9 @@ class Message {
   DateTime? created_at;
   String text = "";
   int userID = 0;
-  Uint8List? smallImageData;
+  //Uint8List? smallImageData;
   String fileName = "";
+  String smallImageName = "";
   bool isImage = false;
 
   Message(
@@ -73,7 +74,8 @@ class Message {
       this.created_at,
       this.ID = 0,
       this.userID = 0,
-      this.smallImageData,
+      this.smallImageName = "",
+      //this.smallImageData,
       this.fileName = "",
       this.isImage = false});
 
@@ -86,20 +88,23 @@ class Message {
       'userID': userID,
       'fileName': fileName,
       'isImage': isImage,
+      'smallImageName': smallImageName,
       //'image': toBase64(image),
     };
   }
 
-  Message.fromJson(Map<String, dynamic> json)
-      : ID = json['ID'],
-        //task = json['task'],
-        created_at = DateTime.tryParse(json['Created_at']),
-        text = json['Text'],
-        taskID = json['TaskID'],
-        userID = json['UserID'],
-        isImage = json['IsImage'],
-        fileName = json['FileName'],
-        smallImageData = fromBase64(json['SmallImageBase64']);
+  Message.fromJson(Map<String, dynamic> json) {
+    ID = json['ID'];
+    //task = json['task'],
+    created_at = DateTime.tryParse(json['Created_at']);
+    text = json['Text'];
+    taskID = json['TaskID'];
+    userID = json['UserID'];
+    isImage = json['IsImage'];
+    fileName = json['FileName'];
+    //smallImageData = fromBase64(json['SmallImageBase64']
+    smallImageName = json['SmallImageName'];
+  }
 }
 
 typedef Future<bool> OnDeleteFn(int messageID);
@@ -254,11 +259,52 @@ class ChatBubble extends StatelessWidget {
       );
     } else {
       if (message.isImage &&
-          message.smallImageData != null &&
-          message.smallImageData!.isNotEmpty) {
-        return Image.memory(message.smallImageData!);
+          message.smallImageName != null &&
+          message.smallImageName.isNotEmpty) {
+        return Image.network(
+            'http://' + server + "/FileStorage/" + message.smallImageName,
+            headers: strMap("sessionID", sessionID), errorBuilder:
+                (BuildContext context, Object exception,
+                    StackTrace? stackTrace) {
+          return const Placeholder(
+            fallbackHeight: 40,
+            fallbackWidth: 40,
+          );
+        }, loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const CircularProgressIndicator();
+        });
       } else {
-        return Text(message.fileName);
+        return DecoratedBox(
+          // chat bubble decoration
+          decoration: BoxDecoration(
+            color: isCurrentUser ? Colors.blue : Colors.grey[300],
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Icon(Icons.file_present_rounded, color: Colors.white),
+                    SizedBox(width: 10),
+                    FittedBox(
+                        fit: BoxFit.fill,
+                        alignment: Alignment.center,
+                        child: SelectableText(
+                          message.fileName,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyText1!
+                              .copyWith(
+                                  color: isCurrentUser
+                                      ? Colors.white
+                                      : Colors.black87),
+                        )),
+                  ])),
+        );
       }
     }
   }
