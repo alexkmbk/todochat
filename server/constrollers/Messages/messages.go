@@ -2,6 +2,7 @@ package Messages
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -32,7 +33,12 @@ func GetFile(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		return
 	}
-	w.Write(data)
+
+	b := bytes.NewBuffer(data)
+
+	w.Header().Set("Content-Type", "application/octet-stream")
+	_, err = b.WriteTo(w)
+	//w.Write(data)
 	//	json.NewEncoder(w).Encode(ToBase64(data))
 }
 

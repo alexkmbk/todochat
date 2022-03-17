@@ -16,6 +16,27 @@ import (
 //var dsn = "host=localhost user=postgres password=123 dbname=todolist port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 var DB *gorm.DB
 
+func DropUnusedColumns(dst interface{}) {
+
+	stmt := &gorm.Statement{DB: DB}
+	stmt.Parse(dst)
+	fields := stmt.Schema.Fields
+	columns, _ := DB.Debug().Migrator().ColumnTypes(dst)
+
+	for i := range columns {
+		found := false
+		for j := range fields {
+			if columns[i].Name() == fields[j].DBName {
+				found = true
+				break
+			}
+		}
+		if !found {
+			DB.Migrator().DropColumn(dst, columns[i].Name())
+		}
+	}
+}
+
 func InitDB() {
 
 	var err error
@@ -43,6 +64,7 @@ func InitDB() {
 		project.Description = "Default project"
 		DB.Create(&project)
 	}
+	DropUnusedColumns(&Message{})
 	/*var messages []*Message
 	DB.Find(&messages)
 
