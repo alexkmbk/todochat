@@ -53,9 +53,13 @@ func InitDB() {
 	//db.Migrator().DropTable(&User{})
 
 	DB.AutoMigrate(&User{})
+	DropUnusedColumns(&User{})
 	DB.AutoMigrate(&Project{})
+	DropUnusedColumns(&Project{})
 	DB.AutoMigrate(&Task{})
+	DropUnusedColumns(&Task{})
 	DB.AutoMigrate(&Message{})
+	DropUnusedColumns(&Message{})
 
 	var count int64
 	DB.Model(&Project{}).Count(&count)
@@ -64,7 +68,6 @@ func InitDB() {
 		project.Description = "Default project"
 		DB.Create(&project)
 	}
-	DropUnusedColumns(&Message{})
 	/*var messages []*Message
 	DB.Find(&messages)
 

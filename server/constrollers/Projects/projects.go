@@ -33,6 +33,25 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func UpdateItem(w http.ResponseWriter, r *http.Request) {
+	userID := GetUserID(w, r)
+	if userID == 0 {
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	var item Project
+
+	err := decoder.Decode(&item)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		io.WriteString(w, `{"updated": false, "error": "Record Not Found"}`)
+	} else {
+		DB.Save(&item)
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		json.NewEncoder(w).Encode(item)
+	}
+}
+
 /*func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	// Get URL parameter from mux
 	vars := mux.Vars(r)

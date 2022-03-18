@@ -6,13 +6,19 @@ import 'LoginPage.dart';
 
 import 'main.dart';
 import 'dart:convert';
+import 'package:collection/collection.dart';
 
 class Project {
   int ID = 0;
   String Description = "";
   bool editMode = false;
+  bool isNewItem = false;
 
-  Project({this.ID = 0, this.Description = "", this.editMode = false});
+  Project(
+      {this.ID = 0,
+      this.Description = "",
+      this.editMode = false,
+      this.isNewItem = false});
 
   Map<String, dynamic> toJson() {
     return {
@@ -132,19 +138,35 @@ class _ProjectsPageState extends State<ProjectsPage> {
                   child: Focus(
                     onFocusChange: (hasFocus) {
                       if (!hasFocus) {
-                        deleteEditorItem();
+                        if (project.isNewItem) {
+                          deleteEditorItem();
+                        } else {
+                          setState(() {
+                            project.editMode = false;
+                          });
+                        }
                       }
                     },
                     child: TextField(
+                      controller: TextEditingController()
+                        ..text = project.Description,
                       decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: "New project name"),
+                          hintText:
+                              (project.isNewItem) ? "New project name" : null),
                       autofocus: true,
                       textInputAction: TextInputAction.done,
                       onSubmitted: (value) async {
                         if (!value.isEmpty) {
-                          await createProject(value);
-                          deleteEditorItem();
+                          if (project.isNewItem) {
+                            await createProject(value);
+                            deleteEditorItem();
+                          } else {
+                            project.Description = value;
+                            await updateProject(project);
+                            project.editMode = false;
+                            setState(() {});
+                          }
                         }
                       },
                     ),
@@ -163,6 +185,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
           child: ListTile(
             shape: const Border(bottom: BorderSide(color: Colors.grey)),
             onTap: () => onTap(project),
+            onLongPress: () => onLongPress(project),
             title: Text(project.Description),
             trailing: Icon(Icons.keyboard_arrow_right),
           ));
@@ -171,7 +194,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
   void addEditorItem() {
     setState(() {
-      widget.items.insert(0, Project(editMode: true));
+      widget.items.insert(0, Project(editMode: true, isNewItem: true));
     });
   }
 
@@ -213,8 +236,49 @@ class _ProjectsPageState extends State<ProjectsPage> {
     return null;
   }
 
+  Future<Project?> updateProject(Project project) async {
+    if (sessionID == "") {
+      return null;
+    }
+
+    String body = jsonEncode(project);
+
+    var headers = {"content-type": "application/json; charset=utf-8"};
+    headers["sessionID"] = sessionID;
+
+    var response;
+    try {
+      response = await httpClient.post(Uri.http(server, '/updateProject'),
+          body: body, headers: headers);
+    } catch (e) {
+      return null;
+    }
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body) as Map<String, dynamic>;
+      project.ID = data["ID"];
+      setState(() {
+        //widget.items.firstWhereOrNull(0, project);
+      });
+      return project;
+    }
+
+    return null;
+  }
+
   Future<void> onTap(Project project) async {
     Navigator.pop(context, project);
+  }
+
+  Future<void> onLongPress(Project project) async {
+    setState(() {
+      var foundProject =
+          widget.items.firstWhereOrNull((element) => element.ID == project.ID);
+      if (foundProject != null) {
+        foundProject.editMode = true;
+        foundProject.isNewItem = false;
+      }
+    });
   }
 
   Future<bool> deleteProject(int projectID) async {

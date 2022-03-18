@@ -49,6 +49,7 @@ func GetRoutesHandler() http.Handler {
 	router.HandleFunc("/projects", Projects.GetItems).Methods("GET")
 	router.HandleFunc("/project/{id}", Projects.GetItem).Methods("GET")
 	router.HandleFunc("/createProject", Projects.CreateItem).Methods("POST")
+	router.HandleFunc("/updateProject", Projects.UpdateItem).Methods("POST")
 	router.HandleFunc("/deleteProject/{id}", Projects.DeleteItem).Methods("DELETE")
 
 	router.HandleFunc("/registerNewUser", Users.RegisterNewUser).Methods("POST")
