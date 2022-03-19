@@ -196,7 +196,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       return;
     }
 
-    var query = strMap("command", "getMessages");
+    var query = mapstr("command", "getMessages");
     query["sessionID"] = sessionID;
     query["lastID"] = _msgListProvider.lastID.toString();
     query["limit"] = "30";

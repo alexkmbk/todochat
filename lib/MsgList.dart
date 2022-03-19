@@ -266,7 +266,7 @@ class ChatBubble extends StatelessWidget {
             onTap: () {},
             child: networkImage(
                 'http://' + server + "/FileStorage/" + message.smallImageName,
-                headers: strMap("sessionID", sessionID)));
+                headers: mapstr("sessionID", sessionID)));
       } else {
         return DecoratedBox(
           // chat bubble decoration

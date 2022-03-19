@@ -124,7 +124,7 @@ Future<Uint8List> readFile(String? path) async {
   }
 }
 
-Map<String, String> strMap([String? key, String? value]) {
+Map<String, String> mapstr([String? key, String? value]) {
   if (key != null && value != null) {
     var res = Map<String, String>();
     res[key] = value;

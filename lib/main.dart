@@ -195,7 +195,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     if (sessionID.isNotEmpty) {
-      var query = strMap("command", "init");
+      var query = mapstr("command", "init");
       query["sessionID"] = sessionID;
       ws.sink.add(jsonEncode(query));
 

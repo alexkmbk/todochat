@@ -51,31 +51,28 @@ func GetRoutesHandler() http.Handler {
 	router.HandleFunc("/todo/{id}", CommonHandler(Tasks.UpdateItem)).Methods("POST")
 	router.HandleFunc("/todo/{id}", CommonHandler(Tasks.DeleteItem)).Methods("DELETE")
 
-	router.HandleFunc("/messages", Messages.GetMessages).Methods("GET")
-	router.HandleFunc("/createMessage", Messages.CreateMessage).Methods("POST")
-	router.HandleFunc("/deleteMessage/{id}", Messages.DeleteItem).Methods("DELETE")
+	router.HandleFunc("/messages", CommonHandler(Messages.GetMessages)).Methods("GET")
+	router.HandleFunc("/createMessage", CommonHandler(Messages.CreateMessage)).Methods("POST")
+	router.HandleFunc("/deleteMessage/{id}", CommonHandler(Messages.DeleteItem)).Methods("DELETE")
 
-	router.HandleFunc("/projects", Projects.GetItems).Methods("GET")
-	router.HandleFunc("/project/{id}", Projects.GetItem).Methods("GET")
-	router.HandleFunc("/createProject", Projects.CreateItem).Methods("POST")
-	router.HandleFunc("/updateProject", Projects.UpdateItem).Methods("POST")
-	router.HandleFunc("/deleteProject/{id}", Projects.DeleteItem).Methods("DELETE")
+	router.HandleFunc("/projects", CommonHandler(Projects.GetItems)).Methods("GET")
+	router.HandleFunc("/project/{id}", CommonHandler(Projects.GetItem)).Methods("GET")
+	router.HandleFunc("/createProject", CommonHandler(Projects.CreateItem)).Methods("POST")
+	router.HandleFunc("/updateProject", CommonHandler(Projects.UpdateItem)).Methods("POST")
+	router.HandleFunc("/deleteProject/{id}", CommonHandler(Projects.DeleteItem)).Methods("DELETE")
 
 	router.HandleFunc("/registerNewUser", Users.RegisterNewUser).Methods("POST")
 
 	router.HandleFunc("/initMessagesWS", WS.InitMessagesWS).Methods("GET")
 	//router.HandleFunc("/echo", WS.Echo).Methods("GET")
-	router.HandleFunc("/getFile", Messages.GetFile).Methods("GET")
+	router.HandleFunc("/getFile", CommonHandler(Messages.GetFile)).Methods("GET")
 
-	//router.PathPrefix("/").Handler(http.FileServer(http.Dir("./FileStorage")))
+	// File server
 	fs := http.StripPrefix("/FileStorage/", http.FileServer(http.Dir("./FileStorage")))
-	//fs := http.FileServer(http.Dir("./FileStorage"))
 	router.PathPrefix("/FileStorage/").Handler(FileServer(fs))
-	//router.Handle("/", WebClient(http.FileServer(http.Dir("E:\\DEV\\Go\\todo\\"))))
+	router.PathPrefix("/").Handler(WebClient(http.FileServer(http.Dir("./WebClient"))))
 
-	//router.Handle("/", http.FileServer(http.Dir("./WebServer")))
-	//router.Handle("/FileStorage", FileServer(fs))
-
+	// CORS
 	handler := cors.New(cors.Options{
 		AllowedHeaders:   []string{"Accept", "content-type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"},
 		AllowedOrigins:   []string{"*"},
