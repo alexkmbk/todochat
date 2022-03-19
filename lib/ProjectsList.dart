@@ -30,6 +30,10 @@ class Project {
   Project.fromJson(Map<String, dynamic> json)
       : ID = json['ID'],
         Description = json['Description'];
+
+  Project.from(Project project)
+      : ID = project.ID,
+        Description = project.Description;
 }
 
 class ProjectsPage extends StatefulWidget {
@@ -45,7 +49,6 @@ class ProjectsPage extends StatefulWidget {
 class _ProjectsPageState extends State<ProjectsPage> {
   final ScrollController _scrollController = ScrollController();
   final _projetcInputController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
@@ -162,10 +165,15 @@ class _ProjectsPageState extends State<ProjectsPage> {
                             await createProject(value);
                             deleteEditorItem();
                           } else {
-                            project.Description = value;
-                            await updateProject(project);
-                            project.editMode = false;
-                            setState(() {});
+                            var tempProject = Project.from(project);
+                            tempProject.Description = value;
+                            var res = await updateProject(tempProject);
+                            if (res) {
+                              setState(() {
+                                project.Description = tempProject.Description;
+                                project.editMode = false;
+                              });
+                            }
                           }
                         }
                       },
@@ -236,9 +244,9 @@ class _ProjectsPageState extends State<ProjectsPage> {
     return null;
   }
 
-  Future<Project?> updateProject(Project project) async {
+  Future<bool> updateProject(Project project) async {
     if (sessionID == "") {
-      return null;
+      return false;
     }
 
     String body = jsonEncode(project);
@@ -251,19 +259,17 @@ class _ProjectsPageState extends State<ProjectsPage> {
       response = await httpClient.post(Uri.http(server, '/updateProject'),
           body: body, headers: headers);
     } catch (e) {
-      return null;
+      return false;
     }
 
     if (response.statusCode == 200) {
-      var data = jsonDecode(response.body) as Map<String, dynamic>;
-      project.ID = data["ID"];
-      setState(() {
-        //widget.items.firstWhereOrNull(0, project);
-      });
-      return project;
+      return true;
+    } else {
+      toast(response.body.toString(), context);
+      return false;
     }
 
-    return null;
+    return false;
   }
 
   Future<void> onTap(Project project) async {

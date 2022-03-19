@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'customWidgets.dart';
 import 'utils.dart';
 import 'package:provider/provider.dart';
 import 'package:web_socket_channel/io.dart';
@@ -263,29 +264,9 @@ class ChatBubble extends StatelessWidget {
           message.smallImageName.isNotEmpty) {
         return GestureDetector(
             onTap: () {},
-            child: Image.network(
-              'http://' + server + "/FileStorage/" + message.smallImageName,
-              headers: strMap("sessionID", sessionID),
-              errorBuilder: (BuildContext context, Object exception,
-                  StackTrace? stackTrace) {
-                return const Placeholder(
-                  fallbackHeight: 40,
-                  fallbackWidth: 40,
-                );
-              },
-              loadingBuilder: (BuildContext context, Widget child,
-                  ImageChunkEvent? loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Center(
-                  child: CircularProgressIndicator(
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                            loadingProgress.expectedTotalBytes!
-                        : null,
-                  ),
-                );
-              },
-            ));
+            child: networkImage(
+                'http://' + server + "/FileStorage/" + message.smallImageName,
+                headers: strMap("sessionID", sessionID)));
       } else {
         return DecoratedBox(
           // chat bubble decoration

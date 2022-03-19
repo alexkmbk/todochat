@@ -34,8 +34,8 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateItem(w http.ResponseWriter, r *http.Request) {
-	userID := GetUserID(w, r)
-	if userID == 0 {
+
+	if !CheckSessionID(w, r) {
 		return
 	}
 	decoder := json.NewDecoder(r.Body)
@@ -43,8 +43,7 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 
 	err := decoder.Decode(&item)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		io.WriteString(w, `{"updated": false, "error": "Record Not Found"}`)
+		http.Error(w, "Json decode error", http.StatusInternalServerError)
 	} else {
 		DB.Save(&item)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")

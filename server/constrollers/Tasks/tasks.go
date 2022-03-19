@@ -30,8 +30,7 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 
 	err = decoder.Decode(&task)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		io.WriteString(w, `{"updated": false, "error": "Record Not Found"}`)
+		http.Error(w, "JSON parse error", http.StatusInternalServerError)
 	} else {
 		description := task.Description
 		log.WithFields(log.Fields{"description": description}).Info("Add new TodoItem. Saving to database.")
@@ -52,8 +51,7 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	// Test if the TodoItem exist in DB
 	err := getItemByID(id)
 	if err == false {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		io.WriteString(w, `{"updated": false, "error": "Record Not Found"}`)
+		http.Error(w, "Record Not Found", http.StatusNotFound)
 	} else {
 		completed, _ := strconv.ParseBool(r.Header.Get("completed"))
 		log.WithFields(log.Fields{"Id": id, "Completed": completed}).Info("Updating TodoItem")
@@ -68,10 +66,6 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 
 func DeleteItem(w http.ResponseWriter, r *http.Request) {
 
-	if !CheckSessionID(w, r) {
-		return
-	}
-
 	// Get URL parameter from mux
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
@@ -79,8 +73,7 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 	// Test if the TodoItem exist in DB
 	err := getItemByID(id)
 	if err == false {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		io.WriteString(w, `{"deleted": false, "error": "Record Not Found"}`)
+		http.Error(w, "Record Not Found", http.StatusNotFound)
 	} else {
 		log.WithFields(log.Fields{"ID": id}).Info("Deleting TodoItem")
 		todo := &Task{}
@@ -104,12 +97,6 @@ func getItemByID(ID int) bool {
 func GetItems(w http.ResponseWriter, r *http.Request) {
 
 	log.Info("Get Tasks")
-
-	if !CheckSessionID(w, r) {
-		w.WriteHeader(401)
-		w.Write([]byte("Unauthorised.\n User was not found. \n"))
-		return
-	}
 
 	lastID, err := strconv.Atoi(r.Header.Get("lastID"))
 	if err != nil {

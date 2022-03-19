@@ -26,13 +26,11 @@ func CheckSessionID(w http.ResponseWriter, r *http.Request) bool {
 	var err error
 	session.SessionID, err = uuid.Parse(SessionID)
 	if err != nil {
-		w.WriteHeader(401)
-		w.Write([]byte("Unauthorised.\n"))
+		http.Error(w, "Unauthorised.", http.StatusUnauthorized)
 		return false
 	}
-	if err = sessionDB.First(&session).Error; err != nil {
-		w.WriteHeader(401)
-		w.Write([]byte("Unauthorised.\n"))
+	if sessionDB.First(&session).Error != nil {
+		http.Error(w, "Unauthorised.", http.StatusUnauthorized)
 		return false
 	}
 	session.LastVisit = time.Now()
@@ -43,18 +41,15 @@ func CheckSessionID(w http.ResponseWriter, r *http.Request) bool {
 // GetUserID returns user id by given sessionID from htt request
 func GetUserID(w http.ResponseWriter, r *http.Request) int64 {
 	SessionID := r.Header.Get("SessionID")
-	//err := json.NewDecoder(r.Body).Decode(&loginData)
 	var session Session
 	var err error
 	session.SessionID, err = uuid.Parse(SessionID)
 	if err != nil {
-		w.WriteHeader(401)
-		w.Write([]byte("Unauthorised.\n"))
+		http.Error(w, "Unauthorised.", http.StatusUnauthorized)
 		return 0
 	}
 	if err = sessionDB.First(&session).Error; err != nil {
-		w.WriteHeader(401)
-		w.Write([]byte("Unauthorised.\n"))
+		http.Error(w, "Unauthorised.", http.StatusUnauthorized)
 		return 0
 	}
 	session.LastVisit = time.Now()
@@ -64,9 +59,8 @@ func GetUserID(w http.ResponseWriter, r *http.Request) int64 {
 
 func SessionIDExists(sessionID uuid.UUID) bool {
 	var session Session
-	var err error
 	session.SessionID = sessionID
-	if err = sessionDB.First(&session).Error; err != nil {
+	if sessionDB.First(&session).Error != nil {
 		return false
 	}
 	return true

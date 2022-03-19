@@ -31,16 +31,25 @@ func WebClient(fs http.Handler) http.HandlerFunc {
 	}
 }
 
+func CommonHandler(f http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !CheckSessionID(w, r) {
+			return
+		}
+		f(w, r)
+	}
+}
+
 //GetRoutesHandler inits router
 func GetRoutesHandler() http.Handler {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/healthz", App.Healthz).Methods("GET")
 	router.HandleFunc("/login", Users.Login).Methods("GET")
-	router.HandleFunc("/todoItems", Tasks.GetItems).Methods("GET")
-	router.HandleFunc("/todo", Tasks.CreateItem).Methods("POST")
-	router.HandleFunc("/todo/{id}", Tasks.UpdateItem).Methods("POST")
-	router.HandleFunc("/todo/{id}", Tasks.DeleteItem).Methods("DELETE")
+	router.HandleFunc("/todoItems", CommonHandler(Tasks.GetItems)).Methods("GET")
+	router.HandleFunc("/todo", CommonHandler(Tasks.CreateItem)).Methods("POST")
+	router.HandleFunc("/todo/{id}", CommonHandler(Tasks.UpdateItem)).Methods("POST")
+	router.HandleFunc("/todo/{id}", CommonHandler(Tasks.DeleteItem)).Methods("DELETE")
 
 	router.HandleFunc("/messages", Messages.GetMessages).Methods("GET")
 	router.HandleFunc("/createMessage", Messages.CreateMessage).Methods("POST")
