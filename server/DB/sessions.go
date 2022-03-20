@@ -54,8 +54,6 @@ func GetUserID(w http.ResponseWriter, r *http.Request) int64 {
 		http.Error(w, "Unauthorised.", http.StatusUnauthorized)
 		return 0
 	}
-	session.LastVisit = time.Now()
-	sessionDB.Save(&session)
 	return session.UserID
 }
 

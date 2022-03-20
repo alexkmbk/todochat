@@ -26,6 +26,7 @@ var WSConnections = make(map[uuid.UUID]*websocket.Conn)
 
 func InitMessagesWS(w http.ResponseWriter, r *http.Request) {
 
+	// CORS
 	Upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	var conn, err = Upgrader.Upgrade(w, r, nil)
@@ -63,6 +64,12 @@ func InitMessagesWS(w http.ResponseWriter, r *http.Request) {
 			}
 			WSConnections[sessionID] = conn
 		} else if query["command"] == "getMessages" {
+			sessionID, err = uuid.Parse(query["sessionID"])
+			if sessionID == uuid.Nil || !SessionIDExists(sessionID) {
+				conn.Close()
+				break
+			}
+
 			lastID := ToInt64(query["lastID"])
 			limit := ToInt64(query["limit"])
 			taskID := ToInt64(query["taskID"])
