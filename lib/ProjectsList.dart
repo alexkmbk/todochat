@@ -220,9 +220,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
     Project project = Project(Description: Description);
     String body = jsonEncode(project);
 
-    Map<String, String> headers = Map<String, String>();
-    headers["sessionID"] = sessionID;
-    headers["content-type"] = "application/json; charset=utf-8";
+    var headers = {
+      "content-type": "application/json; charset=utf-8",
+      "sessionID": sessionID
+    };
 
     var response;
     try {
@@ -251,8 +252,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
     String body = jsonEncode(project);
 
-    var headers = {"content-type": "application/json; charset=utf-8"};
-    headers["sessionID"] = sessionID;
+    var headers = {
+      "content-type": "application/json; charset=utf-8",
+      "sessionID": sessionID
+    };
 
     var response;
     try {
@@ -323,15 +326,12 @@ class _ProjectsPageState extends State<ProjectsPage> {
       return;
     }
 
-    Map<String, String> headers = Map<String, String>();
-    headers["sessionID"] = sessionID;
-
     widget.loading = true;
 
     var response;
     try {
-      response =
-          await httpClient.get(Uri.http(server, '/projects'), headers: headers);
+      response = await httpClient.get(Uri.http(server, '/projects'),
+          headers: {"sessionID": sessionID});
     } catch (e) {
       return;
     }
@@ -374,15 +374,10 @@ Future<Project?> requestFirstItem() async {
   if (sessionID == "") {
     return null;
   }
-
-  Map<String, String> headers = Map<String, String>();
-  headers["sessionID"] = sessionID;
-  headers["limit"] = "1";
-
   var response;
   try {
-    response =
-        await httpClient.get(Uri.http(server, '/projects'), headers: headers);
+    response = await httpClient.get(Uri.http(server, '/projects'),
+        headers: {"sessionID": sessionID, "limit": "1"});
   } catch (e) {
     return null;
   }
@@ -405,14 +400,11 @@ Future<Project?> getProject(int? projectID) async {
     return null;
   }
 
-  Map<String, String> headers = Map<String, String>();
-  headers["sessionID"] = sessionID;
-
   var response;
   try {
     response = await httpClient.get(
         Uri.http(server, '/project/' + projectID.toString()),
-        headers: headers);
+        headers: {"sessionID": sessionID});
   } catch (e) {
     return null;
   }

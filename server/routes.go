@@ -40,13 +40,27 @@ func CommonHandler(f http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func corsHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	return
+}
+
+func origin(origin string) bool {
+	return true
+
+}
+
+func originRequest(r *http.Request, origin string) bool {
+	return true
+}
+
 //GetRoutesHandler inits router
 func GetRoutesHandler() http.Handler {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/healthz", App.Healthz).Methods("GET")
 	router.HandleFunc("/login", Users.Login).Methods("GET")
-	router.HandleFunc("/todoItems", CommonHandler(Tasks.GetItems)).Methods("GET")
+	router.HandleFunc("/tasks", CommonHandler(Tasks.GetItems)).Methods("GET")
 	router.HandleFunc("/todo", CommonHandler(Tasks.CreateItem)).Methods("POST")
 	router.HandleFunc("/todo/{id}", CommonHandler(Tasks.UpdateItem)).Methods("POST")
 	router.HandleFunc("/todo/{id}", CommonHandler(Tasks.DeleteItem)).Methods("DELETE")
@@ -70,14 +84,21 @@ func GetRoutesHandler() http.Handler {
 	// File server
 	fs := http.StripPrefix("/FileStorage/", http.FileServer(http.Dir("./FileStorage")))
 	router.PathPrefix("/FileStorage/").Handler(FileServer(fs))
-	router.PathPrefix("/").Handler(WebClient(http.FileServer(http.Dir("./WebClient"))))
+	router.PathPrefix("/").Handler(WebClient(http.FileServer(http.Dir("./WebClient")))).Methods("GET")
+
+	router.PathPrefix("/").HandlerFunc(corsHandler).Methods("OPTIONS")
 
 	// CORS
 	handler := cors.New(cors.Options{
-		AllowedHeaders:   []string{"Accept", "content-type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"},
-		AllowedOrigins:   []string{"*"},
-		AllowedMethods:   []string{"GET", "POST", "DELETE", "PATCH", "OPTIONS"},
-		AllowCredentials: true,
+		AllowedHeaders: []string{"Accept", "Content-Type", "Bearer", "content-type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Passwordhash", "Username", "Origin", "sessionID", "limit"},
+		//AllowedHeaders:     []string{"Content-Type", "Bearer", "Bearer ", "content-type", "Origin", "Accept"},
+		AllowedOrigins:         []string{"*"},
+		AllowedMethods:         []string{"GET", "POST", "DELETE", "PATCH", "OPTIONS"},
+		AllowCredentials:       true,
+		OptionsPassthrough:     true,
+		Debug:                  true,
+		AllowOriginFunc:        origin,
+		AllowOriginRequestFunc: originRequest,
 	}).Handler(router)
 
 	return handler

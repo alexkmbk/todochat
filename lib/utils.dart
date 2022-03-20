@@ -80,20 +80,27 @@ Uint8List? fromBase64(String str) {
   return base64Decode(str);
 }
 
+String left(String? str, int num) {
+  if (str == null) return "";
+  return str.substring(0, num);
+}
+
 //?param1=one&param2=two
 String toUrlParams(Map<String, String> params) {
   String res = "";
   if (params.isNotEmpty) {
     res += "?";
     params.forEach((key, value) {
-      res += Uri.encodeQueryComponent(key) +
-          "=" +
-          Uri.encodeQueryComponent(value) +
-          "&";
+      res +=
+          "${Uri.encodeQueryComponent(key)}=${Uri.encodeQueryComponent(value)}&";
     });
   }
 
-  return res;
+  if (params.length > 1) {
+    return left(res, res.length - 1);
+  } else {
+    return res;
+  }
 }
 
 bool isImageFile(String? fileName) {

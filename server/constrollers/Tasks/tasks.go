@@ -98,22 +98,20 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 
 	log.Info("Get Tasks")
 
-	lastID, err := strconv.Atoi(r.Header.Get("lastID"))
+	query := r.URL.Query()
+	lastID, err := strconv.Atoi(query.Get("lastID"))
 	if err != nil {
 		return
 	}
 
-	lastCreation_Date, err := time.Parse("2006-01-02 15:04:05.999999Z", r.Header.Get("lastCreation_date"))
-	if err != nil {
+	lastCreation_Date, _ := time.Parse("2006-01-02 15:04:05.999999Z", query.Get("lastCreation_date"))
 
-	}
-
-	limit, err := strconv.Atoi(r.Header.Get("limit"))
+	limit, err := strconv.Atoi(query.Get("limit"))
 	if err != nil {
 		return
 	}
 
-	projectID, err := strconv.Atoi(r.Header.Get("ProjectID"))
+	projectID, err := strconv.Atoi(query.Get("ProjectID"))
 	if err != nil {
 		return
 	}

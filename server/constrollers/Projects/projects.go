@@ -13,17 +13,12 @@ import (
 )
 
 func CreateItem(w http.ResponseWriter, r *http.Request) {
-	userID := GetUserID(w, r)
-	if userID == 0 {
-		return
-	}
 	decoder := json.NewDecoder(r.Body)
 	var item Project
 
 	err := decoder.Decode(&item)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		io.WriteString(w, `{"updated": false, "error": "Record Not Found"}`)
+		http.Error(w, "Json decode error", http.StatusInternalServerError)
 	} else {
 		description := item.Description
 		log.WithFields(log.Fields{"description": description}).Info("Add new TodoItem. Saving to database.")
@@ -35,9 +30,6 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 
 func UpdateItem(w http.ResponseWriter, r *http.Request) {
 
-	if !CheckSessionID(w, r) {
-		return
-	}
 	decoder := json.NewDecoder(r.Body)
 	var item Project
 
@@ -75,10 +67,6 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 
 func DeleteItem(w http.ResponseWriter, r *http.Request) {
 
-	if !CheckSessionID(w, r) {
-		return
-	}
-
 	// Get URL parameter from mux
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
@@ -86,8 +74,7 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 	// Test if the TodoItem exist in DB
 	item := getItemByID(id)
 	if item == nil {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		io.WriteString(w, `{"deleted": false, "error": "Record Not Found"}`)
+		http.Error(w, "Record Not Found", http.StatusNotFound)
 	} else {
 		DB.Delete(&item)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -125,12 +112,6 @@ func GetItem(w http.ResponseWriter, r *http.Request) {
 func GetItems(w http.ResponseWriter, r *http.Request) {
 
 	log.Info("Get projects")
-
-	if !CheckSessionID(w, r) {
-		w.WriteHeader(401)
-		w.Write([]byte("Unauthorised.\n User was not found. \n"))
-		return
-	}
 
 	limit, err := strconv.Atoi(r.Header.Get("limit"))
 	if err != nil {

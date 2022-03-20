@@ -1,7 +1,8 @@
 //import 'dart:ffi';
 
 import 'package:flutter/material.dart';
-import 'package:web_socket_channel/io.dart';
+//import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'LoginPage.dart';
 import 'MainMenu.dart';
 import 'SettingsPage.dart';
@@ -21,8 +22,8 @@ import 'MsgList.dart';
 //import 'package:crypto/crypto.dart';
 
 var httpClient = http.Client();
-IOWebSocketChannel ws =
-    IOWebSocketChannel.connect('ws://' + server + "/initMessagesWS");
+WebSocketChannel ws =
+    WebSocketChannel.connect(Uri.parse('ws://' + server + "/initMessagesWS"));
 
 String server = "";
 //String todolist_server = server + "todo";
@@ -197,17 +198,20 @@ class _MyHomePageState extends State<MyHomePage> {
     if (sessionID.isNotEmpty) {
       var query = mapstr("command", "init");
       query["sessionID"] = sessionID;
-      ws.sink.add(jsonEncode(query));
-
-      ws.stream.listen((messageJson) {
-        WSMessage wsMsg = WSMessage.fromJson(messageJson);
-        if (wsMsg.command == "getMessages") {
-          _msgListProvider.addItems(wsMsg.data);
-        } else if (wsMsg.command == "createMessage") {
-          var message = Message.fromJson(wsMsg.data);
-          _msgListProvider.addItem(message);
-        }
-      });
+      try {
+        ws.sink.add(jsonEncode(query));
+        ws.stream.listen((messageJson) {
+          WSMessage wsMsg = WSMessage.fromJson(messageJson);
+          if (wsMsg.command == "getMessages") {
+            _msgListProvider.addItems(wsMsg.data);
+          } else if (wsMsg.command == "createMessage") {
+            var message = Message.fromJson(wsMsg.data);
+            _msgListProvider.addItem(message);
+          }
+        });
+      } catch (e) {
+        print(e.toString());
+      }
     }
     return true;
   }

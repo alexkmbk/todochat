@@ -26,6 +26,8 @@ var WSConnections = make(map[uuid.UUID]*websocket.Conn)
 
 func InitMessagesWS(w http.ResponseWriter, r *http.Request) {
 
+	Upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+
 	var conn, err = Upgrader.Upgrade(w, r, nil)
 
 	if err != nil {

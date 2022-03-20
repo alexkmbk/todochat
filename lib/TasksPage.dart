@@ -74,10 +74,12 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Future<bool> initBeforeBuild(BuildContext context) async {
-    if (tasksListProvider.projectID == null) {
+    if (tasksListProvider.projectID == null ||
+        tasksListProvider.projectID == 0) {
       tasksListProvider.project = await requestFirstItem();
       if (tasksListProvider.project != null) {
         tasksListProvider.projectID = tasksListProvider.project!.ID;
+        requestTasks(tasksListProvider, context);
       }
     }
 
@@ -207,21 +209,21 @@ class _TasksPageState extends State<TasksPage> {
       return;
     }
 
-    Map<String, String> headers = Map<String, String>();
-    headers["sessionID"] = sessionID;
-    headers["ProjectID"] = tasksListProvider.projectID.toString();
-    //headers["offset"] = tasksListProvider.offset.toString();
-    headers["lastID"] = tasksListProvider.lastID.toString();
-    headers["lastCreation_date"] =
-        tasksListProvider.lastCreation_date.toString();
-    headers["limit"] = "25";
-
     tasksListProvider.loading = true;
+
+    var url = Uri.parse("http://" +
+        server +
+        '/tasks' +
+        toUrlParams({
+          "ProjectID": tasksListProvider.projectID.toString(),
+          "lastID": tasksListProvider.lastID.toString(),
+          "lastCreation_date": tasksListProvider.lastCreation_date.toString(),
+          "limit": "25",
+        }));
 
     var response;
     try {
-      response = await httpClient.get(Uri.http(server, '/todoItems'),
-          headers: headers);
+      response = await httpClient.get(url, headers: {"sessionID": sessionID});
     } catch (e) {
       return;
     }
