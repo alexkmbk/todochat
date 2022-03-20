@@ -48,10 +48,6 @@ func GetMessages__(w http.ResponseWriter, r *http.Request) {
 
 	log.Info("Get Messages")
 
-	if !CheckSessionID(w, r) {
-		return
-	}
-
 	lastID, err := strconv.Atoi(r.Header.Get("lastID"))
 	if err != nil {
 		return
@@ -136,10 +132,6 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 
 	start := time.Now()
 	log.Info("Get Messages")
-
-	if !CheckSessionID(w, r) {
-		return
-	}
 
 	lastID, err := strconv.Atoi(r.Header.Get("lastID"))
 	if err != nil {
@@ -327,10 +319,6 @@ func getItemByID(ID int) (*Message, bool) {
 }
 
 func DeleteItem(w http.ResponseWriter, r *http.Request) {
-
-	if !CheckSessionID(w, r) {
-		return
-	}
 
 	// Get URL parameter from mux
 	vars := mux.Vars(r)

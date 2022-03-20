@@ -17,7 +17,7 @@ import (
 
 func FileServer(fs http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !CheckSessionID(w, r) {
+		if !CheckSessionID(w, r, false) {
 			return
 		}
 
@@ -33,7 +33,7 @@ func WebClient(fs http.Handler) http.HandlerFunc {
 
 func CommonHandler(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !CheckSessionID(w, r) {
+		if !CheckSessionID(w, r, true) {
 			return
 		}
 		f(w, r)
@@ -92,11 +92,11 @@ func GetRoutesHandler() http.Handler {
 	handler := cors.New(cors.Options{
 		AllowedHeaders: []string{"Accept", "Content-Type", "Bearer", "content-type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Passwordhash", "Username", "Origin", "sessionID", "limit"},
 		//AllowedHeaders:     []string{"Content-Type", "Bearer", "Bearer ", "content-type", "Origin", "Accept"},
-		AllowedOrigins:         []string{"*"},
-		AllowedMethods:         []string{"GET", "POST", "DELETE", "PATCH", "OPTIONS"},
-		AllowCredentials:       true,
-		OptionsPassthrough:     true,
-		Debug:                  true,
+		AllowedOrigins:     []string{"*"},
+		AllowedMethods:     []string{"GET", "POST", "DELETE", "PATCH", "OPTIONS"},
+		AllowCredentials:   true,
+		OptionsPassthrough: true,
+		//Debug:                  true,
 		AllowOriginFunc:        origin,
 		AllowOriginRequestFunc: originRequest,
 	}).Handler(router)

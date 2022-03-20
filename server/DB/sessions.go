@@ -16,10 +16,10 @@ type Session struct {
 	UserID    int64     `gorm:"foreignKey:ID"`
 }
 
-var sessionDB, _ = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+var sessionDB, _ = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{SkipDefaultTransaction: true})
 
 // CheckSessionID Checks if session exists
-func CheckSessionID(w http.ResponseWriter, r *http.Request) bool {
+func CheckSessionID(w http.ResponseWriter, r *http.Request, udateLastVisit bool) bool {
 	SessionID := r.Header.Get("SessionID")
 	//err := json.NewDecoder(r.Body).Decode(&loginData)
 	var session Session
@@ -33,8 +33,10 @@ func CheckSessionID(w http.ResponseWriter, r *http.Request) bool {
 		http.Error(w, "Unauthorised.", http.StatusUnauthorized)
 		return false
 	}
-	session.LastVisit = time.Now()
-	sessionDB.Save(&session)
+	if udateLastVisit {
+		session.LastVisit = time.Now()
+		sessionDB.Save(&session)
+	}
 	return true //session.UserID
 }
 
