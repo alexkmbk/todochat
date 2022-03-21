@@ -36,6 +36,8 @@ gorm.db
 .pub/
 /build/
 /server/keys/
+/server/FileStorage/
+/server/WebClient/
 
 
 # Web related
