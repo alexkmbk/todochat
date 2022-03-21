@@ -42,10 +42,11 @@ class MainMenu extends StatelessWidget {
         // add icon, by default "3 dot" icon
         // icon: Icon(Icons.book)
         itemBuilder: (context) {
-      if (items == null)
+      if (items == null) {
         return mainMenuCommonItems;
-      else
+      } else {
         return [...mainMenuCommonItems, ...items!];
+      }
     });
   }
 }

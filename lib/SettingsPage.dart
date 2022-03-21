@@ -42,7 +42,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ElevatedButton(onPressed: ExitApp, child: Text("Exit")),
+                    const ElevatedButton(onPressed: ExitApp, child: Text("Exit")),
                     Row(children: [
                       Expanded(
                           child: GetTextField(
@@ -128,13 +128,13 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget GetConnectionIcon() {
     if (checkingConnection) {
-      return CircularProgressIndicator();
+      return const CircularProgressIndicator();
     } else if (connected) {
       return const Icon(
         Icons.check,
         color: Colors.green,
       );
     }
-    return Icon(Icons.error);
+    return const Icon(Icons.error);
   }
 }

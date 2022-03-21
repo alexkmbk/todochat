@@ -1,14 +1,10 @@
 //import 'dart:ffi';
 
-import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'customWidgets.dart';
 import 'utils.dart';
 import 'package:provider/provider.dart';
-import 'package:web_socket_channel/io.dart';
 
 import 'TasksPage.dart';
 import 'main.dart';
@@ -108,7 +104,7 @@ class Message {
   }
 }
 
-typedef Future<bool> OnDeleteFn(int messageID);
+typedef OnDeleteFn = Future<bool> Function(int messageID);
 
 class InifiniteMsgList extends StatefulWidget {
   final ScrollController scrollController;
@@ -170,6 +166,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
         itemBuilder: (context, index) {
           //if (index < _msgListProvider.items.length) {
           var item = _msgListProvider.items[index];
+
           return ChatBubble(
             isCurrentUser: item.userID == currentUserID,
             message: item,
@@ -260,7 +257,6 @@ class ChatBubble extends StatelessWidget {
       );
     } else {
       if (message.isImage &&
-          message.smallImageName != null &&
           message.smallImageName.isNotEmpty) {
         return GestureDetector(
             onTap: () {},
@@ -281,8 +277,8 @@ class ChatBubble extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.file_present_rounded, color: Colors.white),
-                    SizedBox(width: 10),
+                    const Icon(Icons.file_present_rounded, color: Colors.white),
+                    const SizedBox(width: 10),
                     FittedBox(
                         fit: BoxFit.fill,
                         alignment: Alignment.center,

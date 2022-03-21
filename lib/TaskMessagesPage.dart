@@ -6,8 +6,6 @@ import 'package:http/http.dart';
 import 'MainMenu.dart';
 import 'utils.dart';
 import 'package:provider/provider.dart';
-import 'package:web_socket_channel/io.dart';
-import 'LoginPage.dart';
 import 'MsgList.dart';
 import 'main.dart';
 import 'dart:io';
@@ -96,13 +94,13 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                icon: Icon(
+                icon: const Icon(
                   Icons.keyboard_arrow_left,
                   color: Colors.white,
                 ),
                 label: Text(
                   widget.task.Description,
-                  style: TextStyle(color: Colors.white, fontSize: 18),
+                  style: const TextStyle(color: Colors.white, fontSize: 18),
                 )),
           ]),
           leading: MainMenu()),
@@ -168,7 +166,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                     createMessage(
                         text: _messageInputController.text,
                         fileData: res,
-                        fileName: fileName == null ? "" : fileName);
+                        fileName: fileName ?? "");
                     _messageInputController.text = "";
                   }
                 },
@@ -263,7 +261,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     _msgListProvider.loading = true;
 
     var response;
-    Stopwatch stopwatch = new Stopwatch()..start();
+    Stopwatch stopwatch = Stopwatch()..start();
     var client = HttpClient();
 
     MultipartRequest request =
@@ -319,10 +317,10 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       return false;
     }
 
-    Map<String, String> headers = Map<String, String>();
+    Map<String, String> headers = <String, String>{};
     headers["sessionID"] = sessionID;
 
-    var response;
+    Response response;
 
     try {
       response = await httpClient.delete(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/diagnostics.dart';
 
 Widget GetTextField(
     {TextEditingController? controller,
@@ -24,7 +23,7 @@ Widget GetTextField(
               controller?.clear();
               if (onCleared != null) onCleared();
             },
-            icon: Icon(Icons.clear),
+            icon: const Icon(Icons.clear),
           ),
         ),
         validator: validator,

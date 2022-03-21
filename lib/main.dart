@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 //import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'LoginPage.dart';
-import 'MainMenu.dart';
 import 'SettingsPage.dart';
 import 'utils.dart';
 //import 'TaskMessagesPage.dart';
@@ -101,7 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
           // AsyncSnapshot<Your object type>
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
+            return const Center(
                 child: Text('Connecting to the server...',
                     textDirection: TextDirection.ltr));
           } else {
@@ -111,12 +110,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Spacer(),
+                    const Spacer(),
                     Center(
                         child: IconButton(
                             onPressed: () => setState(() {}),
                             icon: const Icon(Icons.refresh))),
-                    Spacer(),
+                    const Spacer(),
                     ElevatedButton(
                         onPressed: () async {
                           bool res = await Navigator.push(
@@ -126,12 +125,12 @@ class _MyHomePageState extends State<MyHomePage> {
                           );
                           setState(() {});
                         },
-                        child: Text("Settings")),
+                        child: const Text("Settings")),
                   ]);
             } else if (snapshot.data as bool) {
-              return TasksPage();
+              return const TasksPage();
             } else {
-              return Center(
+              return const Center(
                   child: Text('Надо вставить код',
                       textDirection: TextDirection.ltr));
             }
@@ -175,15 +174,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
     settings = await SharedPreferences.getInstance();
 
-    var server_res = settings.getString("server");
+    var serverRes = settings.getString("server");
 
-    if (server_res == null || server_res.isEmpty) {
+    if (serverRes == null || serverRes.isEmpty) {
       res = await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const SettingsPage()),
       );
     } else {
-      server = server_res;
+      server = serverRes;
     }
     try {
       res = await login();

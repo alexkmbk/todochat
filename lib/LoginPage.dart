@@ -88,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ElevatedButton(onPressed: ExitApp, child: Text("Exit")),
+                const ElevatedButton(onPressed: ExitApp, child: Text("Exit")),
                 GetTextField(
                   controller: userNameController,
                   hintText: 'User name',
@@ -103,20 +103,21 @@ class _LoginPageState extends State<LoginPage> {
                 Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                        child: Text("Registration"),
+                        child: const Text("Registration"),
                         onPressed: () {
                           setState(() {
                             registrationMode = true;
                           });
                         })),
                 ElevatedButton(
-                    child: Text('Login'),
+                    child: const Text('Login'),
                     onPressed: () async {
                       if (_formKey.currentState!.validate() &&
                           await login(
                               userName: userNameController.text,
-                              password: passwordController.text))
+                              password: passwordController.text)) {
                         Navigator.pop(context, true);
+                      }
                     }),
               ],
             )));
@@ -129,7 +130,7 @@ class _LoginPageState extends State<LoginPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(onPressed: ExitApp, child: Text("Exit")),
+            const ElevatedButton(onPressed: ExitApp, child: Text("Exit")),
             GetTextField(
               controller: userNameController,
               hintText: 'User name',
@@ -158,8 +159,9 @@ class _LoginPageState extends State<LoginPage> {
             ElevatedButton(
               child: const Text('Registration'),
               onPressed: () async {
-                if (_formKey.currentState!.validate() && await registration())
+                if (_formKey.currentState!.validate() && await registration()) {
                   Navigator.pop(context, true);
+                }
               },
             )
           ],
@@ -176,7 +178,7 @@ Future<void> openLoginPage(BuildContext context) async {
 
 Future<bool> login({String? userName = "", String? password = ""}) async {
   if (userName == null || userName.isEmpty) {
-    final storage = new FlutterSecureStorage();
+    const storage = FlutterSecureStorage();
     userName = await storage.read(key: "userName");
     password = await storage.read(key: "password");
   }
@@ -191,11 +193,11 @@ Future<bool> login({String? userName = "", String? password = ""}) async {
   var url = Uri.http(server, '/login');
 
   // Await the http get response, then decode the json-formatted response.
-  Map<String, String> headers = Map<String, String>();
+  Map<String, String> headers = <String, String>{};
   headers["UserName"] = userName;
   headers["passwordHash"] = passwordHash;
 
-  var response;
+  http.Response response;
   try {
     response = await httpClient.get(url, headers: headers);
   } catch (e) {
@@ -208,7 +210,7 @@ Future<bool> login({String? userName = "", String? password = ""}) async {
     sessionID = data["SessionID"];
     currentUserID = data["UserID"];
 
-    final storage = new FlutterSecureStorage();
+    const storage = FlutterSecureStorage();
     await storage.write(key: "userName", value: userName);
     await storage.write(key: "password", value: password);
 

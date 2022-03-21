@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/src/response.dart';
 import 'utils.dart';
 import 'package:provider/provider.dart';
 import 'MainMenu.dart';
@@ -63,7 +64,7 @@ class _TasksPageState extends State<TasksPage> {
 
     itemPositionsListener.itemPositions.addListener(() {
       if (!tasksListProvider.loading &&
-              itemPositionsListener.itemPositions.value.length == 0 ||
+              itemPositionsListener.itemPositions.value.isEmpty ||
           (itemPositionsListener.itemPositions.value.last.index >=
               tasksListProvider.items.length - 10)) {
         requestTasks(tasksListProvider, context);
@@ -136,12 +137,12 @@ class _TasksPageState extends State<TasksPage> {
     Task task = Task(Description: Description);
     String body = jsonEncode(task);
 
-    Map<String, String> headers = Map<String, String>();
+    Map<String, String> headers = <String, String>{};
     headers["sessionID"] = sessionID;
     headers["ProjectID"] = tasksListProvider.projectID.toString();
     headers["content-type"] = "application/json; charset=utf-8";
 
-    var response;
+    Response response;
     try {
       response = await httpClient.post(Uri.http(server, '/todo'),
           body: body, headers: headers);
@@ -181,10 +182,10 @@ class _TasksPageState extends State<TasksPage> {
       return false;
     }
 
-    Map<String, String> headers = Map<String, String>();
+    Map<String, String> headers = <String, String>{};
     headers["sessionID"] = sessionID;
 
-    var response;
+    Response response;
 
     try {
       response = await httpClient.delete(
@@ -221,7 +222,7 @@ class _TasksPageState extends State<TasksPage> {
           "limit": "25",
         }));
 
-    var response;
+    Response response;
     try {
       response = await httpClient.get(url, headers: {"sessionID": sessionID});
     } catch (e) {
@@ -272,10 +273,10 @@ class _TasksPageState extends State<TasksPage> {
   }
 }
 
-typedef Future<List<Task>> RequestFn(TasksListProvider context);
-typedef Future<bool> OnAddFn(String description);
-typedef Future<bool> OnDeleteFn(int taskID);
-typedef Widget ItemBuilder(BuildContext context, Task item, int index);
+typedef RequestFn = Future<List<Task>> Function(TasksListProvider context);
+typedef OnAddFn = Future<bool> Function(String description);
+typedef OnDeleteFn = Future<bool> Function(int taskID);
+typedef ItemBuilder = Widget Function(BuildContext context, Task item, int index);
 
 class TasksListProvider extends ChangeNotifier {
   Project? project;
@@ -346,7 +347,7 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
   void initState() {
     super.initState();
     _taskListProvider =
-        Provider.of<TasksListProvider>(this.context, listen: false);
+        Provider.of<TasksListProvider>(context, listen: false);
   }
 
 // This is what you're looking for!
@@ -381,7 +382,7 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
       InifiniteTaskList inifiniteTaskList) {
     if (task.editMode) {
       return Container(
-          margin: EdgeInsets.all(4),
+          margin: const EdgeInsets.all(4),
           decoration: BoxDecoration(
               border: Border.all(
                 color: Colors.blue,
@@ -404,12 +405,12 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
                       }
                     },
                     child: TextField(
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                           border: InputBorder.none, hintText: "New task name"),
                       autofocus: true,
                       textInputAction: TextInputAction.done,
                       onSubmitted: (value) async {
-                        if (!value.isEmpty) {
+                        if (value.isNotEmpty) {
                           await inifiniteTaskList.onAddFn(value);
                           tasksListProvider.deleteEditorItem();
                         }
@@ -430,7 +431,7 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
             }
           },
           child: Container(
-            margin: EdgeInsets.all(4),
+            margin: const EdgeInsets.all(4),
             decoration: BoxDecoration(
                 border: Border.all(
                   color: Colors.blue,
@@ -440,7 +441,7 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
             child: ListTile(
               onTap: () => inifiniteTaskList.onTap(task),
               title: Text(task.Description),
-              trailing: Icon(Icons.keyboard_arrow_right),
+              trailing: const Icon(Icons.keyboard_arrow_right),
             ),
           ));
     }
@@ -456,7 +457,7 @@ class TasksPageAppBar extends StatefulWidget with PreferredSizeWidget {
   State<TasksPageAppBar> createState() => _TasksPageAppBarState();
 
   @override
-  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
 class _TasksPageAppBarState extends State<TasksPageAppBar> {
@@ -494,12 +495,12 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
           setState(() {});
         },
         label: widget.tasksPageState.tasksListProvider.project == null
-            ? Text("")
+            ? const Text("")
             : Text(
                 widget.tasksPageState.tasksListProvider.project!.Description,
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               ),
-        icon: Icon(Icons.keyboard_arrow_down),
+        icon: const Icon(Icons.keyboard_arrow_down),
         //style: TextStyle(color: Colors.white),
       ),
       /*const Expanded(
@@ -521,7 +522,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
           onPressed: () {
             widget.tasksPageState.tasksListProvider.addEditorItem();
           },
-          icon: Icon(
+          icon: const Icon(
             Icons.add,
             color: Colors.white,
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/src/response.dart';
 import 'utils.dart';
 import 'MainMenu.dart';
 import 'LoginPage.dart';
@@ -71,7 +72,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
       child: Scaffold(
         appBar: AppBar(
           //title: Text("ToDo Chat"),
-          title: TextField(
+          title: const TextField(
               style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: "Search",
@@ -89,7 +90,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
               onPressed: () {
                 addEditorItem();
               },
-              icon: Icon(
+              icon: const Icon(
                 Icons.add,
                 color: Colors.white,
               ),
@@ -160,7 +161,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                       autofocus: true,
                       textInputAction: TextInputAction.done,
                       onSubmitted: (value) async {
-                        if (!value.isEmpty) {
+                        if (value.isNotEmpty) {
                           if (project.isNewItem) {
                             await createProject(value);
                             deleteEditorItem();
@@ -195,7 +196,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
             onTap: () => onTap(project),
             onLongPress: () => onLongPress(project),
             title: Text(project.Description),
-            trailing: Icon(Icons.keyboard_arrow_right),
+            trailing: const Icon(Icons.keyboard_arrow_right),
           ));
     }
   }
@@ -225,7 +226,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
       "sessionID": sessionID
     };
 
-    var response;
+    Response response;
     try {
       response = await httpClient.post(Uri.http(server, '/createProject'),
           body: body, headers: headers);
@@ -257,7 +258,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
       "sessionID": sessionID
     };
 
-    var response;
+    Response response;
     try {
       response = await httpClient.post(Uri.http(server, '/updateProject'),
           body: body, headers: headers);
@@ -295,10 +296,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
       return false;
     }
 
-    Map<String, String> headers = Map<String, String>();
+    Map<String, String> headers = <String, String>{};
     headers["sessionID"] = sessionID;
 
-    var response;
+    Response response;
 
     try {
       response = await httpClient.delete(
@@ -328,7 +329,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
     widget.loading = true;
 
-    var response;
+    Response response;
     try {
       response = await httpClient.get(Uri.http(server, '/projects'),
           headers: {"sessionID": sessionID});
@@ -374,7 +375,7 @@ Future<Project?> requestFirstItem() async {
   if (sessionID == "") {
     return null;
   }
-  var response;
+  Response response;
   try {
     response = await httpClient.get(Uri.http(server, '/projects'),
         headers: {"sessionID": sessionID, "limit": "1"});
@@ -400,7 +401,7 @@ Future<Project?> getProject(int? projectID) async {
     return null;
   }
 
-  var response;
+  Response response;
   try {
     response = await httpClient.get(
         Uri.http(server, '/project/' + projectID.toString()),
