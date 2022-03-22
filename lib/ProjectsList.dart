@@ -228,7 +228,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
     Response response;
     try {
-      response = await httpClient.post(Uri.http(server, '/createProject'),
+      response = await httpClient.post(Uri.http(serverURI, '/createProject'),
           body: body, headers: headers);
     } catch (e) {
       return null;
@@ -260,7 +260,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
     Response response;
     try {
-      response = await httpClient.post(Uri.http(server, '/updateProject'),
+      response = await httpClient.post(Uri.http(serverURI, '/updateProject'),
           body: body, headers: headers);
     } catch (e) {
       return false;
@@ -272,8 +272,6 @@ class _ProjectsPageState extends State<ProjectsPage> {
       toast(response.body.toString(), context);
       return false;
     }
-
-    return false;
   }
 
   Future<void> onTap(Project project) async {
@@ -303,7 +301,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
     try {
       response = await httpClient.delete(
-          Uri.http(server, '/deleteProject/' + projectID.toString()),
+          Uri.http(serverURI, '/deleteProject/' + projectID.toString()),
           headers: headers);
     } catch (e) {
       return false;
@@ -331,7 +329,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
     Response response;
     try {
-      response = await httpClient.get(Uri.http(server, '/projects'),
+      response = await httpClient.get(Uri.http(serverURI, '/projects'),
           headers: {"sessionID": sessionID});
     } catch (e) {
       return;
@@ -377,7 +375,7 @@ Future<Project?> requestFirstItem() async {
   }
   Response response;
   try {
-    response = await httpClient.get(Uri.http(server, '/projects'),
+    response = await httpClient.get(Uri.http(serverURI, '/projects'),
         headers: {"sessionID": sessionID, "limit": "1"});
   } catch (e) {
     return null;
@@ -404,7 +402,7 @@ Future<Project?> getProject(int? projectID) async {
   Response response;
   try {
     response = await httpClient.get(
-        Uri.http(server, '/project/' + projectID.toString()),
+        Uri.http(serverURI, '/project/' + projectID.toString()),
         headers: {"sessionID": sessionID});
   } catch (e) {
     return null;

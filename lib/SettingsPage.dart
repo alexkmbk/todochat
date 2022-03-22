@@ -13,7 +13,8 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool registrationMode = false;
-  final serverAddressController = TextEditingController(text: server);
+  final serverAddressController = TextEditingController(
+      text: serverURI.scheme + "://" + serverURI.authority);
 
   final _formKey = GlobalKey<FormState>();
   bool connected = false;
@@ -42,7 +43,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const ElevatedButton(onPressed: ExitApp, child: Text("Exit")),
+                    const ElevatedButton(
+                        onPressed: ExitApp, child: Text("Exit")),
                     Row(children: [
                       Expanded(
                           child: GetTextField(
@@ -77,33 +79,39 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> saveAndClose() async {
+    var serverURItemp = parseURL(serverAddressController.text);
+
+    if (serverURItemp == null) {
+      toast("URL parsing error", context);
+      return;
+    }
+
+    if (serverURItemp.scheme.isEmpty) {
+      setUriProperty(serverURItemp, scheme: "http");
+    }
     checkingConnection = true;
     setState(() {});
-    bool res = await checkConnection();
+    bool res = await checkConnection(serverURItemp);
     if (!res) {
       setState(() {});
       toast("Couldn't connect to the server", context);
       return;
     }
-    server = serverAddressController.text;
-    settings.setString("server", server);
+    serverURI = serverURItemp;
+    settings.setString("httpScheme", serverURI.scheme);
+    settings.setString("host", serverURI.host);
+    settings.setInt("port", serverURI.port);
     Navigator.pop(context, true);
   }
 
-  Future<bool> checkConnection() async {
+  Future<bool> checkConnection(Uri uri) async {
     checkingConnection = true;
-    Uri url;
-    try {
-      url = Uri.http(serverAddressController.text, '/healthz');
-    } catch (e) {
-      connected = false;
-      checkingConnection = false;
-      return false;
-    }
 
+    var uriHealthz = Uri(
+        scheme: uri.scheme, host: uri.host, port: uri.port, path: "healthz");
     http.Response response;
     try {
-      response = await httpClient.get(url);
+      response = await httpClient.get(uriHealthz);
     } catch (e) {
       connected = false;
       checkingConnection = false;
@@ -121,7 +129,17 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<bool> checkConnectionAndUpdateState() async {
-    bool res = await checkConnection();
+    var serverURItemp = parseURL(serverAddressController.text);
+
+    if (serverURItemp == null) {
+      return false;
+    }
+
+    if (serverURItemp.scheme.isEmpty) {
+      setUriProperty(serverURItemp, scheme: "http");
+    }
+
+    bool res = await checkConnection(serverURItemp);
     setState(() {});
     return res;
   }

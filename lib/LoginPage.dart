@@ -68,8 +68,8 @@ class _LoginPageState extends State<LoginPage> {
     bodyMap["Name"] = userNameController.text;
     bodyMap["passwordHash"] = passwordHash;
 
-    var response = await httpClient.post(Uri.http(server, '/registerNewUser'),
-        body: bodyMap);
+    var response = await httpClient
+        .post(Uri.http(serverURI.authority, '/registerNewUser'), body: bodyMap);
 
     if (response.statusCode == 200) {
       var data = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -190,7 +190,7 @@ Future<bool> login({String? userName = "", String? password = ""}) async {
   var bytes = utf8.encode(password); // data being hashed
   String passwordHash = sha256.convert(bytes).toString();
 
-  var url = Uri.http(server, '/login');
+  var url = Uri.http(serverURI.authority, '/login');
 
   // Await the http get response, then decode the json-formatted response.
   Map<String, String> headers = <String, String>{};

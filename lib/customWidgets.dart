@@ -88,34 +88,36 @@ Widget GetTextField(
   
 }*/
 
-Widget networkImage(
-  String src, {
-  Map<String, String>? headers,
-}) {
+Widget networkImage(String src,
+    {Map<String, String>? headers, GestureTapCallback? onTap}) {
   try {
-    return Image.network(
-      src,
-      headers: headers,
-      errorBuilder:
-          (BuildContext context, Object exception, StackTrace? stackTrace) {
-        return const Placeholder(
-          fallbackHeight: 40,
-          fallbackWidth: 40,
-        );
-      },
-      loadingBuilder: (BuildContext context, Widget child,
-          ImageChunkEvent? loadingProgress) {
-        if (loadingProgress == null) return child;
-        return Center(
-          child: CircularProgressIndicator(
-            value: loadingProgress.expectedTotalBytes != null
-                ? loadingProgress.cumulativeBytesLoaded /
-                    loadingProgress.expectedTotalBytes!
-                : null,
-          ),
-        );
-      },
-    );
+    return GestureDetector(
+        onTap: onTap,
+        child: ClipRRect(
+            borderRadius: BorderRadius.circular(8.0),
+            child: Image.network(
+              src,
+              headers: headers,
+              errorBuilder: (BuildContext context, Object exception,
+                  StackTrace? stackTrace) {
+                return const Placeholder(
+                  fallbackHeight: 40,
+                  fallbackWidth: 40,
+                );
+              },
+              loadingBuilder: (BuildContext context, Widget child,
+                  ImageChunkEvent? loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                        : null,
+                  ),
+                );
+              },
+            )));
   } catch (e) {
     return const Placeholder();
   }

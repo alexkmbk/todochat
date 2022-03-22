@@ -144,7 +144,7 @@ class _TasksPageState extends State<TasksPage> {
 
     Response response;
     try {
-      response = await httpClient.post(Uri.http(server, '/todo'),
+      response = await httpClient.post(Uri.http(serverURI, '/todo'),
           body: body, headers: headers);
     } catch (e) {
       return null;
@@ -189,7 +189,7 @@ class _TasksPageState extends State<TasksPage> {
 
     try {
       response = await httpClient.delete(
-          Uri.http(server, '/todo/' + taskID.toString()),
+          Uri.http(serverURI, '/todo/' + taskID.toString()),
           headers: headers);
     } catch (e) {
       return false;
@@ -213,7 +213,7 @@ class _TasksPageState extends State<TasksPage> {
     tasksListProvider.loading = true;
 
     var url = Uri.parse("http://" +
-        server +
+        serverURI +
         '/tasks' +
         toUrlParams({
           "ProjectID": tasksListProvider.projectID.toString(),

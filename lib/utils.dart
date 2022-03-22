@@ -88,6 +88,7 @@ String left(String? str, int num) {
 //?param1=one&param2=two
 String toUrlParams(Map<String, String> params) {
   String res = "";
+
   if (params.isNotEmpty) {
     res += "?";
     params.forEach((key, value) {
@@ -101,6 +102,44 @@ String toUrlParams(Map<String, String> params) {
   } else {
     return res;
   }
+}
+
+void setUriProperty(Uri uri,
+    {String? scheme, String? host, int port = 0, String? path}) {
+  uri = Uri(
+    scheme: scheme ?? uri.scheme,
+    host: host ?? uri.host,
+    port: port == 0 ? uri.port : port,
+    path: path ?? uri.path,
+  );
+}
+
+Uri? parseURL(String URL,
+    {String? path, Map<String, String>? queryParameters}) {
+  const String regex =
+      r"^((?<scheme>[^:\/?#]+):(?=\/\/))?(\/\/)?(((?<login>[^:]+)(?::(?<password>[^@]+)?)?@)?(?<host>[^@\/?#:]*)(?::(?<port>\d+)?)?)?(?<path>[^?#]*)(\?(?<query>[^#]*))?(#(?<fragment>.*))?";
+
+  RegExpMatch? match = RegExp(regex).firstMatch(URL);
+
+  if (match != null) {
+    return Uri(
+      scheme: match.namedGroup("scheme"),
+      host: match.namedGroup("host"),
+      port: toInt(match.namedGroup("port")),
+      query: match.namedGroup("query"),
+      path: path,
+      queryParameters: queryParameters,
+    );
+  }
+
+  return null;
+}
+
+int toInt(String? str) {
+  if (str == null || str.isEmpty)
+    return 0;
+  else
+    return int.parse(str);
 }
 
 bool isImageFile(String? fileName) {

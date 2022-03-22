@@ -1,7 +1,4 @@
-//import 'dart:ffi';
-
 import 'package:flutter/material.dart';
-//import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'LoginPage.dart';
 import 'SettingsPage.dart';
@@ -14,18 +11,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-//import 'dart:io';
-//import 'dart:async';
-
 import 'MsgList.dart';
-//import 'package:crypto/crypto.dart';
 
 var httpClient = http.Client();
-WebSocketChannel ws =
-    WebSocketChannel.connect(Uri.parse('ws://' + server + "/initMessagesWS"));
+WebSocketChannel? ws;
 
-String server = "";
-//String todolist_server = server + "todo";
+Uri serverURI = Uri();
 String sessionID = "";
 int currentUserID = 0;
 
@@ -174,15 +165,26 @@ class _MyHomePageState extends State<MyHomePage> {
 
     settings = await SharedPreferences.getInstance();
 
-    var serverRes = settings.getString("server");
+    settings.setString("httpScheme", serverURI.scheme);
+    settings.setString("host", serverURI.host);
+    settings.setInt("port", serverURI.port);
 
-    if (serverRes == null || serverRes.isEmpty) {
-      res = await Navigator.push(
+    var httpScheme = settings.getString("httpScheme");
+    var host = settings.getString("host");
+    var port = settings.getInt("port");
+
+    var isServerURI = true;
+    if (host == null || host.isEmpty) {
+      isServerURI = await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const SettingsPage()),
       );
     } else {
-      server = serverRes;
+      serverURI = Uri(scheme: httpScheme, host: host, port: port);
+    }
+    if (isServerURI) {
+      ws = WebSocketChannel.connect(
+          Uri.parse('ws://' + serverURI.authority + "/initMessagesWS"));
     }
     try {
       res = await login();
@@ -194,12 +196,12 @@ class _MyHomePageState extends State<MyHomePage> {
       await openLoginPage(context);
     }
 
-    if (sessionID.isNotEmpty) {
+    if (sessionID.isNotEmpty && ws != null) {
       var query = mapstr("command", "init");
       query["sessionID"] = sessionID;
       try {
-        ws.sink.add(jsonEncode(query));
-        ws.stream.listen((messageJson) {
+        ws!.sink.add(jsonEncode(query));
+        ws!.stream.listen((messageJson) {
           WSMessage wsMsg = WSMessage.fromJson(messageJson);
           if (wsMsg.command == "getMessages") {
             _msgListProvider.addItems(wsMsg.data);

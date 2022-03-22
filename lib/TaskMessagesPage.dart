@@ -194,14 +194,14 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       return;
     }
 
-    var query = mapstr("command", "getMessages");
-    query["sessionID"] = sessionID;
-    query["lastID"] = _msgListProvider.lastID.toString();
-    query["limit"] = "30";
-    query["taskID"] = widget.task.ID.toString();
-
     _msgListProvider.loading = true;
-    ws.sink.add(jsonEncode(query));
+    ws!.sink.add(jsonEncode({
+      "sessionID": sessionID,
+      "command": "getMessages",
+      "lastID": _msgListProvider.lastID.toString(),
+      "limit": "30",
+      "taskID": _msgListProvider.taskID.toString(),
+    }));
   }
 
   Future<bool> createMessage(
@@ -213,8 +213,8 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       return false;
     }
 
-    MultipartRequest request =
-        MultipartRequest('POST', Uri.http(server, '/createMessage'));
+    MultipartRequest request = MultipartRequest(
+        'POST', Uri.http(serverURI.authority, '/createMessage'));
 
     request.headers["sessionID"] = sessionID;
     request.headers["content-type"] = "application/json; charset=utf-8";
@@ -265,7 +265,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     var client = HttpClient();
 
     MultipartRequest request =
-        MultipartRequest('GET', Uri.http(server, '/messages'));
+        MultipartRequest('GET', Uri.http(serverURI.authority, '/messages'));
 
     request.headers["sessionID"] = sessionID;
     request.headers["lastID"] = _msgListProvider.lastID.toString();
@@ -324,7 +324,8 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
 
     try {
       response = await httpClient.delete(
-          Uri.http(server, '/deleteMessage/' + messageID.toString()),
+          Uri.http(
+              serverURI.authority, '/deleteMessage/' + messageID.toString()),
           headers: headers);
     } catch (e) {
       return false;

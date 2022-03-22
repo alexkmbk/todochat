@@ -1,6 +1,5 @@
 //import 'dart:ffi';
 
-
 import 'package:flutter/material.dart';
 import 'customWidgets.dart';
 import 'utils.dart';
@@ -256,13 +255,14 @@ class ChatBubble extends StatelessWidget {
         ),
       );
     } else {
-      if (message.isImage &&
-          message.smallImageName.isNotEmpty) {
-        return GestureDetector(
-            onTap: () {},
-            child: networkImage(
-                'http://' + server + "/FileStorage/" + message.smallImageName,
-                headers: mapstr("sessionID", sessionID)));
+      if (message.isImage && message.smallImageName.isNotEmpty) {
+        return networkImage(
+            'http://' +
+                serverURI.authority +
+                "/FileStorage/" +
+                message.smallImageName,
+            headers: mapstr("sessionID", sessionID),
+            onTap: () {});
       } else {
         return DecoratedBox(
           // chat bubble decoration
