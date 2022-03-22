@@ -13,8 +13,7 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool registrationMode = false;
-  final serverAddressController = TextEditingController(
-      text: serverURI.scheme + "://" + serverURI.authority);
+  final serverAddressController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
   bool connected = false;
@@ -23,7 +22,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-
+    serverAddressController.text = getUriFullPath(serverURI);
     checkConnectionAndUpdateState();
   }
 
@@ -87,7 +86,7 @@ class _SettingsPageState extends State<SettingsPage> {
     }
 
     if (serverURItemp.scheme.isEmpty) {
-      setUriProperty(serverURItemp, scheme: "http");
+      serverURItemp = setUriProperty(serverURItemp, scheme: "http");
     }
     checkingConnection = true;
     setState(() {});

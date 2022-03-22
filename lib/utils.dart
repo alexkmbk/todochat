@@ -104,14 +104,29 @@ String toUrlParams(Map<String, String> params) {
   }
 }
 
-void setUriProperty(Uri uri,
-    {String? scheme, String? host, int port = 0, String? path}) {
-  uri = Uri(
-    scheme: scheme ?? uri.scheme,
-    host: host ?? uri.host,
-    port: port == 0 ? uri.port : port,
-    path: path ?? uri.path,
-  );
+String getUriFullPath(Uri? uri) {
+  if (uri == null) return "";
+
+  String res = uri.scheme.isNotEmpty ? uri.scheme + "://" : "";
+  res += uri.host;
+  res += uri.port == 0 ? "" : uri.port.toString();
+  res += "/" + uri.path;
+  res += toUrlParams(uri.queryParameters);
+  return res;
+}
+
+Uri setUriProperty(Uri uri,
+    {String? scheme,
+    String? host,
+    int port = 0,
+    String? path,
+    Map<String, dynamic>? queryParameters}) {
+  return Uri(
+      scheme: scheme ?? uri.scheme,
+      host: host ?? uri.host,
+      port: port == 0 ? uri.port : port,
+      path: path ?? uri.path,
+      queryParameters: queryParameters ?? uri.queryParameters);
 }
 
 Uri? parseURL(String URL,

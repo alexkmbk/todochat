@@ -144,7 +144,7 @@ class _TasksPageState extends State<TasksPage> {
 
     Response response;
     try {
-      response = await httpClient.post(Uri.http(serverURI, '/todo'),
+      response = await httpClient.post(setUriProperty(serverURI, path: 'todo'),
           body: body, headers: headers);
     } catch (e) {
       return null;
@@ -189,7 +189,7 @@ class _TasksPageState extends State<TasksPage> {
 
     try {
       response = await httpClient.delete(
-          Uri.http(serverURI, '/todo/' + taskID.toString()),
+          setUriProperty(serverURI, path: 'todo/' + taskID.toString()),
           headers: headers);
     } catch (e) {
       return false;
@@ -212,7 +212,7 @@ class _TasksPageState extends State<TasksPage> {
 
     tasksListProvider.loading = true;
 
-    var url = Uri.parse("http://" +
+    /*var url = Uri.parse("http://" +
         serverURI +
         '/tasks' +
         toUrlParams({
@@ -220,7 +220,14 @@ class _TasksPageState extends State<TasksPage> {
           "lastID": tasksListProvider.lastID.toString(),
           "lastCreation_date": tasksListProvider.lastCreation_date.toString(),
           "limit": "25",
-        }));
+        }));*/
+
+    var url = setUriProperty(serverURI, path: 'tasks', queryParameters: {
+      "ProjectID": tasksListProvider.projectID.toString(),
+      "lastID": tasksListProvider.lastID.toString(),
+      "lastCreation_date": tasksListProvider.lastCreation_date.toString(),
+      "limit": "25",
+    });
 
     Response response;
     try {
@@ -276,7 +283,8 @@ class _TasksPageState extends State<TasksPage> {
 typedef RequestFn = Future<List<Task>> Function(TasksListProvider context);
 typedef OnAddFn = Future<bool> Function(String description);
 typedef OnDeleteFn = Future<bool> Function(int taskID);
-typedef ItemBuilder = Widget Function(BuildContext context, Task item, int index);
+typedef ItemBuilder = Widget Function(
+    BuildContext context, Task item, int index);
 
 class TasksListProvider extends ChangeNotifier {
   Project? project;
@@ -346,8 +354,7 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
   @override
   void initState() {
     super.initState();
-    _taskListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);
+    _taskListProvider = Provider.of<TasksListProvider>(context, listen: false);
   }
 
 // This is what you're looking for!

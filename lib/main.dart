@@ -165,14 +165,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
     settings = await SharedPreferences.getInstance();
 
-    settings.setString("httpScheme", serverURI.scheme);
-    settings.setString("host", serverURI.host);
-    settings.setInt("port", serverURI.port);
-
     var httpScheme = settings.getString("httpScheme");
     var host = settings.getString("host");
     var port = settings.getInt("port");
 
+    if (port == null || port == 0) {
+      port = null;
+    }
     var isServerURI = true;
     if (host == null || host.isEmpty) {
       isServerURI = await Navigator.push(
@@ -184,7 +183,9 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     if (isServerURI) {
       ws = WebSocketChannel.connect(
-          Uri.parse('ws://' + serverURI.authority + "/initMessagesWS"));
+          setUriProperty(serverURI, scheme: "ws", path: "initMessagesWS"));
+      /*ws = WebSocketChannel.connect(
+          Uri.parse('ws://' + serverURI.authority + "/initMessagesWS"));*/
     }
     try {
       res = await login();
