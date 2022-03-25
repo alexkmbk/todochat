@@ -23,7 +23,7 @@ func ToBase64(data []byte) string {
 }
 
 func FileExists(path string) bool {
-	if _, err := os.Stat("/path/to/whatever"); errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 		return false
 	}
 	return true

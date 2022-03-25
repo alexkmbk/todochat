@@ -1,4 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:photo_view/photo_view.dart';
 
 Widget GetTextField(
     {TextEditingController? controller,
@@ -120,5 +124,31 @@ Widget networkImage(String src,
             )));
   } catch (e) {
     return const Placeholder();
+  }
+}
+
+class ImageDialog extends StatelessWidget {
+  final FocusNode focusNode = FocusNode();
+  final Uint8List imageData;
+  ImageDialog({Key? key, required this.imageData}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+        child: Stack(children: [
+      PhotoView(
+        imageProvider: Image.memory(imageData).image,
+      ),
+      Positioned(
+          right: -2,
+          top: -9,
+          child: IconButton(
+              icon: Icon(
+                Icons.cancel,
+                color: Colors.white.withOpacity(0.5),
+                size: 18,
+              ),
+              onPressed: () => Navigator.pop(context)))
+    ]));
   }
 }

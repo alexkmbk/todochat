@@ -120,6 +120,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
               return InifiniteMsgList(
                 scrollController: _scrollController,
                 onDelete: deleteMesage,
+                getFile: getFile,
               );
             }),
             Row(children: [
@@ -202,6 +203,33 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       "limit": "30",
       "taskID": _msgListProvider.taskID.toString(),
     }));
+  }
+
+  Future<Uint8List> getFile(String localFileName) async {
+    Uint8List res = Uint8List(0);
+    if (sessionID == "" || !mounted) {
+      return res;
+    }
+
+    MultipartRequest request = MultipartRequest(
+        'GET',
+        setUriProperty(serverURI,
+            path: 'getFile',
+            queryParameters: {"localFileName": localFileName}));
+
+    request.headers["sessionID"] = sessionID;
+    request.headers["content-type"] = "application/json; charset=utf-8";
+
+    var streamedResponse = await request.send();
+    if (streamedResponse.statusCode == 200) {
+      Response response = await Response.fromStream(streamedResponse);
+      res = response.bodyBytes;
+      /*var data = jsonDecode(response.body) as Map<String, dynamic>;
+      message.ID = data["ID"];
+      message.userID = data["UserID"];*/
+      //return true;
+    }
+    return res;
   }
 
   Future<bool> createMessage(

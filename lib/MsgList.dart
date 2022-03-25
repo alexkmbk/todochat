@@ -1,5 +1,7 @@
 //import 'dart:ffi';
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'customWidgets.dart';
 import 'utils.dart';
@@ -59,8 +61,8 @@ class Message {
   DateTime? created_at;
   String text = "";
   int userID = 0;
-  //Uint8List? smallImageData;
   String fileName = "";
+  String localFileName = "";
   String smallImageName = "";
   bool isImage = false;
 
@@ -71,7 +73,7 @@ class Message {
       this.ID = 0,
       this.userID = 0,
       this.smallImageName = "",
-      //this.smallImageData,
+      this.localFileName = "",
       this.fileName = "",
       this.isImage = false});
 
@@ -85,21 +87,20 @@ class Message {
       'fileName': fileName,
       'isImage': isImage,
       'smallImageName': smallImageName,
-      //'image': toBase64(image),
+      'localFileName': localFileName,
     };
   }
 
   Message.fromJson(Map<String, dynamic> json) {
     ID = json['ID'];
-    //task = json['task'],
     created_at = DateTime.tryParse(json['Created_at']);
     text = json['Text'];
     taskID = json['TaskID'];
     userID = json['UserID'];
     isImage = json['IsImage'];
     fileName = json['FileName'];
-    //smallImageData = fromBase64(json['SmallImageBase64']
     smallImageName = json['SmallImageName'];
+    localFileName = json['LocalFileName'];
   }
 }
 
@@ -108,10 +109,15 @@ typedef OnDeleteFn = Future<bool> Function(int messageID);
 class InifiniteMsgList extends StatefulWidget {
   final ScrollController scrollController;
   final Future<bool> Function(int messageID) onDelete;
+  final Future<Uint8List> Function(String localFileName) getFile;
+
   //final ItemBuilder itemBuilder;
   //final Task task;
   const InifiniteMsgList(
-      {Key? key, required this.scrollController, required this.onDelete})
+      {Key? key,
+      required this.scrollController,
+      required this.onDelete,
+      required this.getFile})
       : super(key: key);
 
   @override
@@ -169,6 +175,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
           return ChatBubble(
             isCurrentUser: item.userID == currentUserID,
             message: item,
+            getFile: widget.getFile,
             onDismissed: (direction) async {
               if (await widget.onDelete(item.ID)) {
                 _msgListProvider.deleteItem(item.ID);
@@ -198,6 +205,7 @@ class ChatBubble extends StatelessWidget {
       {Key? key,
       required this.message,
       required this.onDismissed,
+      required this.getFile,
       required this.isCurrentUser})
       : super(key: key);
   final Message message;
@@ -208,6 +216,7 @@ class ChatBubble extends StatelessWidget {
   final Uint8List? smallImageData;
   final bool isCurrentUser;*/
   final DismissDirectionCallback onDismissed;
+  final Future<Uint8List> Function(String localFileName) getFile;
 
   @override
   Widget build(BuildContext context) {
@@ -261,8 +270,9 @@ class ChatBubble extends StatelessWidget {
                 serverURI.authority +
                 "/FileStorage/" +
                 message.smallImageName,
-            headers: mapstr("sessionID", sessionID),
-            onTap: () {});
+            headers: {"sessionID": sessionID}, onTap: () {
+          onTapOnFileMessage(message, context);
+        });
       } else {
         return DecoratedBox(
           // chat bubble decoration
@@ -293,6 +303,18 @@ class ChatBubble extends StatelessWidget {
                                       : Colors.black87),
                         )),
                   ])),
+        );
+      }
+    }
+  }
+
+  void onTapOnFileMessage(Message message, context) async {
+    if (message.isImage) {
+      var res = await getFile(message.localFileName);
+      if (res.isNotEmpty) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ImageDialog(imageData: res)),
         );
       }
     }

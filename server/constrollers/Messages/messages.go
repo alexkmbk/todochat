@@ -27,10 +27,16 @@ import (
 )
 
 func GetFile(w http.ResponseWriter, r *http.Request) {
-	fileName := r.Header.Get("fileName")
+
+	query := r.URL.Query()
+	fileName := query.Get("localFileName")
+
+	if fileName == "" {
+		return
+	}
 
 	data, err := os.ReadFile(filepath.Join(FileStoragePath, fileName))
-	if err == nil {
+	if err != nil {
 		return
 	}
 
