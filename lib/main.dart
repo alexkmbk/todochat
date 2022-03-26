@@ -198,10 +198,8 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     if (sessionID.isNotEmpty && ws != null) {
-      var query = mapstr("command", "init");
-      query["sessionID"] = sessionID;
       try {
-        ws!.sink.add(jsonEncode(query));
+        ws!.sink.add(jsonEncode({"command": "init", "sessionID": sessionID}));
         ws!.stream.listen((messageJson) {
           WSMessage wsMsg = WSMessage.fromJson(messageJson);
           if (wsMsg.command == "getMessages") {

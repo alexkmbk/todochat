@@ -99,7 +99,7 @@ func InitDB() {
 
 }
 
-func GetMessagesDB(lastID int64, limit int64, taskID int64) []*Message {
+func GetMessagesDB(lastID int64, limit int64, taskID int64, filter string) []*Message {
 
 	start := time.Now()
 	log.Info("Get Messages")

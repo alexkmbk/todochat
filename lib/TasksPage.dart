@@ -17,6 +17,7 @@ class Task {
   int ID = 0;
   bool Completed = false;
   String Description = "";
+  String lastMessage = "";
   bool editMode = false;
   DateTime? Creation_date;
 
@@ -31,6 +32,7 @@ class Task {
       'ID': ID,
       'Completed': Completed,
       'Description': Description,
+      'LastMessage': lastMessage,
     };
   }
 
@@ -38,7 +40,8 @@ class Task {
       : ID = json['ID'],
         Creation_date = DateTime.tryParse(json['Creation_date']),
         Completed = json['Completed'],
-        Description = json['Description'];
+        Description = json['Description'],
+        lastMessage = json['LastMessage'];
 }
 
 class TasksPage extends StatefulWidget {
@@ -251,10 +254,7 @@ class _TasksPageState extends State<TasksPage> {
             DateTime.tryParse(lastItem["Creation_date"]);
       }
       for (var item in tasks) {
-        res.add(Task(
-            Description: item["Description"],
-            ID: item["ID"],
-            Completed: item["Completed"]));
+        res.add(Task.fromJson(item));
       }
     } else if (response.statusCode == 401) {
       bool result = await Navigator.push(
@@ -448,6 +448,8 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
             child: ListTile(
               onTap: () => inifiniteTaskList.onTap(task),
               title: Text(task.Description),
+              subtitle:
+                  task.lastMessage.isEmpty ? null : Text(task.lastMessage),
               trailing: const Icon(Icons.keyboard_arrow_right),
             ),
           ));

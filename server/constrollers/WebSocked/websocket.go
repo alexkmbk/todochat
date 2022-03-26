@@ -73,7 +73,7 @@ func InitMessagesWS(w http.ResponseWriter, r *http.Request) {
 			lastID := ToInt64(query["lastID"])
 			limit := ToInt64(query["limit"])
 			taskID := ToInt64(query["taskID"])
-			res := GetMessagesDB(lastID, limit, taskID)
+			res := GetMessagesDB(lastID, limit, taskID, "")
 			if len(res) > 0 {
 				conn.WriteJSON(WSMessage{"getMessages", res})
 			}

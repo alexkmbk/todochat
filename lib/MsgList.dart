@@ -266,7 +266,8 @@ class ChatBubble extends StatelessWidget {
     } else {
       if (message.isImage && message.smallImageName.isNotEmpty) {
         return networkImage(
-            'http://' +
+            serverURI.scheme +
+                '://' +
                 serverURI.authority +
                 "/FileStorage/" +
                 message.smallImageName,
@@ -275,35 +276,38 @@ class ChatBubble extends StatelessWidget {
         });
       } else {
         return DecoratedBox(
-          // chat bubble decoration
-          decoration: BoxDecoration(
-            color: isCurrentUser ? Colors.blue : Colors.grey[300],
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Icon(Icons.file_present_rounded, color: Colors.white),
-                    const SizedBox(width: 10),
-                    FittedBox(
-                        fit: BoxFit.fill,
-                        alignment: Alignment.center,
-                        child: SelectableText(
-                          message.fileName,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyText1!
-                              .copyWith(
-                                  color: isCurrentUser
-                                      ? Colors.white
-                                      : Colors.black87),
-                        )),
-                  ])),
-        );
+            // chat bubble decoration
+            decoration: BoxDecoration(
+              color: isCurrentUser ? Colors.blue : Colors.grey[300],
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: GestureDetector(
+              onTap: () => onTapOnFileMessage(message, context),
+              child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Icon(Icons.file_present_rounded,
+                            color: Colors.white),
+                        const SizedBox(width: 10),
+                        FittedBox(
+                            fit: BoxFit.fill,
+                            alignment: Alignment.center,
+                            child: SelectableText(
+                              message.fileName,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyText1!
+                                  .copyWith(
+                                      color: isCurrentUser
+                                          ? Colors.white
+                                          : Colors.black87),
+                            )),
+                      ])),
+            ));
       }
     }
   }
@@ -313,9 +317,17 @@ class ChatBubble extends StatelessWidget {
       var res = await getFile(message.localFileName);
       if (res.isNotEmpty) {
         await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ImageDialog(imageData: res)),
-        );
+            context,
+            MaterialPageRoute(
+                builder: (context) => ImageDialog(imageData: res)));
+      }
+    } else if (message.localFileName.isNotEmpty) {
+      var res = await getFile(message.localFileName);
+      if (res.isNotEmpty) {
+        var localFullName = await saveInDownloads(res, message.fileName);
+        if (localFullName.isNotEmpty) {
+          OpenFileInApp(localFullName);
+        }
       }
     }
   }

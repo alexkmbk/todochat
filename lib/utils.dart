@@ -8,6 +8,9 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mime/mime.dart';
+import 'package:file_saver/file_saver.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path/path.dart';
 
 class WSMessage {
   String command = "";
@@ -185,11 +188,29 @@ Future<Uint8List> readFile(String? path) async {
   }
 }
 
-Map<String, String> mapstr([String? key, String? value]) {
-  if (key != null && value != null) {
-    var res = <String, String>{};
-    res[key] = value;
-    return res;
+Future<String> saveInDownloads(Uint8List data, String FileName) async {
+  return await FileSaver.instance.saveFile(FileName, data, extension(FileName));
+
+  /*try {
+    var downloadsDirectory = await DownloadsPathProvider.downloadsDirectory;
+  } catch (e) {
+    return "";
   }
-  return <String, String>{};
+  //File(FileName)writeAsBytes(data);*/
+}
+
+Future<bool> downloadAndOpenFile(String URL,
+    {Map<String, String>? headers}) async {
+  /*if (headers == null) {
+    return await launch(URL);
+  } else {
+    return await launch(URL, headers: headers);
+  }*/
+  return false;
+}
+
+void OpenFileInApp(String? filePath) {
+  if (filePath != null && filePath.isNotEmpty) {
+    OpenFile.open(filePath);
+  }
 }

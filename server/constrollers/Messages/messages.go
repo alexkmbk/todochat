@@ -23,6 +23,7 @@ import (
 
 	. "todochat_server/App"
 	. "todochat_server/DB"
+	Tasks "todochat_server/constrollers/Tasks"
 	WS "todochat_server/constrollers/WebSocked"
 )
 
@@ -309,6 +310,12 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 	message.Created_at = time.Now()
 	message.UserID = userID
 	message.FileSize = fileSize
+
+	task, success := Tasks.GetItemByID(message.TaskID)
+	if success {
+		task.LastMessage = message.Text
+		DB.Save(&task)
+	}
 
 	DB.Create(&message)
 	WS.SendWSMessage(&message)

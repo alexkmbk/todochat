@@ -20,6 +20,7 @@ type Task struct {
 	ProjectID int64 `gorm:"index"`
 	//Project     *Project `gorm:"foreignKey:ID"`
 	Description string
+	LastMessage string
 	Completed   bool
 	AuthorID    int64
 	//Author        *User `gorm:"foreignKey:ID"`

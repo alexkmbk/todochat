@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
+	. "todochat_server/App"
 	. "todochat_server/DB"
 )
 
@@ -46,19 +47,17 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	// Get URL parameter from mux
 	vars := mux.Vars(r)
-	id, _ := strconv.Atoi(vars["id"])
+	id := ToInt64(vars["id"])
 
 	// Test if the TodoItem exist in DB
-	err := getItemByID(id)
+	task, err := GetItemByID(id)
 	if err == false {
 		http.Error(w, "Record Not Found", http.StatusNotFound)
 	} else {
 		completed, _ := strconv.ParseBool(r.Header.Get("completed"))
 		log.WithFields(log.Fields{"Id": id, "Completed": completed}).Info("Updating TodoItem")
-		todo := &Task{}
-		DB.First(&todo, id)
-		todo.Completed = completed
-		DB.Save(&todo)
+		task.Completed = completed
+		DB.Save(&task)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		io.WriteString(w, `{"updated": true}`)
 	}
@@ -68,30 +67,28 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 
 	// Get URL parameter from mux
 	vars := mux.Vars(r)
-	id, _ := strconv.Atoi(vars["id"])
+	id := ToInt64(vars["id"])
 
 	// Test if the TodoItem exist in DB
-	err := getItemByID(id)
+	item, err := GetItemByID(id)
 	if err == false {
 		http.Error(w, "Record Not Found", http.StatusNotFound)
 	} else {
 		log.WithFields(log.Fields{"ID": id}).Info("Deleting TodoItem")
-		todo := &Task{}
-		DB.First(&todo, id)
-		DB.Delete(&todo)
+		DB.Delete(&item)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		io.WriteString(w, `{"deleted": true}`)
 	}
 }
 
-func getItemByID(ID int) bool {
-	todo := &Task{}
-	result := DB.First(&todo, ID)
+func GetItemByID(ID int64) (*Task, bool) {
+	task := &Task{}
+	result := DB.First(&task, ID)
 	if result.Error != nil {
 		log.Warn("TodoItem not found in database")
-		return false
+		return task, false
 	}
-	return true
+	return task, true
 }
 
 func GetItems(w http.ResponseWriter, r *http.Request) {
