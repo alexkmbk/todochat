@@ -20,7 +20,7 @@ class Task {
   String Description = "";
   String lastMessage = "";
   bool editMode = false;
-  DateTime? Creation_date;
+  DateTime Creation_date = DateTime.utc(0);
 
   Task(
       {this.ID = 0,
@@ -35,14 +35,14 @@ class Task {
       'Description': Description,
       'LastMessage': lastMessage,
       'ProjectID': projectID,
-      'Creation_date':
-          Creation_date == null ? "null" : Creation_date?.toIso8601String(),
+      'Creation_date': Creation_date.toIso8601String(),
     };
   }
 
   Task.fromJson(Map<String, dynamic> json)
       : ID = json['ID'],
-        Creation_date = DateTime.tryParse(json['Creation_date']),
+        Creation_date =
+            DateTime.tryParse(json['Creation_date']) ?? DateTime.utc(0),
         Completed = json['Completed'],
         Description = json['Description'],
         lastMessage = json['LastMessage'],
