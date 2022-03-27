@@ -3,8 +3,10 @@ package App
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"image"
+	"io"
 	"os"
 	"strconv"
 
@@ -78,6 +80,13 @@ func StrMap() map[string]string {
 
 func Map() map[string]interface{} {
 	return make(map[string]interface{})
+}
+
+func FromJson(r io.Reader) (interface{}, error) {
+	var res interface{}
+	decoder := json.NewDecoder(r)
+	error := decoder.Decode(res)
+	return res, error
 }
 
 /*func Write(){

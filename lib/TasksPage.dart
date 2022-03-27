@@ -15,6 +15,7 @@ import 'dart:convert';
 
 class Task {
   int ID = 0;
+  int projectID = 0;
   bool Completed = false;
   String Description = "";
   String lastMessage = "";
@@ -33,6 +34,9 @@ class Task {
       'Completed': Completed,
       'Description': Description,
       'LastMessage': lastMessage,
+      'ProjectID': projectID,
+      'Creation_date':
+          Creation_date == null ? "null" : Creation_date?.toIso8601String(),
     };
   }
 
@@ -41,7 +45,17 @@ class Task {
         Creation_date = DateTime.tryParse(json['Creation_date']),
         Completed = json['Completed'],
         Description = json['Description'],
-        lastMessage = json['LastMessage'];
+        lastMessage = json['LastMessage'],
+        projectID = json['ProjectID'];
+
+  Task.from(Task task) {
+    ID = task.ID;
+    Description = task.Description;
+    Creation_date = task.Creation_date;
+    Completed = task.Completed;
+    lastMessage = task.lastMessage;
+    projectID = task.projectID;
+  }
 }
 
 class TasksPage extends StatefulWidget {
@@ -116,6 +130,7 @@ class _TasksPageState extends State<TasksPage> {
                           onDeleteFn: deleteTask,
                           onAddFn: onAddTask,
                           onTap: onTap,
+                          taskCompletedOnChanged: taskCompletedOnChanged,
                         ));
                       }),
                     ],
@@ -271,6 +286,41 @@ class _TasksPageState extends State<TasksPage> {
     }
   }
 
+  Future<bool> updateTask(Task task) async {
+    if (sessionID == "") {
+      return false;
+    }
+
+    Response response;
+
+    try {
+      response = await httpClient.post(
+          setUriProperty(serverURI, path: 'updateTask'),
+          headers: {"sessionID": sessionID},
+          body: jsonEncode(task));
+    } catch (e) {
+      return false;
+    }
+
+    if (response.statusCode == 200) {
+      return true;
+    }
+
+    return false;
+  }
+
+  void taskCompletedOnChanged(bool? value, Task task) async {
+    if (value == null) return;
+
+    var res = await updateTask(Task.from(task)..Completed = value);
+
+    if (res) {
+      setState(() {
+        task.Completed = value;
+      });
+    }
+  }
+
   void _scrollDown() {
     _scrollController.jumpTo(index: tasksListProvider.items.length - 1);
   }
@@ -329,6 +379,7 @@ class InifiniteTaskList extends StatefulWidget {
   final ItemScrollController scrollController;
   final OnAddFn onAddFn;
   final OnDeleteFn onDeleteFn;
+  final Function taskCompletedOnChanged;
 
   final Future<void> Function(Task task) onTap;
 
@@ -338,7 +389,8 @@ class InifiniteTaskList extends StatefulWidget {
       required this.itemPositionsListener,
       required this.onTap,
       required this.onAddFn,
-      required this.onDeleteFn})
+      required this.onDeleteFn,
+      required this.taskCompletedOnChanged})
       : super(key: key);
 
   @override
@@ -447,7 +499,14 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
                 borderRadius: BorderRadius.circular(10)),
             child: ListTile(
               onTap: () => inifiniteTaskList.onTap(task),
-              title: Text(task.Description),
+              title: Row(children: [
+                Checkbox(
+                    fillColor: MaterialStateProperty.all(Colors.green),
+                    value: task.Completed,
+                    onChanged: (value) =>
+                        widget.taskCompletedOnChanged(value, task)),
+                Text(task.Description)
+              ]),
               subtitle:
                   task.lastMessage.isEmpty ? null : Text(task.lastMessage),
               trailing: const Icon(Icons.keyboard_arrow_right),

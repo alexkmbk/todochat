@@ -45,18 +45,14 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateItem(w http.ResponseWriter, r *http.Request) {
-	// Get URL parameter from mux
-	vars := mux.Vars(r)
-	id := ToInt64(vars["id"])
+	decoder := json.NewDecoder(r.Body)
+	var task Task
 
-	// Test if the TodoItem exist in DB
-	task, err := GetItemByID(id)
-	if err == false {
+	err := decoder.Decode(&task)
+	if err != nil {
 		http.Error(w, "Record Not Found", http.StatusNotFound)
 	} else {
-		completed, _ := strconv.ParseBool(r.Header.Get("completed"))
-		log.WithFields(log.Fields{"Id": id, "Completed": completed}).Info("Updating TodoItem")
-		task.Completed = completed
+		print(task.Creation_date.GoString())
 		DB.Save(&task)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		io.WriteString(w, `{"updated": true}`)
@@ -113,7 +109,9 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var tasks []Task
+	//filter := query.Get("filter")
+
+	var tasks []*Task
 	if lastID == 0 {
 		DB.Order("Creation_date desc, ID desc").Where("project_ID = @projectID", sql.Named("projectID", projectID)).Limit(limit).Find(&tasks)
 	} else {

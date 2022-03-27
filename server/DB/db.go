@@ -68,6 +68,14 @@ func InitDB() {
 		project.Description = "Default project"
 		DB.Create(&project)
 	}
+
+	/*var tasks []*Task
+	DB.Where("Project_ID = 0").Find(&tasks)
+
+	for i := range tasks {
+		tasks[i].ProjectID = 2
+	}
+	DB.Save(&tasks)*/
 	/*var messages []*Message
 	DB.Find(&messages)
 
