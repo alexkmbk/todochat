@@ -12,6 +12,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 //import 'customWidgets.dart';
 import 'main.dart';
 import 'dart:convert';
+import 'package:collection/collection.dart';
 
 class Task {
   int ID = 0;
@@ -22,6 +23,7 @@ class Task {
   String lastMessage = "";
   bool editMode = false;
   DateTime Creation_date = DateTime.utc(0);
+  bool isNewItem = false;
 
   Task(
       {this.ID = 0,
@@ -134,6 +136,7 @@ class _TasksPageState extends State<TasksPage> {
                           onDeleteFn: deleteTask,
                           onAddFn: onAddTask,
                           onTap: onTap,
+                          onLongPress: onLongPress,
                           taskCompletedOnChanged: taskCompletedOnChanged,
                         ));
                       }),
@@ -201,6 +204,17 @@ class _TasksPageState extends State<TasksPage> {
 
   Future<void> onTap(Task task) async {
     OpenTask(context, task);
+  }
+
+  void onLongPress(Task task) {
+    setState(() {
+      var foundTask = tasksListProvider.items
+          .firstWhereOrNull((element) => element.ID == task.ID);
+      if (foundTask != null) {
+        foundTask.editMode = true;
+        foundTask.isNewItem = false;
+      }
+    });
   }
 
   Future<bool> deleteTask(int taskID) async {
@@ -294,29 +308,6 @@ class _TasksPageState extends State<TasksPage> {
     }
   }
 
-  Future<bool> updateTask(Task task) async {
-    if (sessionID == "") {
-      return false;
-    }
-
-    Response response;
-
-    try {
-      response = await httpClient.post(
-          setUriProperty(serverURI, path: 'updateTask'),
-          headers: {"sessionID": sessionID},
-          body: jsonEncode(task));
-    } catch (e) {
-      return false;
-    }
-
-    if (response.statusCode == 200) {
-      return true;
-    }
-
-    return false;
-  }
-
   void taskCompletedOnChanged(bool? value, Task task) async {
     if (value == null) return;
 
@@ -390,6 +381,7 @@ class InifiniteTaskList extends StatefulWidget {
   final Function taskCompletedOnChanged;
 
   final Future<void> Function(Task task) onTap;
+  final void Function(Task task) onLongPress;
 
   const InifiniteTaskList(
       {Key? key,
@@ -398,7 +390,8 @@ class InifiniteTaskList extends StatefulWidget {
       required this.onTap,
       required this.onAddFn,
       required this.onDeleteFn,
-      required this.taskCompletedOnChanged})
+      required this.taskCompletedOnChanged,
+      required this.onLongPress})
       : super(key: key);
 
   @override
@@ -468,21 +461,42 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
                   child: Focus(
                     onFocusChange: (hasFocus) {
                       if (!hasFocus) {
-                        tasksListProvider.deleteEditorItem();
+                        if (task.isNewItem) {
+                          tasksListProvider.deleteEditorItem();
+                        } else {
+                          setState(() {
+                            task.editMode = false;
+                          });
+                        }
                       }
                     },
                     child: TextField(
-                      decoration: const InputDecoration(
-                          border: InputBorder.none, hintText: "New task name"),
-                      autofocus: true,
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (value) async {
-                        if (value.isNotEmpty) {
-                          await inifiniteTaskList.onAddFn(value);
-                          tasksListProvider.deleteEditorItem();
-                        }
-                      },
-                    ),
+                        controller: TextEditingController()
+                          ..text = task.Description,
+                        decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText:
+                                task.isNewItem ? "New project name" : null),
+                        autofocus: true,
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (value) async {
+                          if (value.isNotEmpty) {
+                            if (task.isNewItem) {
+                              await inifiniteTaskList.onAddFn(value);
+                              tasksListProvider.deleteEditorItem();
+                            } else {
+                              var tempTask = Task.from(task);
+                              tempTask.Description = value;
+                              var res = await updateTask(tempTask);
+                              if (res) {
+                                setState(() {
+                                  task.Description = tempTask.Description;
+                                  task.editMode = false;
+                                });
+                              }
+                            }
+                          }
+                        }),
                   ))));
     } else {
       return Dismissible(
@@ -507,6 +521,7 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
                 borderRadius: BorderRadius.circular(10)),
             child: ListTile(
               onTap: () => inifiniteTaskList.onTap(task),
+              onLongPress: () => inifiniteTaskList.onLongPress(task),
               title: Row(children: [
                 Checkbox(
                     fillColor: MaterialStateProperty.all(Colors.green),
@@ -607,4 +622,27 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
       ],
     );
   }
+}
+
+Future<bool> updateTask(Task task) async {
+  if (sessionID == "") {
+    return false;
+  }
+
+  Response response;
+
+  try {
+    response = await httpClient.post(
+        setUriProperty(serverURI, path: 'updateTask'),
+        headers: {"sessionID": sessionID},
+        body: jsonEncode(task));
+  } catch (e) {
+    return false;
+  }
+
+  if (response.statusCode == 200) {
+    return true;
+  }
+
+  return false;
 }
