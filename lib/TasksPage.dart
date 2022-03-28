@@ -16,6 +16,7 @@ import 'dart:convert';
 class Task {
   int ID = 0;
   int projectID = 0;
+  int authorID = 0;
   bool Completed = false;
   String Description = "";
   String lastMessage = "";
@@ -35,6 +36,7 @@ class Task {
       'Description': Description,
       'LastMessage': lastMessage,
       'ProjectID': projectID,
+      'AuthorID': authorID,
       'Creation_date': Creation_date.toIso8601String(),
     };
   }
@@ -46,7 +48,8 @@ class Task {
         Completed = json['Completed'],
         Description = json['Description'],
         lastMessage = json['LastMessage'],
-        projectID = json['ProjectID'];
+        projectID = json['ProjectID'],
+        authorID = json['AuthorID'];
 
   Task.from(Task task) {
     ID = task.ID;
@@ -55,6 +58,7 @@ class Task {
     Completed = task.Completed;
     lastMessage = task.lastMessage;
     projectID = task.projectID;
+    authorID = task.authorID;
   }
 }
 
@@ -171,7 +175,11 @@ class _TasksPageState extends State<TasksPage> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body) as Map<String, dynamic>;
+      task.projectID = data["ProjectID"];
       task.ID = data["ID"];
+      task.Creation_date =
+          DateTime.tryParse(data["Creation_date"]) ?? DateTime.utc(0);
+      task.authorID = data["AuthorID"];
       return task;
     }
 
