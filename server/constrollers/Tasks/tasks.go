@@ -71,7 +71,12 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Record Not Found", http.StatusNotFound)
 	} else {
 		log.WithFields(log.Fields{"ID": id}).Info("Deleting TodoItem")
-		DB.Delete(&item)
+		var messages []*Message
+		DB.Where("Task_ID = ?", item.ID).Find(&messages)
+		tx := DB.Begin()
+		tx.Delete(&messages)
+		tx.Delete(&item)
+		tx.Commit()
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		io.WriteString(w, `{"deleted": true}`)
 	}

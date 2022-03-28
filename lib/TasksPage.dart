@@ -29,7 +29,8 @@ class Task {
       {this.ID = 0,
       this.Description = "",
       this.Completed = false,
-      this.editMode = false});
+      this.editMode = false,
+      this.isNewItem = false});
 
   Map<String, dynamic> toJson() {
     return {
@@ -350,7 +351,7 @@ class TasksListProvider extends ChangeNotifier {
   }
 
   void addEditorItem() {
-    items.insert(0, Task(editMode: true));
+    items.insert(0, Task(editMode: true, isNewItem: true));
     notifyListeners();
   }
 
