@@ -366,6 +366,12 @@ class TasksListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateLastMessage(int taskID, [String lastMessage = ""]) {
+    items.where((element) => element.ID == taskID).first.lastMessage =
+        lastMessage;
+    notifyListeners();
+  }
+
   void deleteItem(int taskID) async {
     offset--;
     if (offset < 0) offset = 0;

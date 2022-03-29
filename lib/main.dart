@@ -207,6 +207,7 @@ class _MyHomePageState extends State<MyHomePage> {
           } else if (wsMsg.command == "createMessage") {
             var message = Message.fromJson(wsMsg.data);
             _msgListProvider.addItem(message);
+            _tasksListProvider.updateLastMessage(message.taskID, message.text);
           }
         });
       } catch (e) {

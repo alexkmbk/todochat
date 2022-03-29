@@ -129,15 +129,43 @@ Widget networkImage(String src,
 
 class ImageDialog extends StatelessWidget {
   final FocusNode focusNode = FocusNode();
-  final Uint8List imageData;
-  ImageDialog({Key? key, required this.imageData}) : super(key: key);
+  final ImageProvider imageProvider;
+  //final Uint8List imageData;
+  final int fileSize;
+  ImageDialog({Key? key, required this.imageProvider, this.fileSize = 0})
+      : super(key: key);
+
+  double calsProgress(ImageChunkEvent? event) {
+    if (event == null) {
+      return 0;
+    } else {
+      if (fileSize == 0) {
+        if (event.expectedTotalBytes == null || event.expectedTotalBytes == 0) {
+          return 0;
+        } else {
+          return event.cumulativeBytesLoaded /
+              (event.expectedTotalBytes as int);
+        }
+      }
+    }
+    return event.cumulativeBytesLoaded / fileSize;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
         child: Stack(children: [
       PhotoView(
-        imageProvider: Image.memory(imageData).image,
+        imageProvider: imageProvider,
+        loadingBuilder: (context, event) => Center(
+          child: Container(
+            width: 20.0,
+            height: 20.0,
+            child: CircularProgressIndicator(
+              value: calsProgress(event),
+            ),
+          ),
+        ),
       ),
       Positioned(
           right: -2,

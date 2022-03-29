@@ -62,6 +62,7 @@ class Message {
   String text = "";
   int userID = 0;
   String fileName = "";
+  int fileSize = 0;
   String localFileName = "";
   String smallImageName = "";
   bool isImage = false;
@@ -85,6 +86,7 @@ class Message {
       'text': text,
       'userID': userID,
       'fileName': fileName,
+      'fileSize': fileSize,
       'isImage': isImage,
       'smallImageName': smallImageName,
       'localFileName': localFileName,
@@ -99,6 +101,7 @@ class Message {
     userID = json['UserID'];
     isImage = json['IsImage'];
     fileName = json['FileName'];
+    fileSize = json['FileSize'];
     smallImageName = json['SmallImageName'];
     localFileName = json['LocalFileName'];
   }
@@ -313,14 +316,22 @@ class ChatBubble extends StatelessWidget {
   }
 
   void onTapOnFileMessage(Message message, context) async {
-    if (message.isImage) {
-      var res = await getFile(message.localFileName);
-      if (res.isNotEmpty) {
-        await Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => ImageDialog(imageData: res)));
-      }
+    if (message.isImage && message.localFileName.isNotEmpty) {
+      // var res = await getFile(message.localFileName);
+      var res = NetworkImage(
+          serverURI.scheme +
+              "://" +
+              serverURI.authority +
+              "/FileStorage/" +
+              message.localFileName,
+          headers: {"sessionID": sessionID});
+      //if (res.isNotEmpty) {
+      await Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  ImageDialog(imageProvider: res, fileSize: message.fileSize)));
+      //}
     } else if (message.localFileName.isNotEmpty) {
       var res = await getFile(message.localFileName);
       if (res.isNotEmpty) {
