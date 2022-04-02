@@ -14,11 +14,14 @@ Widget GetTextField(
     final VoidCallback? onCleared,
     bool showClearButton = false,
     TextInputType? keyboardType,
-    bool obscureText = false}) {
+    bool obscureText = false,
+    Color? fillColor}) {
   return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextFormField(
         decoration: InputDecoration(
+          filled: fillColor == null ? false : true,
+          fillColor: fillColor,
           labelText: labelText,
           hintText: hintText,
           border: const OutlineInputBorder(),

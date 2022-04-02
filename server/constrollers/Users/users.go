@@ -23,21 +23,30 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}*/
-	UserName := r.Header.Get("UserName")
-	passwordHash := r.Header.Get("passwordHash")
+
+	decoder := json.NewDecoder(r.Body)
+	var data map[string]string
+
+	err := decoder.Decode(&data)
+	if err != nil {
+		http.Error(w, "Json parsing error", http.StatusBadRequest)
+		return
+	}
+
+	UserName := data["UserName"]
+	passwordHash := data["passwordHash"]
+
 	var user User
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	err := DB.Where("Name = ?", UserName).First(&user).Error
+	err = DB.Where("Name = ?", UserName).First(&user).Error
 	if err != nil {
-		w.WriteHeader(401)
-		w.Write([]byte("Unauthorised.\n User was not found. \n"))
+		http.Error(w, "Unauthorised.\n User was not found.\n", http.StatusUnauthorized)
 	} else {
 		/*h := sha256.New()
 		h.Write([]byte(Password))
 		hs := fmt.Sprintf("%x", h.Sum(nil))*/
 		if user.PasswordHash != passwordHash {
-			w.WriteHeader(401)
-			w.Write([]byte("Unauthorised.\n Wrong password.\n"))
+			http.Error(w, "Unauthorised.\n Wrong password.\n", http.StatusUnauthorized)
 		} else {
 			sessionID := CreateNewSession(user)
 			res := make(map[string]interface{})
@@ -75,8 +84,7 @@ func RegisterNewUser(w http.ResponseWriter, r *http.Request) {
 
 	err := decoder.Decode(&data)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		io.WriteString(w, `{"updated": false, "error": "Record Not Found"}`)
+		http.Error(w, "Json parsing error", http.StatusBadRequest)
 	} else {
 		log.WithFields(log.Fields{"User": data["Name"]}).Info("Add new User. Saving to database.")
 		//message := &Message{Description: description, Completed: false, Creation_date: time.Now()}

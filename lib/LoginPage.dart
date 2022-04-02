@@ -60,16 +60,17 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<bool> registration() async {
-    var bytes = utf8.encode(passwordController.text); // data being hashed
+    var bytes =
+        utf8.encode(passwordController.text.trim()); // data being hashed
     String passwordHash = sha256.convert(bytes).toString();
 
-    Map<String, String> bodyMap = <String, String>{};
-
-    bodyMap["Name"] = userNameController.text;
-    bodyMap["passwordHash"] = passwordHash;
-
-    var response = await httpClient
-        .post(Uri.http(serverURI.authority, '/registerNewUser'), body: bodyMap);
+    var response = await httpClient.post(
+        Uri.http(serverURI.authority, '/registerNewUser'),
+        body: jsonEncode({
+          "Name": userNameController.text.trim(),
+          "passwordHash": passwordHash
+        }),
+        headers: {"content-type": "application/json; charset=utf-8"});
 
     if (response.statusCode == 200) {
       var data = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -98,7 +99,6 @@ class _LoginPageState extends State<LoginPage> {
                   controller: passwordController,
                   hintText: 'Password',
                   obscureText: true,
-                  validator: (value) => validateEmpty(value, 'Password'),
                 ),
                 Align(
                     alignment: Alignment.centerRight,
@@ -145,7 +145,6 @@ class _LoginPageState extends State<LoginPage> {
               controller: passwordController,
               hintText: 'Password',
               obscureText: true,
-              validator: (value) => validateEmpty(value, 'Password'),
             ),
             Align(
                 alignment: Alignment.centerRight,
@@ -190,16 +189,13 @@ Future<bool> login({String? userName = "", String? password = ""}) async {
   var bytes = utf8.encode(password); // data being hashed
   String passwordHash = sha256.convert(bytes).toString();
 
-  var url = Uri.http(serverURI.authority, '/login');
-
-  // Await the http get response, then decode the json-formatted response.
-  Map<String, String> headers = <String, String>{};
-  headers["UserName"] = userName;
-  headers["passwordHash"] = passwordHash;
+  var url = setUriProperty(serverURI, path: "login");
 
   http.Response response;
   try {
-    response = await httpClient.get(url, headers: headers);
+    response = await httpClient.post(url,
+        headers: {"content-type": "application/json; charset=utf-8"},
+        body: jsonEncode({"UserName": userName, "passwordHash": passwordHash}));
   } catch (e) {
     return Future.error(e.toString());
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/src/response.dart';
+import 'package:http/http.dart';
+import 'package:todochat/customWidgets.dart';
 import 'utils.dart';
 import 'package:provider/provider.dart';
 import 'MainMenu.dart';
@@ -283,7 +284,6 @@ class _TasksPageState extends State<TasksPage> {
       var tasks = data["tasks"];
 
       if (tasks == null) return;
-      tasksListProvider.offset = tasksListProvider.offset + tasks.length;
 
       if (tasks.length > 0) {
         var lastItem = tasks[tasks.length - 1];
@@ -340,10 +340,15 @@ class TasksListProvider extends ChangeNotifier {
   Project? project;
   int? projectID;
   List<Task> items = [];
-  num offset = 0;
   int lastID = 0;
   DateTime? lastCreation_date;
   bool loading = false;
+
+  void clear() {
+    items.clear();
+    lastID = 0;
+    lastCreation_date = null;
+  }
 
   void setProjectID(int? value) {
     projectID = value;
@@ -361,20 +366,19 @@ class TasksListProvider extends ChangeNotifier {
   }
 
   void addItem(Task task) {
-    offset++;
     items.insert(0, task);
     notifyListeners();
   }
 
   void updateLastMessage(int taskID, [String lastMessage = ""]) {
-    items.where((element) => element.ID == taskID).first.lastMessage =
-        lastMessage;
-    notifyListeners();
+    var item = items.firstWhereOrNull((element) => element.ID == taskID);
+    if (item != null) {
+      item.lastMessage = lastMessage;
+      notifyListeners();
+    }
   }
 
   void deleteItem(int taskID) async {
-    offset--;
-    if (offset < 0) offset = 0;
     items.removeWhere((item) => item.ID == taskID);
     notifyListeners();
   }
@@ -548,6 +552,7 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
 
 class TasksPageAppBar extends StatefulWidget with PreferredSizeWidget {
   final _TasksPageState tasksPageState;
+  bool showSearch = false;
 
   TasksPageAppBar({Key? key, required this.tasksPageState}) : super(key: key);
 
@@ -559,6 +564,7 @@ class TasksPageAppBar extends StatefulWidget with PreferredSizeWidget {
 }
 
 class _TasksPageAppBarState extends State<TasksPageAppBar> {
+  TextEditingController searchController = TextEditingController();
   /*late TasksListProvider _taskListProvider;
   @override
   void initState() {
@@ -568,11 +574,19 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
         Provider.of<TasksListProvider>(this.context, listen: false);
   }*/
 
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-      //title: Text("ToDo Chat"),
-      title: TextButton.icon(
+  Widget getAppBarTitle() {
+    if (widget.showSearch) {
+      return GetTextField(
+          controller: searchController,
+          hintText: "Search",
+          fillColor: Colors.white,
+          onCleared: () {
+            setState(() {
+              widget.showSearch = false;
+            });
+          });
+    } else {
+      return TextButton.icon(
         onPressed: () async {
           var res = await Navigator.push(
             context,
@@ -582,9 +596,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
               widget.tasksPageState.tasksListProvider.project != res) {
             widget.tasksPageState.tasksListProvider.project = res;
             widget.tasksPageState.tasksListProvider.projectID = res.ID;
-            widget.tasksPageState.tasksListProvider.items.clear();
-            widget.tasksPageState.tasksListProvider.lastID = 0;
-            widget.tasksPageState.tasksListProvider.lastCreation_date = null;
+            widget.tasksPageState.tasksListProvider.clear();
             widget.tasksPageState
                 .requestTasks(widget.tasksPageState.tasksListProvider, context);
             //widget.tasksPageState.tasksListProvider.setProjectID(res.ID);
@@ -600,7 +612,15 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
               ),
         icon: const Icon(Icons.keyboard_arrow_down),
         //style: TextStyle(color: Colors.white),
-      ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      //title: Text("ToDo Chat"),
+      title: getAppBarTitle(),
       /*const Expanded(
               child: TextField(
                   style: TextStyle(color: Colors.white),
@@ -616,6 +636,18 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
                   )))),*/
       leading: MainMenu(),
       actions: [
+        IconButton(
+          onPressed: () {
+            setState(() {
+              widget.showSearch = true;
+            });
+          },
+          icon: const Icon(
+            Icons.search,
+            color: Colors.white,
+          ),
+          tooltip: "Search",
+        ),
         IconButton(
           onPressed: () {
             widget.tasksPageState.tasksListProvider.addEditorItem();
