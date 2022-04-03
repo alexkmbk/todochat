@@ -12,6 +12,11 @@ class HttpClient extends http.BaseClient {
     if (defaultHeaders != null) {
       request.headers.addAll(defaultHeaders!);
     }
+
+    if (request.method == 'POST') {
+      request.headers["Content-type"] = "application/json; charset=utf-8";
+    }
+
     return _httpClient.send(request);
   }
 }

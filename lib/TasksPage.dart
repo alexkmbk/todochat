@@ -162,17 +162,11 @@ class _TasksPageState extends State<TasksPage> {
     }
 
     Task task = Task(Description: Description);
-    String body = jsonEncode(task);
-
-    Map<String, String> headers = <String, String>{};
-    headers["sessionID"] = sessionID;
-    headers["ProjectID"] = tasksListProvider.projectID.toString();
-    headers["content-type"] = "application/json; charset=utf-8";
-
     Response response;
     try {
       response = await httpClient.post(setUriProperty(serverURI, path: 'todo'),
-          body: body, headers: headers);
+          body: jsonEncode(task),
+          headers: {"ProjectID": tasksListProvider.projectID.toString()});
     } catch (e) {
       return null;
     }
@@ -674,7 +668,6 @@ Future<bool> updateTask(Task task) async {
   try {
     response = await httpClient.post(
         setUriProperty(serverURI, path: 'updateTask'),
-        headers: {"sessionID": sessionID},
         body: jsonEncode(task));
   } catch (e) {
     return false;

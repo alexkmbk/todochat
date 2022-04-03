@@ -65,12 +65,12 @@ class _LoginPageState extends State<LoginPage> {
     String passwordHash = sha256.convert(bytes).toString();
 
     var response = await httpClient.post(
-        Uri.http(serverURI.authority, '/registerNewUser'),
-        body: jsonEncode({
-          "Name": userNameController.text.trim(),
-          "passwordHash": passwordHash
-        }),
-        headers: {"content-type": "application/json; charset=utf-8"});
+      Uri.http(serverURI.authority, '/registerNewUser'),
+      body: jsonEncode({
+        "Name": userNameController.text.trim(),
+        "passwordHash": passwordHash
+      }),
+    );
 
     if (response.statusCode == 200) {
       var data = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -194,7 +194,6 @@ Future<bool> login({String? userName = "", String? password = ""}) async {
   http.Response response;
   try {
     response = await httpClient.post(url,
-        headers: {"content-type": "application/json; charset=utf-8"},
         body: jsonEncode({"UserName": userName, "passwordHash": passwordHash}));
   } catch (e) {
     return Future.error(e.toString());

@@ -219,19 +219,12 @@ class _ProjectsPageState extends State<ProjectsPage> {
     }
 
     Project project = Project(Description: Description);
-    String body = jsonEncode(project);
-
-    var headers = {
-      "content-type": "application/json; charset=utf-8",
-      "sessionID": sessionID
-    };
 
     Response response;
     try {
       response = await httpClient.post(
           setUriProperty(serverURI, path: 'createProject'),
-          body: body,
-          headers: headers);
+          body: jsonEncode(project));
     } catch (e) {
       return null;
     }
@@ -253,19 +246,11 @@ class _ProjectsPageState extends State<ProjectsPage> {
       return false;
     }
 
-    String body = jsonEncode(project);
-
-    var headers = {
-      "content-type": "application/json; charset=utf-8",
-      "sessionID": sessionID
-    };
-
     Response response;
     try {
       response = await httpClient.post(
           setUriProperty(serverURI, path: 'updateProject'),
-          body: body,
-          headers: headers);
+          body: jsonEncode(project));
     } catch (e) {
       return false;
     }
