@@ -205,6 +205,7 @@ Future<bool> login({String? userName = "", String? password = ""}) async {
 
     sessionID = data["SessionID"];
     currentUserID = data["UserID"];
+    httpClient.defaultHeaders = {"sessionID": sessionID};
 
     const storage = FlutterSecureStorage();
     await storage.write(key: "userName", value: userName);

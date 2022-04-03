@@ -273,7 +273,8 @@ class _TasksPageState extends State<TasksPage> {
 
     Response response;
     try {
-      response = await httpClient.get(url, headers: {"sessionID": sessionID});
+      //response = await httpClient.get(url, headers: {"sessionID": sessionID});
+      response = await httpClient.get(url);
     } catch (e) {
       return;
     }

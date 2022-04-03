@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'HttpClient.dart';
 import 'LoginPage.dart';
 import 'SettingsPage.dart';
 import 'utils.dart';
@@ -13,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'MsgList.dart';
 
-var httpClient = http.Client();
+var httpClient = HttpClient();
 WebSocketChannel? ws;
 
 Uri serverURI = Uri();

@@ -242,7 +242,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     }
 
     MultipartRequest request = MultipartRequest(
-        'POST', Uri.http(serverURI.authority, '/createMessage'));
+        'POST', setUriProperty(serverURI, path: 'createMessage'));
 
     request.headers["sessionID"] = sessionID;
     request.headers["content-type"] = "application/json; charset=utf-8";
