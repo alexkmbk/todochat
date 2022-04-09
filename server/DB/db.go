@@ -8,7 +8,8 @@ import (
 
 	. "todochat_server/App"
 
-	"gorm.io/driver/sqlite"
+	//"gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -41,7 +42,7 @@ func InitDB() {
 
 	var err error
 	DBPAth := filepath.Join(GetCurrentDir(), "gorm.db")
-	DB, err = gorm.Open(sqlite.Open(DBPAth), &gorm.Config{})
+	DB, err = gorm.Open(sqlite.Open(DBPAth+"?_pragma=journal_mode(MEMORY)"), &gorm.Config{})
 	if err != nil {
 		log.Println(err)
 		return
@@ -52,14 +53,14 @@ func InitDB() {
 
 	//db.Migrator().DropTable(&User{})
 
-	DB.AutoMigrate(&User{})
+	/*DB.AutoMigrate(&User{})
 	DropUnusedColumns(&User{})
 	DB.AutoMigrate(&Project{})
 	DropUnusedColumns(&Project{})
 	DB.AutoMigrate(&Task{})
 	DropUnusedColumns(&Task{})
 	DB.AutoMigrate(&Message{})
-	DropUnusedColumns(&Message{})
+	DropUnusedColumns(&Message{})*/
 
 	var count int64
 	DB.Model(&Project{}).Count(&count)
@@ -68,6 +69,64 @@ func InitDB() {
 		project.Description = "Default project"
 		DB.Create(&project)
 	}
+
+	// Full text search
+
+	// FTS Messages
+	DB.Exec("CREATE VIRTUAL TABLE IF NOT EXISTS messages_fts USING fts5(text, content=messages, content_rowid=ID)")
+	DB.Exec("INSERT INTO messages_fts (rowid, text) SELECT ID, text FROM messages")
+
+	// MESSAGE INSERT TRIGGER
+	trigger_query := `CREATE TRIGGER IF NOT EXISTS messages_ai AFTER INSERT ON messages
+	    BEGIN
+	        INSERT INTO messages_fts (rowid, text)
+	        VALUES (new.id, new.text);
+	    END;`
+
+	DB.Exec(trigger_query)
+
+	// MESSAGE DELETE TRIGGER
+	trigger_query = `CREATE TRIGGER IF NOT EXISTS messages_ad AFTER DELETE ON messages BEGIN
+	INSERT INTO messages_fts(messages_fts, rowid, text) VALUES('delete', rowid, text);
+  END`
+
+	DB.Exec(trigger_query)
+
+	// MESSAGE UPDATE TRIGGER
+	trigger_query = `CREATE TRIGGER IF NOT EXISTS messages_au AFTER UPDATE ON messages BEGIN
+	INSERT INTO messages_fts(messages_fts, rowid, text) VALUES('delete', rowid, text);
+	INSERT INTO messages_fts(rowid, text) VALUES(rowid, text);
+  END`
+
+	DB.Exec(trigger_query)
+
+	// FTS Tasks
+	DB.Exec("CREATE VIRTUAL TABLE IF NOT EXISTS tasks_fts USING fts5(description, content=tasks, content_rowid=ID)")
+	DB.Exec("INSERT INTO tasks_fts (rowid, description) SELECT ID, description FROM tasks")
+
+	// TASK INSERT TRIGGER
+	trigger_query = `CREATE TRIGGER IF NOT EXISTS tasks_ai AFTER INSERT ON tasks
+	    BEGIN
+	        INSERT INTO tasks_fts (rowid, description)
+	        VALUES (new.id, new.description);
+	    END;`
+
+	DB.Exec(trigger_query)
+
+	// TASK DELETE TRIGGER
+	trigger_query = `CREATE TRIGGER IF NOT EXISTS tasks_ad AFTER DELETE ON tasks BEGIN
+	INSERT INTO tasks_fts(tasks_fts, rowid, description) VALUES('delete', rowid, description);
+  END`
+
+	DB.Exec(trigger_query)
+
+	// TASK UPDATE TRIGGER
+	trigger_query = `CREATE TRIGGER IF NOT EXISTS tasks_au AFTER UPDATE ON tasks BEGIN
+	INSERT INTO tasks_fts(tasks_fts, rowid, description) VALUES('delete', rowid, description);
+	INSERT INTO tasks_fts(rowid, description) VALUES(rowid, description);
+  END`
+
+	DB.Exec(trigger_query)
 
 	/*var tasks []*Task
 	DB.Where("Project_ID = 0").Find(&tasks)
