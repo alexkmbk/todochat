@@ -73,38 +73,44 @@ func InitDB() {
 	// Full text search
 
 	// FTS Messages
-	DB.Exec("CREATE VIRTUAL TABLE IF NOT EXISTS messages_fts USING fts5(text, content=messages, content_rowid=ID)")
+	DB.Exec("DROP TABLE IF EXISTS messages_fts")
+	DB.Exec("CREATE VIRTUAL TABLE IF NOT EXISTS messages_fts USING fts5(text, task_id, content=messages, content_rowid=ID)")
 	DB.Exec("INSERT INTO messages_fts (rowid, text) SELECT ID, text FROM messages")
 
 	// MESSAGE INSERT TRIGGER
+	DB.Exec("DROP TRIGGER IF EXISTS messages_ai")
 	trigger_query := `CREATE TRIGGER IF NOT EXISTS messages_ai AFTER INSERT ON messages
 	    BEGIN
-	        INSERT INTO messages_fts (rowid, text)
-	        VALUES (new.id, new.text);
+	        INSERT INTO messages_fts (rowid, text, task_id)
+	        VALUES (new.id, new.text, new.task_id);
 	    END;`
 
 	DB.Exec(trigger_query)
 
 	// MESSAGE DELETE TRIGGER
+	DB.Exec("DROP TRIGGER IF EXISTS messages_ad")
 	trigger_query = `CREATE TRIGGER IF NOT EXISTS messages_ad AFTER DELETE ON messages BEGIN
-	INSERT INTO messages_fts(messages_fts, rowid, text) VALUES('delete', rowid, text);
+	INSERT INTO messages_fts(messages_fts, rowid, text, task_id) VALUES('delete', old.id, old.text, old.task_id);
   END`
 
 	DB.Exec(trigger_query)
 
 	// MESSAGE UPDATE TRIGGER
+	DB.Exec("DROP TRIGGER IF EXISTS messages_au")
 	trigger_query = `CREATE TRIGGER IF NOT EXISTS messages_au AFTER UPDATE ON messages BEGIN
-	INSERT INTO messages_fts(messages_fts, rowid, text) VALUES('delete', rowid, text);
-	INSERT INTO messages_fts(rowid, text) VALUES(rowid, text);
+	INSERT INTO messages_fts(messages_fts, rowid, text) VALUES('delete', old.id, old.text, old.task_id);
+	INSERT INTO messages_fts(rowid, text, task_id) VALUES(new.id, new.text, new.task_id);
   END`
 
 	DB.Exec(trigger_query)
 
 	// FTS Tasks
+	DB.Exec("DROP TABLE IF EXISTS tasks_fts")
 	DB.Exec("CREATE VIRTUAL TABLE IF NOT EXISTS tasks_fts USING fts5(description, content=tasks, content_rowid=ID)")
 	DB.Exec("INSERT INTO tasks_fts (rowid, description) SELECT ID, description FROM tasks")
 
 	// TASK INSERT TRIGGER
+	DB.Exec("DROP TRIGGER IF EXISTS tasks_ai")
 	trigger_query = `CREATE TRIGGER IF NOT EXISTS tasks_ai AFTER INSERT ON tasks
 	    BEGIN
 	        INSERT INTO tasks_fts (rowid, description)
@@ -114,16 +120,17 @@ func InitDB() {
 	DB.Exec(trigger_query)
 
 	// TASK DELETE TRIGGER
+	DB.Exec("DROP TRIGGER IF EXISTS tasks_ad")
 	trigger_query = `CREATE TRIGGER IF NOT EXISTS tasks_ad AFTER DELETE ON tasks BEGIN
-	INSERT INTO tasks_fts(tasks_fts, rowid, description) VALUES('delete', rowid, description);
+	INSERT INTO tasks_fts(tasks_fts, rowid, description) VALUES('delete', old.id, old.description);
   END`
 
 	DB.Exec(trigger_query)
 
 	// TASK UPDATE TRIGGER
 	trigger_query = `CREATE TRIGGER IF NOT EXISTS tasks_au AFTER UPDATE ON tasks BEGIN
-	INSERT INTO tasks_fts(tasks_fts, rowid, description) VALUES('delete', rowid, description);
-	INSERT INTO tasks_fts(rowid, description) VALUES(rowid, description);
+	INSERT INTO tasks_fts(tasks_fts, rowid, description) VALUES('delete', old.id, old.description);
+	INSERT INTO tasks_fts(rowid, description) VALUES(new.id, new.description);
   END`
 
 	DB.Exec(trigger_query)

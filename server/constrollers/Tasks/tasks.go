@@ -148,3 +148,59 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 	//var todos []TodoItem
 	//DB.Where("completed = ?", false).Find(&todos)
 }
+
+func SearchItems(w http.ResponseWriter, r *http.Request) {
+
+	log.Info("Search for Tasks")
+
+	query := r.URL.Query()
+	search := query.Get("search")
+
+	projectID, err := strconv.Atoi(query.Get("ProjectID"))
+	if err != nil {
+		return
+	}
+
+	//filter := query.Get("filter")
+
+	var tasks []*Task
+
+	rows, err := DB.Raw("SELECT rowid, task_id, text, tasks.description FROM messages_fts(?) left join tasks on tasks.ID = task_id AND  tasks.project_id = ?", search, projectID).Rows()
+	defer rows.Close()
+
+	for rows.Next() {
+		var text string
+		var rowid string
+		var task_id int64
+		var description string
+		var task Task
+		rows.Scan(&rowid, &task_id, &text, &description)
+		task = Task{ID: task_id, Description: description, LastMessage: text}
+		tasks = append(tasks, &task)
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	m := make(map[string]interface{})
+	m["tasks"] = tasks
+	json.NewEncoder(w).Encode(m)
+
+	//lastItem := r.Header.Get("lastItem")
+
+	//DB.Where("completed = ?", false)
+
+	//orderby := strings.Split(string(r.Header.Get("orderby")), ",")
+
+	//filter := r.Header.Get("filter")
+
+	//fmt.Sprintf()
+	/*rows, err := DB.Raw("select TodoItem.Description from TodoItem where TodoItem.Description > &Description", sql.Named("Description", lastItem)).Rows()
+
+	if err == nil {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		json.NewEncoder(w).Encode(rows)
+	}*/
+
+	//var todos []TodoItem
+	//DB.Where("completed = ?", false).Find(&todos)
+}

@@ -61,6 +61,8 @@ func GetRoutesHandler() http.Handler {
 	router.HandleFunc("/healthz", App.Healthz).Methods("GET")
 	router.HandleFunc("/login", Users.Login).Methods("POST")
 	router.HandleFunc("/tasks", CommonHandler(Tasks.GetItems)).Methods("GET")
+	router.HandleFunc("/searchTasks", CommonHandler(Tasks.SearchItems)).Methods("GET")
+
 	router.HandleFunc("/todo", CommonHandler(Tasks.CreateItem)).Methods("POST")
 	router.HandleFunc("/updateTask", CommonHandler(Tasks.UpdateItem)).Methods("POST")
 	router.HandleFunc("/todo/{id}", CommonHandler(Tasks.UpdateItem)).Methods("POST")
