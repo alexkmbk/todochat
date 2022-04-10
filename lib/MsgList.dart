@@ -57,6 +57,7 @@ class MsgListProvider extends ChangeNotifier {
 class Message {
   int ID = 0;
   int taskID = 0;
+  int projectID = 0;
   Task? task;
   DateTime? created_at;
   String text = "";
@@ -82,6 +83,7 @@ class Message {
     return {
       'ID': ID,
       'taskID': task?.ID,
+      'projectID': projectID,
       'created_at': created_at,
       'text': text,
       'userID': userID,
@@ -98,6 +100,7 @@ class Message {
     created_at = DateTime.tryParse(json['Created_at']);
     text = json['Text'];
     taskID = json['TaskID'];
+    projectID = json['ProjectID'];
     userID = json['UserID'];
     isImage = json['IsImage'];
     fileName = json['FileName'];

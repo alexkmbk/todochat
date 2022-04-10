@@ -165,7 +165,13 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 
 	var tasks []*Task
 
-	rows, err := DB.Raw("SELECT rowid, task_id, text, tasks.description FROM messages_fts(?) left join tasks on tasks.ID = task_id AND  tasks.project_id = ?", search, projectID).Rows()
+	rows, err := DB.Raw(`SELECT found_messages.message_id, found_messages.task_id, messages.text,  tasks.description 
+	from 
+	(SELECT max(rowid) as message_id as task_description FROM messages_fts(&search) where project_id = &projectID) as found_messages 
+	left join tasks on tasks.ID = task_id AND  tasks.project_id = &projectID GROUP BY task_id
+	left join messages on messages.ID = found_messages.message_id GROUP BY task_id
+	UNION tasks.last_message_id, tasks_fts.id, tasks.last_message, tasks.description FROM tasks_fts(&search)
+	left join tasks on tasks.ID = rowid`, sql.Named("search", search), sql.Named("projectID", projectID)).Group("task_id").Rows()
 	defer rows.Close()
 
 	for rows.Next() {

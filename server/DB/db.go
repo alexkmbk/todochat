@@ -74,15 +74,15 @@ func InitDB() {
 
 	// FTS Messages
 	DB.Exec("DROP TABLE IF EXISTS messages_fts")
-	DB.Exec("CREATE VIRTUAL TABLE IF NOT EXISTS messages_fts USING fts5(text, task_id, content=messages, content_rowid=ID)")
-	DB.Exec("INSERT INTO messages_fts (rowid, text) SELECT ID, text FROM messages")
+	DB.Exec("CREATE VIRTUAL TABLE IF NOT EXISTS messages_fts USING fts5(text, task_id, project_id content=messages, content_rowid=ID)")
+	DB.Exec("INSERT INTO messages_fts (rowid, text, task_id, project_id) (SELECT ID, text, task_id, project_id FROM messages)")
 
 	// MESSAGE INSERT TRIGGER
 	DB.Exec("DROP TRIGGER IF EXISTS messages_ai")
 	trigger_query := `CREATE TRIGGER IF NOT EXISTS messages_ai AFTER INSERT ON messages
 	    BEGIN
-	        INSERT INTO messages_fts (rowid, text, task_id)
-	        VALUES (new.id, new.text, new.task_id);
+	        INSERT INTO messages_fts (rowid, text, task_id, project_id)
+	        VALUES (new.id, new.text, new.task_id, new.project_id);
 	    END;`
 
 	DB.Exec(trigger_query)
@@ -90,7 +90,7 @@ func InitDB() {
 	// MESSAGE DELETE TRIGGER
 	DB.Exec("DROP TRIGGER IF EXISTS messages_ad")
 	trigger_query = `CREATE TRIGGER IF NOT EXISTS messages_ad AFTER DELETE ON messages BEGIN
-	INSERT INTO messages_fts(messages_fts, rowid, text, task_id) VALUES('delete', old.id, old.text, old.task_id);
+	INSERT INTO messages_fts(messages_fts, rowid, text, task_id, project_id) VALUES('delete', old.id, old.text, old.task_id, old.project_id);
   END`
 
 	DB.Exec(trigger_query)
@@ -98,8 +98,8 @@ func InitDB() {
 	// MESSAGE UPDATE TRIGGER
 	DB.Exec("DROP TRIGGER IF EXISTS messages_au")
 	trigger_query = `CREATE TRIGGER IF NOT EXISTS messages_au AFTER UPDATE ON messages BEGIN
-	INSERT INTO messages_fts(messages_fts, rowid, text) VALUES('delete', old.id, old.text, old.task_id);
-	INSERT INTO messages_fts(rowid, text, task_id) VALUES(new.id, new.text, new.task_id);
+	INSERT INTO messages_fts(messages_fts, rowid, text, project_id) VALUES('delete', old.id, old.text, old.task_id, old.project_id);
+	INSERT INTO messages_fts(rowid, text, task_id) VALUES(new.id, new.text, new.task_id, new.project_id);
   END`
 
 	DB.Exec(trigger_query)

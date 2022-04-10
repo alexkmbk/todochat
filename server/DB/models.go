@@ -19,10 +19,11 @@ type Task struct {
 	ID        int64 `gorm:"primary_key"`
 	ProjectID int64 `gorm:"index"`
 	//Project     *Project `gorm:"foreignKey:ID"`
-	Description string
-	LastMessage string
-	Completed   bool
-	AuthorID    int64
+	Description   string
+	LastMessage   string
+	LastMessageID int64
+	Completed     bool
+	AuthorID      int64
 	//Author        *User `gorm:"foreignKey:ID"`
 	Creation_date time.Time `gorm:"index"`
 }
@@ -30,7 +31,8 @@ type Task struct {
 type Message struct {
 	ID              int64 `gorm:"primary_key"`
 	TaskID          int64 `gorm:"index"`
-	ParentMessageID int
+	ParentMessageID int64
+	ProjectID       int64
 	//ParentMessage   *Message `gorm:"foreignKey:ParentMessageID"`
 	Text             string
 	UserID           int64

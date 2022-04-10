@@ -314,9 +314,10 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 	task, success := Tasks.GetItemByID(message.TaskID)
 	if success {
 		task.LastMessage = message.Text
+		task.LastMessageID = message.ID
 		DB.Save(&task)
 	}
-
+	message.ProjectID = task.ProjectID
 	DB.Create(&message)
 	WS.SendWSMessage(&message)
 }
