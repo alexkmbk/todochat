@@ -166,14 +166,17 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 	found_messages.message_id as message_id,
 	messages.text as text,  
 	messages.created_at,
-	found_messages.task_id as task_id, 
-	tasks.description as task_description
+	messages.task_id as task_id, 
+	tasks.description as task_description,
+	tasks.creation_date as task_creation_date,
+	tasks.author_id
 	from 
 	(SELECT max(rowid) as message_id FROM messages_fts(&search) where project_id = &projectID) as found_messages 
 	inner join messages on messages.ID = found_messages.message_id
 	inner join tasks on tasks.ID = messages.task_id 
-	UNION tasks.last_message_id, tasks_fts.rowid, tasks.last_message, tasks.description, tasks.creation_date FROM tasks_fts(&search)
-	inner join tasks on tasks.ID = rowid`, sql.Named("search", search), sql.Named("projectID", projectID)).Order("created_at desc").Rows()
+	UNION tasks.last_message_id, tasks.last_message, messages.text, tasks_fts.rowid, tasks.description, tasks.creation_date, tasks.author_id FROM tasks_fts(&search)
+	inner join tasks on tasks.ID = rowid
+	inner join messages on tasks.last_message_id = messages.ID`, sql.Named("search", search), sql.Named("projectID", projectID)).Order("created_at desc").Rows()
 	defer rows.Close()
 
 	if err != nil {
@@ -182,13 +185,13 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var text string
-		var created_at time.Time
+		var created_at, task_creation_date time.Time
 		var message_id int64
-		var task_id int64
+		var task_id, author_id int64
 		var description string
 		var task Task
 		rows.Scan(&message_id, &text, &created_at, &task_id, &description)
-		task = Task{ID: task_id, Description: description, LastMessage: text, LastMessageID: message_id, ProjectID: projectID}
+		task = Task{ID: task_id, Description: description, LastMessage: text, LastMessageID: message_id, ProjectID: projectID, Creation_date: task_creation_date, AuthorID: author_id}
 		tasks = append(tasks, &task)
 	}
 
