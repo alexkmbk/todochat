@@ -156,32 +156,39 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	search := query.Get("search")
 
-	projectID, err := strconv.Atoi(query.Get("ProjectID"))
-	if err != nil {
-		return
-	}
+	projectID := ToInt64(query.Get("ProjectID"))
 
 	//filter := query.Get("filter")
 
 	var tasks []*Task
 
-	rows, err := DB.Raw(`SELECT found_messages.message_id, found_messages.task_id, messages.text,  tasks.description 
+	rows, err := DB.Raw(`SELECT 
+	found_messages.message_id as message_id,
+	messages.text as text,  
+	messages.created_at,
+	found_messages.task_id as task_id, 
+	tasks.description as task_description
 	from 
-	(SELECT max(rowid) as message_id as task_description FROM messages_fts(&search) where project_id = &projectID) as found_messages 
-	left join tasks on tasks.ID = task_id AND  tasks.project_id = &projectID GROUP BY task_id
-	left join messages on messages.ID = found_messages.message_id GROUP BY task_id
-	UNION tasks.last_message_id, tasks_fts.id, tasks.last_message, tasks.description FROM tasks_fts(&search)
-	left join tasks on tasks.ID = rowid`, sql.Named("search", search), sql.Named("projectID", projectID)).Group("task_id").Rows()
+	(SELECT max(rowid) as message_id FROM messages_fts(&search) where project_id = &projectID) as found_messages 
+	inner join messages on messages.ID = found_messages.message_id
+	inner join tasks on tasks.ID = messages.task_id 
+	UNION tasks.last_message_id, tasks_fts.rowid, tasks.last_message, tasks.description, tasks.creation_date FROM tasks_fts(&search)
+	inner join tasks on tasks.ID = rowid`, sql.Named("search", search), sql.Named("projectID", projectID)).Order("created_at desc").Rows()
 	defer rows.Close()
+
+	if err != nil {
+		return
+	}
 
 	for rows.Next() {
 		var text string
-		var rowid string
+		var created_at time.Time
+		var message_id int64
 		var task_id int64
 		var description string
 		var task Task
-		rows.Scan(&rowid, &task_id, &text, &description)
-		task = Task{ID: task_id, Description: description, LastMessage: text}
+		rows.Scan(&message_id, &text, &created_at, &task_id, &description)
+		task = Task{ID: task_id, Description: description, LastMessage: text, LastMessageID: message_id, ProjectID: projectID}
 		tasks = append(tasks, &task)
 	}
 
