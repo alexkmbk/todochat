@@ -171,9 +171,9 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 	tasks.creation_date as task_creation_date,
 	tasks.author_id
 	from 
-	(SELECT max(rowid) as message_id FROM messages_fts(@search) where project_id = @projectID) as found_messages 
+	(SELECT max(rowid) as message_id, task_id FROM messages_fts(@search) where project_id = @projectID group by task_id) as found_messages 
 	inner join messages on messages.ID = found_messages.message_id
-	inner join tasks as tasks on tasks.ID = messages.task_id 
+	inner join tasks as tasks on tasks.ID = found_messages.task_id 
 	`, sql.Named("search", search), sql.Named("projectID", projectID)).Order("created_at desc").Rows()
 	/*UNION tasks.last_message_id, tasks.last_message, messages.text, tasks_fts.rowid, tasks.description, tasks.creation_date, tasks.author_id FROM tasks_fts(@search)
 	inner join tasks as tasks on tasks.ID = rowid
@@ -195,7 +195,7 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 		var task_id, author_id int64
 		var description string
 		var task Task
-		rows.Scan(&message_id, &text, &created_at, &task_id, &description)
+		rows.Scan(&message_id, &text, &created_at, &task_id, &description, &task_creation_date, &author_id)
 		task = Task{ID: task_id, Description: description, LastMessage: text, LastMessageID: message_id, ProjectID: projectID, Creation_date: task_creation_date, AuthorID: author_id}
 		tasks = append(tasks, &task)
 	}

@@ -150,6 +150,43 @@ func InitDB() {
 	DB.Exec(trigger_query)
 
 	/*var tasks []*Task
+
+	rows, err := DB.Raw(`SELECT
+	found_messages.message_id as message_id,
+	messages.text as text,
+	found_messages.task_id as task_id,
+	tasks.description as task_description
+	from
+	(SELECT max(rowid) as message_id, task_id as task_id  FROM messages_fts(@search) where project_id = @projectID group by task_id) as found_messages
+	inner join messages on messages.ID = found_messages.message_id
+	inner join tasks as tasks on tasks.ID = found_messages.task_id
+	`, sql.Named("search", "hi"), sql.Named("projectID", 2)).Order("created_at desc").Rows()
+	/*UNION tasks.last_message_id, tasks.last_message, messages.text, tasks_fts.rowid, tasks.description, tasks.creation_date, tasks.author_id FROM tasks_fts(@search)
+	inner join tasks as tasks on tasks.ID = rowid
+	inner join messages as messages on tasks.last_message_id = messages.ID where project_id = @projectID`, sql.Named("search", search), sql.Named("projectID", projectID)).Order("created_at desc").Rows()*/
+	/*defer func() {
+		if rows != nil {
+			rows.Close()
+		}
+	}()
+
+	if err != nil {
+		return
+	}
+
+	for rows.Next() {
+		var text string
+		var task_creation_date time.Time
+		var message_id int64
+		var task_id, author_id int64
+		var description string
+		var task Task
+		rows.Scan(&message_id, &text, &task_id, &description)
+		task = Task{ID: task_id, Description: description, LastMessage: text, LastMessageID: message_id, ProjectID: 2, Creation_date: task_creation_date, AuthorID: author_id}
+		tasks = append(tasks, &task)
+	}*/
+
+	/*var tasks []*Task
 	DB.Where("Project_ID = 0").Find(&tasks)
 
 	for i := range tasks {
