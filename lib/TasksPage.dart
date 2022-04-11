@@ -89,9 +89,10 @@ class _TasksPageState extends State<TasksPage> {
 
     itemPositionsListener.itemPositions.addListener(() {
       if (!tasksListProvider.loading &&
-              itemPositionsListener.itemPositions.value.isEmpty ||
-          (itemPositionsListener.itemPositions.value.last.index >=
-              tasksListProvider.items.length - 10)) {
+          !tasksListProvider.searchMode &&
+          (itemPositionsListener.itemPositions.value.isEmpty ||
+              (itemPositionsListener.itemPositions.value.last.index >=
+                  tasksListProvider.items.length - 10))) {
         requestTasks(tasksListProvider, context);
       }
     });
@@ -238,6 +239,63 @@ class _TasksPageState extends State<TasksPage> {
     return false;
   }
 
+  Future<void> searchTasks(String search, BuildContext context) async {
+    if (search.isEmpty) {
+      await requestTasks(tasksListProvider, context);
+      return;
+    }
+    tasksListProvider.clear();
+    List<Task> res = [];
+
+    if (sessionID == "") {
+      return;
+    }
+
+    tasksListProvider.loading = true;
+
+    var url = setUriProperty(serverURI, path: 'searchTasks', queryParameters: {
+      "ProjectID": tasksListProvider.projectID.toString(),
+      "search": search,
+    });
+
+    Response response;
+    try {
+      response = await httpClient.get(url);
+    } catch (e) {
+      return;
+    }
+
+    if (response.statusCode == 200 && response.body != "") {
+      var data = jsonDecode(response.body);
+
+      var tasks = data["tasks"];
+
+      if (tasks == null) return;
+
+      /*     if (tasks.length > 0) {
+        var lastItem = tasks[tasks.length - 1];
+        tasksListProvider.lastID = lastItem["ID"];
+        tasksListProvider.lastCreation_date =
+            DateTime.tryParse(lastItem["Creation_date"]);
+      }*/
+      for (var item in tasks) {
+        res.add(Task.fromJson(item));
+      }
+    } else if (response.statusCode == 401) {
+      bool result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    }
+
+    tasksListProvider.loading = false;
+
+    if (res.isNotEmpty) {
+      setState(
+          () => tasksListProvider.items = [...tasksListProvider.items, ...res]);
+    }
+  }
+
   Future<void> requestTasks(
       TasksListProvider tasksListProvider, BuildContext context) async {
     List<Task> res = [];
@@ -338,6 +396,7 @@ class TasksListProvider extends ChangeNotifier {
   int lastID = 0;
   DateTime? lastCreation_date;
   bool loading = false;
+  bool searchMode = false;
 
   void clear() {
     items.clear();
@@ -577,8 +636,20 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
           fillColor: Colors.white,
           onCleared: () {
             setState(() {
+              widget.tasksPageState.tasksListProvider.searchMode = false;
               widget.showSearch = false;
             });
+          },
+          onFieldSubmitted: (value) async {
+            if (!value.isEmpty) {
+              setState(() {
+                widget.tasksPageState.tasksListProvider.searchMode = true;
+                widget.tasksPageState.tasksListProvider.clear();
+              });
+              widget.tasksPageState.searchTasks(value, context);
+            } else {
+              widget.tasksPageState.tasksListProvider.searchMode = false;
+            }
           });
     } else {
       return TextButton.icon(

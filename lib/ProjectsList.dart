@@ -71,7 +71,6 @@ class _ProjectsPageState extends State<ProjectsPage> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         appBar: AppBar(
-          //title: Text("ToDo Chat"),
           title: const TextField(
               style: TextStyle(color: Colors.white),
               decoration: InputDecoration(

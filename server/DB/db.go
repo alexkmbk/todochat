@@ -53,26 +53,27 @@ func InitDB() {
 
 	//db.Migrator().DropTable(&User{})
 
-	DB.AutoMigrate(&User{})
+	/*DB.AutoMigrate(&User{})
 	DropUnusedColumns(&User{})
 	DB.AutoMigrate(&Project{})
 	DropUnusedColumns(&Project{})
 	DB.AutoMigrate(&Task{})
 	DropUnusedColumns(&Task{})
 	DB.AutoMigrate(&Message{})
-	DropUnusedColumns(&Message{})
+	DropUnusedColumns(&Message{})*/
 
-	var messages []*Message
-	DB.Where("Project_ID = 0").Find(&messages)
+	/*var tasks []*Task
+	DB.Where("last_message_ID = 0").Find(&tasks)
 
-	for i := range messages {
-		var task Task
-		DB.Where("ID = ?", messages[i].TaskID).First(&task)
-		messages[i].ProjectID = task.ProjectID
+	for i := range tasks {
+		var message Message
+		DB.Where("task_ID = ?", tasks[i].ID).Order("created_at desc").First(&message)
+		tasks[i].LastMessageID = message.ID
+		tasks[i].LastMessage = message.Text
 	}
-	if len(messages) > 0 {
-		DB.Save(&messages)
-	}
+	if len(tasks) > 0 {
+		DB.Save(&tasks)
+	}*/
 
 	var count int64
 	DB.Model(&Project{}).Count(&count)

@@ -171,13 +171,18 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 	tasks.creation_date as task_creation_date,
 	tasks.author_id
 	from 
-	(SELECT max(rowid) as message_id FROM messages_fts(&search) where project_id = &projectID) as found_messages 
+	(SELECT max(rowid) as message_id FROM messages_fts(@search) where project_id = @projectID) as found_messages 
 	inner join messages on messages.ID = found_messages.message_id
-	inner join tasks on tasks.ID = messages.task_id 
-	UNION tasks.last_message_id, tasks.last_message, messages.text, tasks_fts.rowid, tasks.description, tasks.creation_date, tasks.author_id FROM tasks_fts(&search)
-	inner join tasks on tasks.ID = rowid
-	inner join messages on tasks.last_message_id = messages.ID`, sql.Named("search", search), sql.Named("projectID", projectID)).Order("created_at desc").Rows()
-	defer rows.Close()
+	inner join tasks as tasks on tasks.ID = messages.task_id 
+	`, sql.Named("search", search), sql.Named("projectID", projectID)).Order("created_at desc").Rows()
+	/*UNION tasks.last_message_id, tasks.last_message, messages.text, tasks_fts.rowid, tasks.description, tasks.creation_date, tasks.author_id FROM tasks_fts(@search)
+	inner join tasks as tasks on tasks.ID = rowid
+	inner join messages as messages on tasks.last_message_id = messages.ID where project_id = @projectID`, sql.Named("search", search), sql.Named("projectID", projectID)).Order("created_at desc").Rows()*/
+	defer func() {
+		if rows != nil {
+			rows.Close()
+		}
+	}()
 
 	if err != nil {
 		return
@@ -200,23 +205,4 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 	m := make(map[string]interface{})
 	m["tasks"] = tasks
 	json.NewEncoder(w).Encode(m)
-
-	//lastItem := r.Header.Get("lastItem")
-
-	//DB.Where("completed = ?", false)
-
-	//orderby := strings.Split(string(r.Header.Get("orderby")), ",")
-
-	//filter := r.Header.Get("filter")
-
-	//fmt.Sprintf()
-	/*rows, err := DB.Raw("select TodoItem.Description from TodoItem where TodoItem.Description > &Description", sql.Named("Description", lastItem)).Rows()
-
-	if err == nil {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		json.NewEncoder(w).Encode(rows)
-	}*/
-
-	//var todos []TodoItem
-	//DB.Where("completed = ?", false).Find(&todos)
 }
