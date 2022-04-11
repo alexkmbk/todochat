@@ -53,14 +53,26 @@ func InitDB() {
 
 	//db.Migrator().DropTable(&User{})
 
-	/*DB.AutoMigrate(&User{})
+	DB.AutoMigrate(&User{})
 	DropUnusedColumns(&User{})
 	DB.AutoMigrate(&Project{})
 	DropUnusedColumns(&Project{})
 	DB.AutoMigrate(&Task{})
 	DropUnusedColumns(&Task{})
 	DB.AutoMigrate(&Message{})
-	DropUnusedColumns(&Message{})*/
+	DropUnusedColumns(&Message{})
+
+	var messages []*Message
+	DB.Where("Project_ID = 0").Find(&messages)
+
+	for i := range messages {
+		var task Task
+		DB.Where("ID = ?", messages[i].TaskID).First(&task)
+		messages[i].ProjectID = task.ProjectID
+	}
+	if len(messages) > 0 {
+		DB.Save(&messages)
+	}
 
 	var count int64
 	DB.Model(&Project{}).Count(&count)
@@ -74,8 +86,8 @@ func InitDB() {
 
 	// FTS Messages
 	DB.Exec("DROP TABLE IF EXISTS messages_fts")
-	DB.Exec("CREATE VIRTUAL TABLE IF NOT EXISTS messages_fts USING fts5(text, task_id, project_id content=messages, content_rowid=ID)")
-	DB.Exec("INSERT INTO messages_fts (rowid, text, task_id, project_id) (SELECT ID, text, task_id, project_id FROM messages)")
+	DB.Exec("CREATE VIRTUAL TABLE IF NOT EXISTS messages_fts USING fts5(text, task_id, project_id, content=messages, content_rowid=ID)")
+	DB.Exec("INSERT INTO messages_fts (rowid, text, task_id, project_id) SELECT ID, text, task_id, project_id FROM messages")
 
 	// MESSAGE INSERT TRIGGER
 	DB.Exec("DROP TRIGGER IF EXISTS messages_ai")
@@ -99,7 +111,7 @@ func InitDB() {
 	DB.Exec("DROP TRIGGER IF EXISTS messages_au")
 	trigger_query = `CREATE TRIGGER IF NOT EXISTS messages_au AFTER UPDATE ON messages BEGIN
 	INSERT INTO messages_fts(messages_fts, rowid, text, project_id) VALUES('delete', old.id, old.text, old.task_id, old.project_id);
-	INSERT INTO messages_fts(rowid, text, task_id) VALUES(new.id, new.text, new.task_id, new.project_id);
+	INSERT INTO messages_fts(rowid, text, task_id, project_id) VALUES(new.id, new.text, new.task_id, new.project_id);
   END`
 
 	DB.Exec(trigger_query)
@@ -128,6 +140,7 @@ func InitDB() {
 	DB.Exec(trigger_query)
 
 	// TASK UPDATE TRIGGER
+	DB.Exec("DROP TRIGGER IF EXISTS tasks_au")
 	trigger_query = `CREATE TRIGGER IF NOT EXISTS tasks_au AFTER UPDATE ON tasks BEGIN
 	INSERT INTO tasks_fts(tasks_fts, rowid, description) VALUES('delete', old.id, old.description);
 	INSERT INTO tasks_fts(rowid, description) VALUES(new.id, new.description);
