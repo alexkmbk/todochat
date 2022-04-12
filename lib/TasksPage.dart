@@ -79,6 +79,7 @@ class _TasksPageState extends State<TasksPage> {
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
 
+  bool showSearch = false;
   @override
   void initState() {
     super.initState();
@@ -606,7 +607,6 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
 
 class TasksPageAppBar extends StatefulWidget with PreferredSizeWidget {
   final _TasksPageState tasksPageState;
-  bool showSearch = false;
 
   TasksPageAppBar({Key? key, required this.tasksPageState}) : super(key: key);
 
@@ -629,19 +629,21 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
   }*/
 
   Widget getAppBarTitle() {
-    if (widget.showSearch) {
+    if (widget.tasksPageState.showSearch) {
       return GetTextField(
           controller: searchController,
           hintText: "Search",
           fillColor: Colors.white,
           onCleared: () {
-            setState(() {
-              widget.tasksPageState.tasksListProvider.searchMode = false;
-              widget.showSearch = false;
-            });
+            widget.tasksPageState.tasksListProvider.clear();
+            widget.tasksPageState.tasksListProvider.searchMode = false;
+            widget.tasksPageState.showSearch = false;
+            setState(() {});
+            widget.tasksPageState
+                .requestTasks(widget.tasksPageState.tasksListProvider, context);
           },
           onFieldSubmitted: (value) async {
-            if (!value.isEmpty) {
+            if (value.isNotEmpty) {
               setState(() {
                 widget.tasksPageState.tasksListProvider.searchMode = true;
                 widget.tasksPageState.tasksListProvider.clear();
@@ -705,7 +707,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
         IconButton(
           onPressed: () {
             setState(() {
-              widget.showSearch = true;
+              widget.tasksPageState.showSearch = true;
             });
           },
           icon: const Icon(
