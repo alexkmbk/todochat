@@ -162,22 +162,30 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 
 	var tasks []*Task
 
-	rows, err := DB.Raw(`SELECT 
-	found_messages.message_id as message_id,
-	messages.text as text,  
+	rows, err := DB.Raw(`SELECT
+	ifnull(found_messages.message_id, 0) as message_id,
+	messages.text as text,
 	messages.created_at,
-	messages.task_id as task_id, 
+	messages.task_id as task_id,
 	tasks.description as task_description,
 	tasks.creation_date as task_creation_date,
 	tasks.author_id
-	from 
-	(SELECT max(rowid) as message_id, task_id FROM messages_fts(@search) where project_id = @projectID group by task_id) as found_messages 
+	from
+	(SELECT max(rowid) as message_id, task_id FROM messages_fts(@search) where project_id = @projectID group by task_id) as found_messages
 	inner join messages on messages.ID = found_messages.message_id
-	inner join tasks as tasks on tasks.ID = found_messages.task_id 
-	`, sql.Named("search", search), sql.Named("projectID", projectID)).Order("created_at desc").Rows()
-	/*UNION tasks.last_message_id, tasks.last_message, messages.text, tasks_fts.rowid, tasks.description, tasks.creation_date, tasks.author_id FROM tasks_fts(@search)
-	inner join tasks as tasks on tasks.ID = rowid
-	inner join messages as messages on tasks.last_message_id = messages.ID where project_id = @projectID`, sql.Named("search", search), sql.Named("projectID", projectID)).Order("created_at desc").Rows()*/
+	inner join tasks as tasks on tasks.ID = found_messages.task_id
+	UNION
+	SELECT ifnull(tasks.last_message_id, 0),
+	ifnull(tasks.last_message, 0),
+	ifnull(messages.created_at, CURRENT_TIMESTAMP),
+	tasks_fts.rowid,
+	tasks.description,
+	tasks.creation_date,
+	tasks.author_id
+	FROM tasks_fts(@search)
+	inner join tasks as tasks on tasks.ID = tasks_fts.rowid
+	left join messages as messages on tasks.last_message_id = messages.ID where tasks_fts.project_id = @projectID AND (messages.project_id = @projectID OR messages.project_id IS NULL)`, sql.Named("search", search), sql.Named("projectID", projectID)).Order("created_at desc").Rows()
+
 	defer func() {
 		if rows != nil {
 			rows.Close()

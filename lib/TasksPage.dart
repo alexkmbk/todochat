@@ -219,15 +219,11 @@ class _TasksPageState extends State<TasksPage> {
       return false;
     }
 
-    Map<String, String> headers = <String, String>{};
-    headers["sessionID"] = sessionID;
-
     Response response;
 
     try {
-      response = await httpClient.delete(
-          setUriProperty(serverURI, path: 'todo/' + taskID.toString()),
-          headers: headers);
+      response = await httpClient
+          .delete(setUriProperty(serverURI, path: 'todo/' + taskID.toString()));
     } catch (e) {
       return false;
     }
@@ -262,6 +258,7 @@ class _TasksPageState extends State<TasksPage> {
     try {
       response = await httpClient.get(url);
     } catch (e) {
+      setState(() {});
       return;
     }
 
@@ -270,7 +267,10 @@ class _TasksPageState extends State<TasksPage> {
 
       var tasks = data["tasks"];
 
-      if (tasks == null) return;
+      if (tasks == null) {
+        setState(() {});
+        return;
+      }
 
       /*     if (tasks.length > 0) {
         var lastItem = tasks[tasks.length - 1];
@@ -291,9 +291,9 @@ class _TasksPageState extends State<TasksPage> {
     tasksListProvider.loading = false;
 
     if (res.isNotEmpty) {
-      setState(
-          () => tasksListProvider.items = [...tasksListProvider.items, ...res]);
+      tasksListProvider.items = [...tasksListProvider.items, ...res];
     }
+    setState(() {});
   }
 
   Future<void> requestTasks(
