@@ -53,14 +53,14 @@ func InitDB() {
 
 	//db.Migrator().DropTable(&User{})
 
-	/*DB.AutoMigrate(&User{})
+	DB.AutoMigrate(&User{})
 	DropUnusedColumns(&User{})
 	DB.AutoMigrate(&Project{})
 	DropUnusedColumns(&Project{})
 	DB.AutoMigrate(&Task{})
 	DropUnusedColumns(&Task{})
 	DB.AutoMigrate(&Message{})
-	DropUnusedColumns(&Message{})*/
+	DropUnusedColumns(&Message{})
 
 	/*var tasks []*Task
 	DB.Where("last_message_ID = 0").Find(&tasks)
@@ -82,6 +82,25 @@ func InitDB() {
 		project.Description = "Default project"
 		DB.Create(&project)
 	}
+
+	/*var messages []*Message
+	DB.Where("project_id = 0 OR project_id is null AND task_id > 0").Find(&messages)
+
+	for i := range messages {
+		var task Task
+		DB.Where("id = ?", messages[i].TaskID).First(&task)
+		if task.ID > 0 {
+			var message *Message
+			message = messages[i]
+			message.ProjectID = task.ProjectID
+			//DB.Save(message)
+			DB.Model(message).Updates(message)
+		}
+
+	}*/
+	/*if len(messages) > 0 {
+		DB.Save(&messages)
+	}*/
 
 	// Full text search
 
@@ -111,7 +130,7 @@ func InitDB() {
 	// MESSAGE UPDATE TRIGGER
 	DB.Exec("DROP TRIGGER IF EXISTS messages_au")
 	trigger_query = `CREATE TRIGGER IF NOT EXISTS messages_au AFTER UPDATE ON messages BEGIN
-	INSERT INTO messages_fts(messages_fts, rowid, text, project_id) VALUES('delete', old.id, old.text, old.task_id, old.project_id);
+	INSERT INTO messages_fts(messages_fts, rowid, text, task_id, project_id) VALUES('delete', old.id, old.text, old.task_id, old.project_id);
 	INSERT INTO messages_fts(rowid, text, task_id, project_id) VALUES(new.id, new.text, new.task_id, new.project_id);
   END`
 

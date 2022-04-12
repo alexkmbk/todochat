@@ -29,11 +29,10 @@ type Task struct {
 }
 
 type Message struct {
-	ID              int64 `gorm:"primary_key"`
-	TaskID          int64 `gorm:"index"`
-	ParentMessageID int64
-	ProjectID       int64
-	//ParentMessage   *Message `gorm:"foreignKey:ParentMessageID"`
+	ID               int64 `gorm:"primary_key"`
+	TaskID           int64 `gorm:"index"`
+	ParentMessageID  int64
+	ProjectID        int64
 	Text             string
 	UserID           int64
 	SmallImageBase64 string `gorm:"-"`
