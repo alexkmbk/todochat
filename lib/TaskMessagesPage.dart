@@ -14,6 +14,7 @@ import 'dart:convert';
 import 'TasksPage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
+import 'package:pasteboard/pasteboard.dart';
 
 //import 'package:web_socket_channel/web_socket_channel.dart';
 //import 'package:web_socket_channel/status.dart' as status;
@@ -91,6 +92,10 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       }
     });
 
+    /*document.onPaste.listen((ClipboardEvent e) {
+      var blob = e.clipboardData?.items?[0].getAsFile();
+    });*/
+
     requestMessages(widget.task.lastMessageID);
   }
 
@@ -149,6 +154,21 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                       control: false): () {
                     createMessage(text: _messageInputController.text);
                     _messageInputController.text = "";
+                  },
+                  const SingleActivator(LogicalKeyboardKey.keyV, control: true):
+                      () async {
+                    final bytes = await Pasteboard.image;
+                    createMessage(
+                        text: _messageInputController.text,
+                        fileData: bytes,
+                        fileName: "image.bmp" ?? "");
+                    /*var file = File("d:\image.bmp");
+                    if (bytes != null) {
+                      file.writeAsBytesSync(bytes);
+                    }*/
+
+                    //createMessage(text: _messageInputController.text);
+                    //_messageInputController.text = "";
                   },
                 },
                 child: Focus(

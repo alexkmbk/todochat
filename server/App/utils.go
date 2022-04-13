@@ -12,7 +12,12 @@ import (
 
 	//"github.com/h2non/bimg"
 	"image/jpeg"
+	_ "image/png"
 
+	_ "golang.org/x/image/bmp"
+
+	"github.com/anthonynsimon/bild/effect"
+	"github.com/anthonynsimon/bild/transform"
 	"github.com/nfnt/resize"
 )
 
@@ -63,6 +68,33 @@ func ResizeImageByHeight(data []byte, height uint) ([]byte, error) {
 	if size.Height != height {
 		return newImage, error()
 	}*/
+	return newImage, nil
+}
+
+func ResizeImageByHeight__(data []byte, height int) ([]byte, error) {
+	var newImage []byte
+
+	reader := bytes.NewReader(data)
+
+	imageInfo, _, err := image.DecodeConfig(reader)
+	if err != nil {
+		return newImage, err
+	}
+
+	image, _, err := image.Decode(reader)
+	if err != nil {
+		return newImage, err
+	}
+
+	scale := height / imageInfo.Height
+	inverted := effect.Invert(image)
+
+	resized := transform.Resize(inverted, height, imageInfo.Width*scale, transform.Linear)
+
+	buf := new(bytes.Buffer)
+	err = jpeg.Encode(buf, resized, nil)
+	newImage = buf.Bytes()
+
 	return newImage, nil
 }
 

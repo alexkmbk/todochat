@@ -14,6 +14,7 @@ require (
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-sqlite3 v1.14.10 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
+	golang.org/x/image v0.0.0-20190703141733-d6a02ce849c9 // indirect
 	gorm.io/gorm v1.23.3 // indirect
 	modernc.org/libc v1.14.12 // indirect
 	modernc.org/mathutil v1.4.1 // indirect
@@ -22,6 +23,7 @@ require (
 )
 
 require (
+	github.com/anthonynsimon/bild v0.13.0
 	github.com/glebarez/sqlite v1.4.1
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
@@ -29,5 +31,6 @@ require (
 	github.com/h2non/bimg v1.1.7
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	golang.org/x/sys v0.0.0-20220319134239-a9b59b0215f8 // indirect
+	gopkg.in/gographics/imagick.v2 v2.6.0
 	gorm.io/driver/sqlite v1.2.6
 )

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	_ "image/png"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -15,15 +16,19 @@ import (
 	"strings"
 	"time"
 
-	//"github.com/gorilla/mux"
-
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+
+	//"github.com/gorilla/mux"
+
 	log "github.com/sirupsen/logrus"
 
 	. "todochat_server/App"
+
 	. "todochat_server/DB"
+
 	Tasks "todochat_server/constrollers/Tasks"
+
 	WS "todochat_server/constrollers/WebSocked"
 )
 
