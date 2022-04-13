@@ -22,6 +22,7 @@ class Task {
   bool Completed = false;
   String Description = "";
   String lastMessage = "";
+  int lastMessageID = 0;
   bool editMode = false;
   DateTime Creation_date = DateTime.utc(0);
   bool isNewItem = false;
@@ -39,6 +40,7 @@ class Task {
       'Completed': Completed,
       'Description': Description,
       'LastMessage': lastMessage,
+      'LastMessageID': lastMessageID,
       'ProjectID': projectID,
       'AuthorID': authorID,
       'Creation_date': Creation_date.toIso8601String(),
@@ -52,6 +54,7 @@ class Task {
         Completed = json['Completed'],
         Description = json['Description'],
         lastMessage = json['LastMessage'],
+        lastMessageID = json['LastMessageID'],
         projectID = json['ProjectID'],
         authorID = json['AuthorID'];
 
@@ -61,6 +64,7 @@ class Task {
     Creation_date = task.Creation_date;
     Completed = task.Completed;
     lastMessage = task.lastMessage;
+    lastMessageID = task.lastMessageID;
     projectID = task.projectID;
     authorID = task.authorID;
   }

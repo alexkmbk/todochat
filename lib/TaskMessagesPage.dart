@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'MainMenu.dart';
 import 'utils.dart';
 import 'package:provider/provider.dart';
@@ -35,18 +36,34 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
 
   final _messageInputController = TextEditingController();
 
-  final ScrollController _scrollController = ScrollController();
+  //final ScrollController _scrollController = ScrollController();
+  final ItemScrollController _scrollController = ItemScrollController();
+  final ItemPositionsListener itemPositionsListener =
+      ItemPositionsListener.create();
 
 // This is what you're looking for!
   void _scrollDown() {
-    _scrollController.jumpTo(_scrollController.position.minScrollExtent);
+    _scrollController.jumpTo(index: _msgListProvider.items.length - 1);
   }
+
+  /*void _jumpTo(int messageID) {
+    if (messageID == 0) return;
+    var index =
+        _msgListProvider.items.indexWhere((element) => element.ID == messageID);
+    if (index >= 0) {
+      _scrollController.jumpTo(index: index);
+    }
+  }*/
 
   @override
   void initState() {
     super.initState();
     _msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
     _msgListProvider.taskID = widget.task.ID;
+    _msgListProvider.foundMessageID = widget.task.lastMessageID;
+    /*_msgListProvider.addListener(() {
+      _jumpTo(widget.task.lastMessageID);
+    });*/
 
 /*    var query = strMap("command", "init");
     query["sessionID"] = sessionID;
@@ -65,15 +82,16 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       }
     });*/
 
-    _scrollController.addListener(() {
+    itemPositionsListener.itemPositions.addListener(() {
       if (!_msgListProvider.loading &&
-          _scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent) {
+          (itemPositionsListener.itemPositions.value.isEmpty ||
+              (itemPositionsListener.itemPositions.value.last.index >=
+                  _msgListProvider.items.length - 10))) {
         requestMessages();
       }
     });
 
-    requestMessages();
+    requestMessages(widget.task.lastMessageID);
   }
 
   @override
@@ -81,7 +99,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     super.dispose();
     _msgListProvider.clear();
     //ws.sink.close();
-    _scrollController.dispose();
+    //_scrollController.dispose();
   }
 
   @override
@@ -118,10 +136,10 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                 )),*/
             Consumer<MsgListProvider>(builder: (context, provider, child) {
               return InifiniteMsgList(
-                scrollController: _scrollController,
-                onDelete: deleteMesage,
-                getFile: getFile,
-              );
+                  scrollController: _scrollController,
+                  itemPositionsListener: itemPositionsListener,
+                  onDelete: deleteMesage,
+                  getFile: getFile);
             }),
             Row(children: [
               Expanded(
@@ -188,7 +206,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     );
   }
 
-  Future<void> requestMessages() async {
+  Future<void> requestMessages([int messageIDPosition = 0]) async {
     //List<Message> res = [];
 
     if (sessionID == "" || !mounted) {
@@ -200,6 +218,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       "sessionID": sessionID,
       "command": "getMessages",
       "lastID": _msgListProvider.lastID.toString(),
+      "messageIDPosition": messageIDPosition.toString(),
       "limit": "30",
       "taskID": _msgListProvider.taskID.toString(),
     }));

@@ -241,7 +241,7 @@ func InitDB() {
 
 }
 
-func GetMessagesDB(lastID int64, limit int64, taskID int64, filter string) []*Message {
+func GetMessagesDB(lastID int64, limit int64, taskID int64, filter string, messageIDPosition int64) []*Message {
 
 	start := time.Now()
 	log.Info("Get Messages")
@@ -249,7 +249,18 @@ func GetMessagesDB(lastID int64, limit int64, taskID int64, filter string) []*Me
 	var messages []*Message
 	//DB.Where("task_id = ?", taskID).Order("created_at desc").Offset(offset).Limit(limit).Find(&messages)
 	if lastID == 0 {
-		DB.Order("ID desc").Where("task_id = ?", taskID).Limit(int(limit)).Find(&messages)
+		if messageIDPosition > 0 {
+			var addMessages []*Message
+			DB.Order("ID desc").Where("task_id = ? AND ID >= ?", taskID, messageIDPosition).Find(&addMessages)
+			DB.Order("ID desc").Where("task_id = ? AND ID < ?", taskID, messageIDPosition).Limit(int(limit)).Find(&messages)
+			messages = append(addMessages, messages...)
+			/*DB.Raw("? UNION ?",
+				DB.Order("ID desc").Where("task_id = ? AND ID >= ?", taskID, messageIDPosition).Model(&Message{}),
+				DB.Order("ID desc").Where("task_id = ? AND ID >= ?", taskID, messageIDPosition).Model(&Message{}),
+			).Scan(&messages)*/
+		} else {
+			DB.Order("ID desc").Where("task_id = ?", taskID).Limit(int(limit)).Find(&messages)
+		}
 	} else {
 		DB.Order("ID desc").Where("task_id = ? AND ID < ?", taskID, lastID).Limit(int(limit)).Find(&messages)
 	}

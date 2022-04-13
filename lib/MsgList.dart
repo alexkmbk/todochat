@@ -3,6 +3,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'customWidgets.dart';
 import 'utils.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +17,7 @@ class MsgListProvider extends ChangeNotifier {
   int lastID = 0;
   bool loading = false;
   int taskID = 0;
+  int foundMessageID = 0;
 
   void clear() {
     items.clear();
@@ -113,7 +115,9 @@ class Message {
 typedef OnDeleteFn = Future<bool> Function(int messageID);
 
 class InifiniteMsgList extends StatefulWidget {
-  final ScrollController scrollController;
+  final ItemPositionsListener itemPositionsListener;
+  final ItemScrollController scrollController;
+
   final Future<bool> Function(int messageID) onDelete;
   final Future<Uint8List> Function(String localFileName) getFile;
 
@@ -122,6 +126,7 @@ class InifiniteMsgList extends StatefulWidget {
   const InifiniteMsgList(
       {Key? key,
       required this.scrollController,
+      required this.itemPositionsListener,
       required this.onDelete,
       required this.getFile})
       : super(key: key);
@@ -136,12 +141,20 @@ class InifiniteMsgList extends StatefulWidget {
 class InifiniteMsgListState extends State<InifiniteMsgList> {
   late MsgListProvider _msgListProvider;
 
+  void _jumpTo(int messageID) {
+    if (messageID == 0) return;
+    var index =
+        _msgListProvider.items.indexWhere((element) => element.ID == messageID);
+    if (index >= 0) {
+      widget.scrollController.jumpTo(index: index);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
 
     _msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
-
     //getMoreItems();
     /*WidgetsBinding.instance?.addPostFrameCallback((_) {
       getMoreItems();
@@ -168,14 +181,26 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      if (_msgListProvider.foundMessageID > 0 &&
+          _msgListProvider.items.isNotEmpty) {
+        _jumpTo(_msgListProvider.foundMessageID);
+        _msgListProvider.foundMessageID = 0;
+      }
+    });
+
     return Expanded(
         child: Column(children: <Widget>[
       Expanded(
-          child: ListView.builder(
+          child: ScrollablePositionedList.builder(
         reverse: true,
-        controller: widget.scrollController,
+        itemScrollController: widget.scrollController,
+        itemPositionsListener: widget.itemPositionsListener,
+        itemCount: _msgListProvider.items.length,
         itemBuilder: (context, index) {
-          //if (index < _msgListProvider.items.length) {
+          if (index < 0) {
+            return Text("index < 0");
+          }
           var item = _msgListProvider.items[index];
 
           return ChatBubble(
@@ -200,7 +225,6 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
           }*/
           //return const Center(child: Text('End of list'));
         },
-        itemCount: _msgListProvider.items.length,
       )),
     ]));
   }
