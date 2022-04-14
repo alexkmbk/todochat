@@ -14,11 +14,8 @@ import (
 	"image/jpeg"
 	_ "image/png"
 
-	_ "golang.org/x/image/bmp"
-
-	"github.com/anthonynsimon/bild/effect"
-	"github.com/anthonynsimon/bild/transform"
 	"github.com/nfnt/resize"
+	_ "golang.org/x/image/bmp"
 )
 
 func FromBase64(base64Text string) ([]byte, error) {
@@ -71,6 +68,7 @@ func ResizeImageByHeight(data []byte, height uint) ([]byte, error) {
 	return newImage, nil
 }
 
+/*
 func ResizeImageByHeight__(data []byte, height int) ([]byte, error) {
 	var newImage []byte
 
@@ -97,7 +95,7 @@ func ResizeImageByHeight__(data []byte, height int) ([]byte, error) {
 
 	return newImage, nil
 }
-
+*/
 func ToInt64(str string) int64 {
 	res, err := strconv.ParseInt(str, 10, 64)
 	if err != nil {

@@ -158,10 +158,28 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                   const SingleActivator(LogicalKeyboardKey.keyV, control: true):
                       () async {
                     final bytes = await Pasteboard.image;
-                    createMessage(
+                    if (bytes != null) {
+                      createMessage(
+                          text: _messageInputController.text,
+                          fileData: bytes,
+                          fileName: "clipboard_image.bmp");
+                    } else {
+                      final files = await Pasteboard.files();
+                      for (final file in files) {
+                        var fileData = await readFile(file);
+                        if (fileData.isNotEmpty) {
+                          createMessage(
+                              text: _messageInputController.text,
+                              fileData: fileData,
+                              fileName: file);
+                        }
+                      }
+                    }
+
+                    /*createMessage(
                         text: _messageInputController.text,
                         fileData: bytes,
-                        fileName: "image.bmp" ?? "");
+                        fileName: "clipboard_image.bmp");*/
                     /*var file = File("d:\image.bmp");
                     if (bytes != null) {
                       file.writeAsBytesSync(bytes);
