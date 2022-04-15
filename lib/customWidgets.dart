@@ -15,7 +15,8 @@ Widget GetTextField(
     bool showClearButton = false,
     TextInputType? keyboardType,
     bool obscureText = false,
-    Color? fillColor}) {
+    Color? fillColor,
+    Widget? prefixIcon}) {
   return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextFormField(
@@ -25,6 +26,7 @@ Widget GetTextField(
           labelText: labelText,
           hintText: hintText,
           border: const OutlineInputBorder(),
+          prefixIcon: prefixIcon,
           suffixIcon: IconButton(
             onPressed: () {
               controller?.clear();

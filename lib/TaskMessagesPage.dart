@@ -176,28 +176,26 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                               fileName: "clipboard_image.bmp");
                         } else {
                           final files = await Pasteboard.files();
-                          for (final file in files) {
-                            var fileData = await readFile(file);
-                            if (fileData.isNotEmpty) {
-                              createMessage(
-                                  text: _messageInputController.text,
-                                  fileData: fileData,
-                                  fileName: file);
+                          if (files.isNotEmpty) {
+                            for (final file in files) {
+                              var fileData = await readFile(file);
+                              if (fileData.isNotEmpty) {
+                                createMessage(
+                                    text: _messageInputController.text,
+                                    fileData: fileData,
+                                    fileName: file);
+                              }
+                            }
+                          } else {
+                            ClipboardData? data =
+                                await Clipboard.getData('text/plain');
+
+                            if (data != null && data.text != null) {
+                              String text = data.text ?? "";
+                              _messageInputController.text = text.trim();
                             }
                           }
                         }
-
-                        /*createMessage(
-                        text: _messageInputController.text,
-                        fileData: bytes,
-                        fileName: "clipboard_image.bmp");*/
-                        /*var file = File("d:\image.bmp");
-                    if (bytes != null) {
-                      file.writeAsBytesSync(bytes);
-                    }*/
-
-                        //createMessage(text: _messageInputController.text);
-                        //_messageInputController.text = "";
                       },
                     },
                     child: Focus(

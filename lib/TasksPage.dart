@@ -608,8 +608,7 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
                           ..text = task.Description,
                         decoration: InputDecoration(
                             border: InputBorder.none,
-                            hintText:
-                                task.isNewItem ? "New project name" : null),
+                            hintText: task.isNewItem ? "New task name" : null),
                         autofocus: true,
                         textInputAction: TextInputAction.done,
                         onSubmitted: (value) async {
@@ -700,6 +699,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
 
   Widget getProjectField() {
     return Flexible(
+        fit: FlexFit.tight,
         //flex: 6,
         child: Align(
             alignment: Alignment.topLeft,
@@ -738,11 +738,13 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
 
   Widget getSearchField() {
     return Flexible(
+        fit: FlexFit.tight,
         //flex: 4,
         child: GetTextField(
             controller: searchController,
             hintText: "Search",
             fillColor: Colors.white,
+            prefixIcon: Icon(Icons.search),
             onCleared: () {
               widget.tasksPageState.tasksListProvider.currentTask = null;
               widget.tasksPageState.msgListProvider.clear();
@@ -797,18 +799,19 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
                   )))),*/
       leading: MainMenu(),
       actions: [
-        IconButton(
-          onPressed: () {
-            setState(() {
-              widget.tasksPageState.showSearch = true;
-            });
-          },
-          icon: const Icon(
-            Icons.search,
-            color: Colors.white,
+        if (!widget.tasksPageState.showSearch)
+          IconButton(
+            onPressed: () {
+              setState(() {
+                widget.tasksPageState.showSearch = true;
+              });
+            },
+            icon: const Icon(
+              Icons.search,
+              color: Colors.white,
+            ),
+            tooltip: "Search",
           ),
-          tooltip: "Search",
-        ),
         IconButton(
           onPressed: () {
             widget.tasksPageState.tasksListProvider.addEditorItem();
