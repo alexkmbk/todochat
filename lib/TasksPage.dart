@@ -86,7 +86,6 @@ class _TasksPageState extends State<TasksPage> {
       ItemPositionsListener.create();
 
   bool showSearch = false;
-  Task? currentTask;
 
   @override
   void initState() {
@@ -162,14 +161,14 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Widget renderMessages() {
-    if (currentTask != null) {
-      msgListProvider.taskID = currentTask!.ID;
+    if (tasksListProvider.currentTask != null) {
+      msgListProvider.taskID = tasksListProvider.currentTask!.ID;
     }
 
     return Expanded(
         flex: 6,
-        child: currentTask != null
-            ? TaskMessagesPage(task: currentTask!)
+        child: tasksListProvider.currentTask != null
+            ? TaskMessagesPage(task: tasksListProvider.currentTask!)
             : const Center(child: Text("No any task was selected")));
   }
 
@@ -251,7 +250,7 @@ class _TasksPageState extends State<TasksPage> {
     if (isDesktopMode) {
       setState(() {
         msgListProvider.clear();
-        currentTask = task;
+        tasksListProvider.currentTask = task;
       });
     } else {
       OpenTask(context, task);
@@ -336,6 +335,11 @@ class _TasksPageState extends State<TasksPage> {
       for (var item in tasks) {
         res.add(Task.fromJson(item));
       }
+      if (tasks.length > 0) {
+        tasksListProvider.currentTask = Task.fromJson(tasks[0]);
+      } else {
+        tasksListProvider.currentTask = null;
+      }
     } else if (response.statusCode == 401) {
       bool result = await Navigator.push(
         context,
@@ -398,6 +402,7 @@ class _TasksPageState extends State<TasksPage> {
         tasksListProvider.lastID = lastItem["ID"];
         tasksListProvider.lastCreation_date =
             DateTime.tryParse(lastItem["Creation_date"]);
+        tasksListProvider.currentTask ??= Task.fromJson(tasks[0]);
       }
       for (var item in tasks) {
         res.add(Task.fromJson(item));
@@ -452,6 +457,7 @@ class TasksListProvider extends ChangeNotifier {
   DateTime? lastCreation_date;
   bool loading = false;
   bool searchMode = false;
+  Task? currentTask;
 
   void clear() {
     items.clear();
@@ -554,6 +560,13 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
     ]);
   }
 
+  Color? getTileColor(bool selected) {
+    if (selected) {
+      return Colors.blue[50];
+    }
+    return null;
+  }
+
   Widget buildListRow(
       BuildContext context,
       index,
@@ -640,6 +653,9 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
                 ),
                 borderRadius: BorderRadius.circular(10)),
             child: ListTile(
+              tileColor: tasksListProvider.currentTask == null
+                  ? null
+                  : getTileColor(tasksListProvider.currentTask!.ID == task.ID),
               onTap: () => inifiniteTaskList.onTap(task),
               onLongPress: () => inifiniteTaskList.onLongPress(task),
               title: Row(children: [
@@ -689,6 +705,8 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
           hintText: "Search",
           fillColor: Colors.white,
           onCleared: () {
+            widget.tasksPageState.tasksListProvider.currentTask = null;
+            widget.tasksPageState.msgListProvider.clear();
             widget.tasksPageState.tasksListProvider.clear();
             widget.tasksPageState.tasksListProvider.searchMode = false;
             widget.tasksPageState.showSearch = false;
@@ -699,6 +717,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
           onFieldSubmitted: (value) async {
             if (value.isNotEmpty) {
               setState(() {
+                widget.tasksPageState.msgListProvider.clear();
                 widget.tasksPageState.tasksListProvider.searchMode = true;
                 widget.tasksPageState.tasksListProvider.clear();
               });
