@@ -20,6 +20,7 @@ WebSocketChannel? ws;
 Uri serverURI = Uri();
 String sessionID = "";
 int currentUserID = 0;
+bool isDesktopMode = false;
 
 late SharedPreferences settings;
 
@@ -214,6 +215,14 @@ class _MyHomePageState extends State<MyHomePage> {
       } catch (e) {
         print(e.toString());
       }
+    }
+
+    var mediaQuery = MediaQuery.of(context);
+    var physicalPixelWidth =
+        mediaQuery.size.width * mediaQuery.devicePixelRatio;
+
+    if (physicalPixelWidth > 1000) {
+      isDesktopMode = true;
     }
     return true;
   }

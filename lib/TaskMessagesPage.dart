@@ -25,7 +25,9 @@ class TaskMessagesPage extends StatefulWidget {
   const TaskMessagesPage({Key? key, required this.task}) : super(key: key);
 
   @override
-  State<TaskMessagesPage> createState() => _TaskMessagesPageState();
+  State<TaskMessagesPage> createState() {
+    return _TaskMessagesPageState();
+  }
 }
 
 /*IOWebSocketChannel InitSocket() {
@@ -110,23 +112,25 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          //backgroundColor: Colors.black,
-          title: Row(children: [
-            TextButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(
-                  Icons.keyboard_arrow_left,
-                  color: Colors.white,
-                ),
-                label: Text(
-                  widget.task.Description,
-                  style: const TextStyle(color: Colors.white, fontSize: 18),
-                )),
-          ]),
-          leading: MainMenu()),
+      appBar: isDesktopMode
+          ? null
+          : AppBar(
+              //backgroundColor: Colors.black,
+              title: Row(children: [
+                TextButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(
+                      Icons.keyboard_arrow_left,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      widget.task.Description,
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                    )),
+              ]),
+              leading: MainMenu()),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -146,91 +150,101 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                   onDelete: deleteMesage,
                   getFile: getFile);
             }),
-            Row(children: [
-              Expanded(
-                  child: CallbackShortcuts(
-                bindings: {
-                  const SingleActivator(LogicalKeyboardKey.enter,
-                      control: false): () {
-                    createMessage(text: _messageInputController.text);
-                    _messageInputController.text = "";
-                  },
-                  const SingleActivator(LogicalKeyboardKey.keyV, control: true):
-                      () async {
-                    final bytes = await Pasteboard.image;
-                    if (bytes != null) {
-                      createMessage(
-                          text: _messageInputController.text,
-                          fileData: bytes,
-                          fileName: "clipboard_image.bmp");
-                    } else {
-                      final files = await Pasteboard.files();
-                      for (final file in files) {
-                        var fileData = await readFile(file);
-                        if (fileData.isNotEmpty) {
+            Container(
+                decoration: const BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: Colors.grey),
+                    bottom: BorderSide(color: Colors.grey),
+                  ),
+                ),
+                child: Row(children: [
+                  Expanded(
+                      child: CallbackShortcuts(
+                    bindings: {
+                      const SingleActivator(LogicalKeyboardKey.enter,
+                          control: false): () {
+                        createMessage(text: _messageInputController.text);
+                        _messageInputController.text = "";
+                      },
+                      const SingleActivator(LogicalKeyboardKey.keyV,
+                          control: true): () async {
+                        final bytes = await Pasteboard.image;
+                        if (bytes != null) {
                           createMessage(
                               text: _messageInputController.text,
-                              fileData: fileData,
-                              fileName: file);
+                              fileData: bytes,
+                              fileName: "clipboard_image.bmp");
+                        } else {
+                          final files = await Pasteboard.files();
+                          for (final file in files) {
+                            var fileData = await readFile(file);
+                            if (fileData.isNotEmpty) {
+                              createMessage(
+                                  text: _messageInputController.text,
+                                  fileData: fileData,
+                                  fileName: file);
+                            }
+                          }
                         }
-                      }
-                    }
 
-                    /*createMessage(
+                        /*createMessage(
                         text: _messageInputController.text,
                         fileData: bytes,
                         fileName: "clipboard_image.bmp");*/
-                    /*var file = File("d:\image.bmp");
+                        /*var file = File("d:\image.bmp");
                     if (bytes != null) {
                       file.writeAsBytesSync(bytes);
                     }*/
 
-                    //createMessage(text: _messageInputController.text);
-                    //_messageInputController.text = "";
-                  },
-                },
-                child: Focus(
-                  autofocus: true,
-                  child: TextField(
-                    autofocus: true,
-                    controller: _messageInputController,
-                    keyboardType: TextInputType.multiline,
-                    maxLines: null,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'Message',
+                        //createMessage(text: _messageInputController.text);
+                        //_messageInputController.text = "";
+                      },
+                    },
+                    child: Focus(
+                      autofocus: true,
+                      child: TextField(
+                        autofocus: true,
+                        controller: _messageInputController,
+                        keyboardType: TextInputType.multiline,
+                        maxLines: null,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none, // OutlineInputBorder(),
+                          hintText: 'Message',
+                        ),
+                      ),
+                    ),
+                  )),
+                  IconButton(
+                    onPressed: () {
+                      createMessage(text: _messageInputController.text);
+                      _messageInputController.text = "";
+                    },
+                    tooltip: 'New message',
+                    icon: const Icon(
+                      Icons.send,
+                      color: Colors.blue,
                     ),
                   ),
-                ),
-              )),
-              FloatingActionButton(
-                onPressed: () {
-                  createMessage(text: _messageInputController.text);
-                  _messageInputController.text = "";
-                },
-                tooltip: 'New message',
-                child: const Icon(Icons.message),
-              ),
-              IconButton(
-                onPressed: () async {
-                  FilePickerResult? result =
-                      await FilePicker.platform.pickFiles();
+                  IconButton(
+                    onPressed: () async {
+                      FilePickerResult? result =
+                          await FilePicker.platform.pickFiles();
 
-                  if (result != null && result.files.single.path != null) {
-                    //File file = File([], result.files.single.path as String);
-                    var fileName = result.files.single.path;
-                    var res = await readFile(result.files.single.path);
-                    createMessage(
-                        text: _messageInputController.text,
-                        fileData: res,
-                        fileName: fileName ?? "");
-                    _messageInputController.text = "";
-                  }
-                },
-                tooltip: 'Add file',
-                icon: const Icon(Icons.attach_file),
-              )
-            ])
+                      if (result != null && result.files.single.path != null) {
+                        //File file = File([], result.files.single.path as String);
+                        var fileName = result.files.single.path;
+                        var res = await readFile(result.files.single.path);
+                        createMessage(
+                            text: _messageInputController.text,
+                            fileData: res,
+                            fileName: fileName ?? "");
+                        _messageInputController.text = "";
+                      }
+                    },
+                    tooltip: 'Add file',
+                    icon: const Icon(Icons.attach_file),
+                  )
+                ]))
           ],
         ),
       ), /*Center(

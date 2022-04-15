@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
+import 'package:todochat/MsgList.dart';
 import 'package:todochat/customWidgets.dart';
 import 'utils.dart';
 import 'package:provider/provider.dart';
@@ -79,16 +80,20 @@ class TasksPage extends StatefulWidget {
 
 class _TasksPageState extends State<TasksPage> {
   late TasksListProvider tasksListProvider;
+  late MsgListProvider msgListProvider;
   final ItemScrollController _scrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
 
   bool showSearch = false;
+  Task? currentTask;
+
   @override
   void initState() {
     super.initState();
 
     tasksListProvider = Provider.of<TasksListProvider>(context, listen: false);
+    msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
 
     tasksListProvider.projectID = settings.getInt("projectID");
 
@@ -131,28 +136,66 @@ class _TasksPageState extends State<TasksPage> {
               onTap: () => FocusScope.of(context).unfocus(),
               child: Scaffold(
                 appBar: TasksPageAppBar(tasksPageState: this),
-                body: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Consumer<TasksListProvider>(
-                          builder: (context, provider, child) {
-                        return Expanded(
-                            child: InifiniteTaskList(
-                          scrollController: _scrollController,
-                          itemPositionsListener: itemPositionsListener,
-                          onDeleteFn: deleteTask,
-                          onAddFn: onAddTask,
-                          onTap: onTap,
-                          onLongPress: onLongPress,
-                          taskCompletedOnChanged: taskCompletedOnChanged,
-                        ));
-                      }),
-                    ],
-                  ),
-                ),
+                body: renderBody(),
               ));
         });
+  }
+
+  Widget renderTasks() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Consumer<TasksListProvider>(builder: (context, provider, child) {
+          return Expanded(
+              child: InifiniteTaskList(
+            scrollController: _scrollController,
+            itemPositionsListener: itemPositionsListener,
+            onDeleteFn: deleteTask,
+            onAddFn: onAddTask,
+            onTap: onTap,
+            onLongPress: onLongPress,
+            taskCompletedOnChanged: taskCompletedOnChanged,
+          ));
+        }),
+      ],
+    );
+  }
+
+  Widget renderMessages() {
+    if (currentTask != null) {
+      msgListProvider.taskID = currentTask!.ID;
+    }
+
+    return Expanded(
+        flex: 6,
+        child: currentTask != null
+            ? TaskMessagesPage(task: currentTask!)
+            : const Center(child: Text("No any task was selected")));
+  }
+
+  Widget renderBody() {
+    if (isDesktopMode) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Expanded(flex: 4, child: renderTasks()),
+          const VerticalDivider(),
+          renderMessages(),
+          //Expanded(flex: 6, child: const Text("data")),
+
+          //renderTasks(),
+          /*Expanded(
+              child: currentTask != null
+                  ? const Text("data") //TaskMessagesPage(task: currentTask!)
+                  : const Text("data"))*/
+        ],
+      );
+    } else {
+      return Center(
+        child: renderTasks(),
+      );
+    }
   }
 
   void OpenTask(BuildContext context, Task task) {
@@ -205,7 +248,14 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Future<void> onTap(Task task) async {
-    OpenTask(context, task);
+    if (isDesktopMode) {
+      setState(() {
+        msgListProvider.clear();
+        currentTask = task;
+      });
+    } else {
+      OpenTask(context, task);
+    }
   }
 
   void onLongPress(Task task) {

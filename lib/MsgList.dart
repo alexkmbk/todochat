@@ -23,7 +23,8 @@ class MsgListProvider extends ChangeNotifier {
     items.clear();
     offset = 0;
     lastID = 0;
-    taskID = 0;
+    //taskID = 0;
+    loading = false;
   }
 
   void addItems(dynamic data) {
@@ -33,9 +34,11 @@ class MsgListProvider extends ChangeNotifier {
         items.add(message);
       }
     }
-    if (data.length > 0) lastID = data[data.length - 1]["ID"];
     loading = false;
-    notifyListeners();
+    if (data.length > 0) {
+      lastID = data[data.length - 1]["ID"];
+      notifyListeners();
+    }
   }
 
   void addItem(Message message) {

@@ -75,9 +75,9 @@ func InitMessagesWS(w http.ResponseWriter, r *http.Request) {
 			taskID := ToInt64(query["taskID"])
 			messageIDPosition := ToInt64(query["messageIDPosition"])
 			res := GetMessagesDB(lastID, limit, taskID, "", messageIDPosition)
-			if len(res) > 0 {
-				conn.WriteJSON(WSMessage{"getMessages", res})
-			}
+			//if len(res) > 0 {
+			conn.WriteJSON(WSMessage{"getMessages", res})
+			//}
 
 		}
 
