@@ -85,7 +85,7 @@ class _TasksPageState extends State<TasksPage> {
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
 
-  bool showSearch = false;
+  bool showSearch = isDesktopMode;
 
   @override
   void initState() {
@@ -698,62 +698,82 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
         Provider.of<TasksListProvider>(this.context, listen: false);
   }*/
 
-  Widget getAppBarTitle() {
-    if (widget.tasksPageState.showSearch) {
-      return GetTextField(
-          controller: searchController,
-          hintText: "Search",
-          fillColor: Colors.white,
-          onCleared: () {
-            widget.tasksPageState.tasksListProvider.currentTask = null;
-            widget.tasksPageState.msgListProvider.clear();
-            widget.tasksPageState.tasksListProvider.clear();
-            widget.tasksPageState.tasksListProvider.searchMode = false;
-            widget.tasksPageState.showSearch = false;
-            setState(() {});
-            widget.tasksPageState
-                .requestTasks(widget.tasksPageState.tasksListProvider, context);
-          },
-          onFieldSubmitted: (value) async {
-            if (value.isNotEmpty) {
-              setState(() {
-                widget.tasksPageState.msgListProvider.clear();
-                widget.tasksPageState.tasksListProvider.searchMode = true;
-                widget.tasksPageState.tasksListProvider.clear();
-              });
-              widget.tasksPageState.searchTasks(value, context);
-            } else {
-              widget.tasksPageState.tasksListProvider.searchMode = false;
-            }
-          });
-    } else {
-      return TextButton.icon(
-        onPressed: () async {
-          var res = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ProjectsPage()),
-          );
-          if (res != null &&
-              widget.tasksPageState.tasksListProvider.project != res) {
-            widget.tasksPageState.tasksListProvider.project = res;
-            widget.tasksPageState.tasksListProvider.projectID = res.ID;
-            widget.tasksPageState.tasksListProvider.clear();
-            widget.tasksPageState
-                .requestTasks(widget.tasksPageState.tasksListProvider, context);
-            //widget.tasksPageState.tasksListProvider.setProjectID(res.ID);
-            await settings.setInt("projectID", res.ID);
-          }
-          setState(() {});
-        },
-        label: widget.tasksPageState.tasksListProvider.project == null
-            ? const Text("")
-            : Text(
-                widget.tasksPageState.tasksListProvider.project!.Description,
-                style: const TextStyle(color: Colors.white),
+  Widget getProjectField() {
+    return Flexible(
+        //flex: 6,
+        child: Align(
+            alignment: Alignment.topLeft,
+            child: TextButton.icon(
+              onPressed: () async {
+                var res = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProjectsPage()),
+                );
+                if (res != null &&
+                    widget.tasksPageState.tasksListProvider.project != res) {
+                  widget.tasksPageState.tasksListProvider.project = res;
+                  widget.tasksPageState.tasksListProvider.projectID = res.ID;
+                  widget.tasksPageState.tasksListProvider.clear();
+                  widget.tasksPageState.requestTasks(
+                      widget.tasksPageState.tasksListProvider, context);
+                  //widget.tasksPageState.tasksListProvider.setProjectID(res.ID);
+                  await settings.setInt("projectID", res.ID);
+                }
+                setState(() {});
+              },
+              label: widget.tasksPageState.tasksListProvider.project == null
+                  ? const Text("")
+                  : Text(
+                      widget.tasksPageState.tasksListProvider.project!
+                          .Description,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+              icon: const Icon(
+                Icons.keyboard_arrow_down,
+                color: Colors.white,
               ),
-        icon: const Icon(Icons.keyboard_arrow_down),
-        //style: TextStyle(color: Colors.white),
-      );
+              //style: TextStyle(color: Colors.white),
+            )));
+  }
+
+  Widget getSearchField() {
+    return Flexible(
+        //flex: 4,
+        child: GetTextField(
+            controller: searchController,
+            hintText: "Search",
+            fillColor: Colors.white,
+            onCleared: () {
+              widget.tasksPageState.tasksListProvider.currentTask = null;
+              widget.tasksPageState.msgListProvider.clear();
+              widget.tasksPageState.tasksListProvider.clear();
+              widget.tasksPageState.tasksListProvider.searchMode = false;
+              widget.tasksPageState.showSearch = isDesktopMode;
+              setState(() {});
+              widget.tasksPageState.requestTasks(
+                  widget.tasksPageState.tasksListProvider, context);
+            },
+            onFieldSubmitted: (value) async {
+              if (value.isNotEmpty) {
+                setState(() {
+                  widget.tasksPageState.msgListProvider.clear();
+                  widget.tasksPageState.tasksListProvider.searchMode = true;
+                  widget.tasksPageState.tasksListProvider.clear();
+                });
+                widget.tasksPageState.searchTasks(value, context);
+              } else {
+                widget.tasksPageState.tasksListProvider.searchMode = false;
+              }
+            }));
+  }
+
+  Widget getAppBarTitle() {
+    if (isDesktopMode || !widget.tasksPageState.showSearch) {
+      return Row(children: [getProjectField(), getSearchField()]);
+    } else if (widget.tasksPageState.showSearch) {
+      return getSearchField();
+    } else {
+      return getProjectField();
     }
   }
 
