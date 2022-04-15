@@ -163,6 +163,12 @@ class _TasksPageState extends State<TasksPage> {
   Widget renderMessages() {
     if (tasksListProvider.currentTask != null) {
       msgListProvider.taskID = tasksListProvider.currentTask!.ID;
+      if (tasksListProvider.searchMode) {
+        msgListProvider.foundMessageID =
+            tasksListProvider.currentTask!.lastMessageID;
+      } else {
+        msgListProvider.foundMessageID = 0;
+      }
     }
 
     return Expanded(
@@ -771,7 +777,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
 
   Widget getAppBarTitle() {
     if (isDesktopMode || !widget.tasksPageState.showSearch) {
-      return Row(children: [getProjectField(), getSearchField()]);
+      return Row(children: [getSearchField(), getProjectField()]);
     } else if (widget.tasksPageState.showSearch) {
       return getSearchField();
     } else {

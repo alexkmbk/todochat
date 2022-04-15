@@ -45,9 +45,9 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       ItemPositionsListener.create();
 
 // This is what you're looking for!
-  void _scrollDown() {
+  /* void _scrollDown() {
     _scrollController.jumpTo(index: _msgListProvider.items.length - 1);
-  }
+  }*/
 
   /*void _jumpTo(int messageID) {
     if (messageID == 0) return;
@@ -64,6 +64,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     _msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
     _msgListProvider.taskID = widget.task.ID;
     _msgListProvider.foundMessageID = widget.task.lastMessageID;
+    _msgListProvider.scrollController = _scrollController;
     /*_msgListProvider.addListener(() {
       _jumpTo(widget.task.lastMessageID);
     });*/
@@ -163,8 +164,10 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                     bindings: {
                       const SingleActivator(LogicalKeyboardKey.enter,
                           control: false): () {
-                        createMessage(text: _messageInputController.text);
-                        _messageInputController.text = "";
+                        if (_messageInputController.text.isNotEmpty) {
+                          createMessage(text: _messageInputController.text);
+                          _messageInputController.text = "";
+                        }
                       },
                       const SingleActivator(LogicalKeyboardKey.keyV,
                           control: true): () async {
@@ -214,8 +217,10 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                   )),
                   IconButton(
                     onPressed: () {
-                      createMessage(text: _messageInputController.text);
-                      _messageInputController.text = "";
+                      if (_messageInputController.text.isNotEmpty) {
+                        createMessage(text: _messageInputController.text);
+                        _messageInputController.text = "";
+                      }
                     },
                     tooltip: 'New message',
                     icon: const Icon(

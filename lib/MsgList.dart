@@ -18,6 +18,15 @@ class MsgListProvider extends ChangeNotifier {
   bool loading = false;
   int taskID = 0;
   int foundMessageID = 0;
+  ItemScrollController? scrollController;
+
+  void jumpTo(int messageID) {
+    if (messageID == 0) return;
+    var index = items.indexWhere((element) => element.ID == messageID);
+    if (index >= 0 && scrollController != null) {
+      scrollController!.jumpTo(index: index);
+    }
+  }
 
   void clear() {
     items.clear();
@@ -144,15 +153,6 @@ class InifiniteMsgList extends StatefulWidget {
 class InifiniteMsgListState extends State<InifiniteMsgList> {
   late MsgListProvider _msgListProvider;
 
-  void _jumpTo(int messageID) {
-    if (messageID == 0) return;
-    var index =
-        _msgListProvider.items.indexWhere((element) => element.ID == messageID);
-    if (index >= 0) {
-      widget.scrollController.jumpTo(index: index);
-    }
-  }
-
   @override
   void initState() {
     super.initState();
@@ -187,7 +187,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       if (_msgListProvider.foundMessageID > 0 &&
           _msgListProvider.items.isNotEmpty) {
-        _jumpTo(_msgListProvider.foundMessageID);
+        _msgListProvider.jumpTo(_msgListProvider.foundMessageID);
         _msgListProvider.foundMessageID = 0;
       }
     });
