@@ -15,6 +15,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'main.dart';
 import 'dart:convert';
 import 'package:collection/collection.dart';
+import 'highlight_text.dart';
 
 class Task {
   int ID = 0;
@@ -182,10 +183,15 @@ class _TasksPageState extends State<TasksPage> {
     if (isDesktopMode) {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        //mainAxisAlignment: MainAxisAlignment.,
         children: [
           Expanded(flex: 4, child: renderTasks()),
-          const VerticalDivider(),
+          const VerticalDivider(
+            indent: 0.1,
+            endIndent: 0.1,
+            color: Colors.grey,
+          ),
           renderMessages(),
           //Expanded(flex: 6, child: const Text("data")),
 
@@ -463,6 +469,7 @@ class TasksListProvider extends ChangeNotifier {
   DateTime? lastCreation_date;
   bool loading = false;
   bool searchMode = false;
+  List<String> searchHighlightedWords = [];
   Task? currentTask;
 
   void clear() {
@@ -549,6 +556,7 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
     return Column(children: <Widget>[
       Expanded(
           child: ScrollablePositionedList.builder(
+        padding: EdgeInsets.zero,
         itemScrollController: widget.scrollController,
         itemPositionsListener: widget.itemPositionsListener,
         //controller: widget.scrollController,
@@ -638,18 +646,54 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
                   ))));
     } else {
       return Dismissible(
-          key: UniqueKey(),
-          direction: DismissDirection.startToEnd,
-          confirmDismiss: (direction) {
-            return confirmDimissDlg(
-                "Are you sure you wish to delete this item?", context);
-          },
-          onDismissed: (direction) async {
-            if (await inifiniteTaskList.onDeleteFn(task.ID)) {
-              tasksListProvider.deleteItem(task.ID);
-            }
-          },
-          child: Container(
+        key: UniqueKey(),
+        direction: DismissDirection.startToEnd,
+        confirmDismiss: (direction) {
+          return confirmDimissDlg(
+              "Are you sure you wish to delete this item?", context);
+        },
+        onDismissed: (direction) async {
+          if (await inifiniteTaskList.onDeleteFn(task.ID)) {
+            tasksListProvider.deleteItem(task.ID);
+          }
+        },
+        child: Container(
+            height: 70,
+            child: ListTile(
+              //visualDensity: VisualDensity(vertical: 2),
+              //contentPadding: EdgeInsets.only(right: 0.0),
+              //visualDensity: VisualDensity(horizontal: -4, vertical: 2),
+
+              shape: const Border(bottom: BorderSide(color: Colors.grey)),
+              tileColor: tasksListProvider.currentTask == null
+                  ? null
+                  : getTileColor(tasksListProvider.currentTask!.ID == task.ID),
+              onTap: () => inifiniteTaskList.onTap(task),
+              onLongPress: () => inifiniteTaskList.onLongPress(task),
+              title: Row(children: [
+                Checkbox(
+                    fillColor: MaterialStateProperty.all(Colors.green),
+                    value: task.Completed,
+                    onChanged: (value) =>
+                        widget.taskCompletedOnChanged(value, task)),
+                tasksListProvider.searchMode
+                    ? HighlightText(
+                        highlightColor: Colors.red,
+                        text: task.Description,
+                        words: tasksListProvider.searchHighlightedWords,
+                      )
+                    : Text(task.Description, overflow: TextOverflow.ellipsis),
+              ]),
+              subtitle: task.lastMessage.isEmpty
+                  ? null
+                  : tasksListProvider.searchMode
+                      ? HighlightText(
+                          highlightColor: Colors.red,
+                          text: task.lastMessage,
+                          words: tasksListProvider.searchHighlightedWords,
+                        )
+                      : Text(task.lastMessage, overflow: TextOverflow.ellipsis),
+            )), /*Container(
             margin: const EdgeInsets.all(4),
             decoration: BoxDecoration(
                 border: Border.all(
@@ -675,7 +719,8 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
                   task.lastMessage.isEmpty ? null : Text(task.lastMessage),
               trailing: const Icon(Icons.keyboard_arrow_right),
             ),
-          ));
+          )*/
+      );
     }
   }
 }
@@ -766,6 +811,8 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
                 setState(() {
                   widget.tasksPageState.msgListProvider.clear();
                   widget.tasksPageState.tasksListProvider.searchMode = true;
+                  widget.tasksPageState.tasksListProvider
+                      .searchHighlightedWords = getHighlightedWords(value);
                   widget.tasksPageState.tasksListProvider.clear();
                 });
                 widget.tasksPageState.searchTasks(value, context);

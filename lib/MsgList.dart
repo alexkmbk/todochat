@@ -282,17 +282,17 @@ class ChatBubble extends StatelessWidget {
       return DecoratedBox(
         // chat bubble decoration
         decoration: BoxDecoration(
-          color: isCurrentUser ? Colors.blue : Colors.grey[300],
+          color: isCurrentUser
+              ? Color.fromARGB(255, 187, 239, 251)
+              : Colors.grey[300],
           borderRadius: BorderRadius.circular(16),
         ),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: SelectableText(
             message.text,
-            style: Theme.of(context)
-                .textTheme
-                .bodyText1!
-                .copyWith(color: isCurrentUser ? Colors.white : Colors.black87),
+            //style: Theme.of(context).textTheme.bodyText1!
+            //.copyWith(color: isCurrentUser ? Colors.white : Colors.black87),
           ),
         ),
       );

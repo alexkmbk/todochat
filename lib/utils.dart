@@ -11,6 +11,7 @@ import 'package:mime/mime.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart';
+import 'highlight_text.dart';
 
 class WSMessage {
   String command = "";
@@ -214,3 +215,17 @@ void OpenFileInApp(String? filePath) {
     OpenFile.open(filePath);
   }
 }
+
+/*Map<String, HighlightedWord> getHighlightedWords(String? str) {
+  Map<String, HighlightedWord> res = {};
+  if (str == null) {
+    return res;
+  }
+  var words = str.split(' ');
+  words.forEach((word) {
+    res[word] = HighlightedWord(
+        onTap: () {}, textStyle: const TextStyle(color: Colors.green));
+  });
+
+  return res;
+}*/
