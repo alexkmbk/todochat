@@ -285,7 +285,7 @@ class ChatBubble extends StatelessWidget {
           color: isCurrentUser
               ? Color.fromARGB(255, 187, 239, 251)
               : Colors.grey[300],
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -312,7 +312,7 @@ class ChatBubble extends StatelessWidget {
             // chat bubble decoration
             decoration: BoxDecoration(
               color: isCurrentUser ? Colors.blue : Colors.grey[300],
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: GestureDetector(
               onTap: () => onTapOnFileMessage(message, context),

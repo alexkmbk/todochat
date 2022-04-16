@@ -196,6 +196,10 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                             if (data != null && data.text != null) {
                               String text = data.text ?? "";
                               _messageInputController.text = text.trim();
+                              _messageInputController.selection =
+                                  TextSelection.fromPosition(TextPosition(
+                                      offset:
+                                          _messageInputController.text.length));
                             }
                           }
                         }

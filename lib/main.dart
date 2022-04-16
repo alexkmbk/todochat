@@ -8,7 +8,7 @@ import 'utils.dart';
 import 'TasksPage.dart';
 import 'package:provider/provider.dart';
 //import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
+//import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,6 +21,7 @@ Uri serverURI = Uri();
 String sessionID = "";
 int currentUserID = 0;
 bool isDesktopMode = false;
+bool appInitialized = false;
 
 late SharedPreferences settings;
 
@@ -44,13 +45,12 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'ToDo Chat',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-        ),
-        home: const MyHomePage(title: "ToDo Chat"),
-      ),
+          title: 'ToDo Chat',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          home: const MyHomePage(title: "ToDo Chat")),
     );
   }
 }
@@ -80,57 +80,62 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     super.dispose();
     httpClient.close();
+    if (ws != null) {
+      ws?.sink.close();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    if (appInitialized) {
+      return const Scaffold(body: TasksPage());
+    } else {
+      return Scaffold(
         //appBar: AppBar(title: Text(widget.title), leading: MainMenu()),
-        body: RefreshIndicator(
-      onRefresh: _refresh,
-      child: FutureBuilder<bool>(
-        future: initApp(context), // function where you call your api
-        builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-          // AsyncSnapshot<Your object type>
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-                child: Text('Connecting to the server...',
-                    textDirection: TextDirection.ltr));
-          } else {
-            if (snapshot.hasError) {
-              //toast(snapshot.error.toString(), context);
-              return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Spacer(),
-                    Center(
-                        child: IconButton(
-                            onPressed: () => setState(() {}),
-                            icon: const Icon(Icons.refresh))),
-                    const Spacer(),
-                    ElevatedButton(
-                        onPressed: () async {
-                          bool res = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const SettingsPage()),
-                          );
-                          setState(() {});
-                        },
-                        child: const Text("Settings")),
-                  ]);
-            } else if (snapshot.data as bool) {
-              return const TasksPage();
-            } else {
+        body: FutureBuilder<bool>(
+          future: initApp(context), // function where you call your api
+          builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+            // AsyncSnapshot<Your object type>
+            if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
-                  child: Text('Надо вставить код',
+                  child: Text('Connecting to the server...',
                       textDirection: TextDirection.ltr));
+            } else {
+              if (snapshot.hasError) {
+                //toast(snapshot.error.toString(), context);
+                return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Spacer(),
+                      Center(
+                          child: IconButton(
+                              onPressed: () => setState(() {}),
+                              icon: const Icon(Icons.refresh))),
+                      const Spacer(),
+                      ElevatedButton(
+                          onPressed: () async {
+                            bool res = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const SettingsPage()),
+                            );
+                            setState(() {});
+                          },
+                          child: const Text("Settings")),
+                    ]);
+              } else if (snapshot.data as bool) {
+                return const TasksPage();
+              } else {
+                return const Center(
+                    child: Text('Надо вставить код',
+                        textDirection: TextDirection.ltr));
+              }
             }
-          }
-        },
-      ),
-    ));
+          },
+        ),
+      );
+    }
 
     /*Scaffold(
       appBar: AppBar(
@@ -163,6 +168,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<bool> initApp(BuildContext context) async {
+    if (appInitialized) return true;
     bool res;
 
     settings = await SharedPreferences.getInstance();
@@ -224,6 +230,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (physicalPixelWidth > 1000) {
       isDesktopMode = true;
     }
+    appInitialized = true;
     return true;
   }
 }

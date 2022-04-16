@@ -21,6 +21,7 @@ Widget GetTextField(
       padding: const EdgeInsets.all(8.0),
       child: TextFormField(
         decoration: InputDecoration(
+          isDense: true,
           filled: fillColor == null ? false : true,
           fillColor: fillColor,
           labelText: labelText,

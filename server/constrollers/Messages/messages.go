@@ -26,10 +26,9 @@ import (
 	. "todochat_server/App"
 
 	. "todochat_server/DB"
+	WS "todochat_server/constrollers/WebSocked"
 
 	Tasks "todochat_server/constrollers/Tasks"
-
-	WS "todochat_server/constrollers/WebSocked"
 )
 
 func GetFile(w http.ResponseWriter, r *http.Request) {
@@ -325,6 +324,10 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 	message.ProjectID = task.ProjectID
 	DB.Create(&message)
 	WS.SendWSMessage(&message)
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(message)
+
 }
 
 func getItemByID(ID int) (*Message, bool) {

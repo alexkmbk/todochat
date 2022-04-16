@@ -113,8 +113,8 @@ String getUriFullPath(Uri? uri) {
 
   String res = uri.scheme.isNotEmpty ? uri.scheme + "://" : "";
   res += uri.host;
-  res += uri.port == 0 ? "" : uri.port.toString();
-  res += "/" + uri.path;
+  res += uri.port == 0 ? "" : ":" + uri.port.toString();
+  res += res.isNotEmpty && uri.path.isNotEmpty ? "/" + uri.path : "";
   res += toUrlParams(uri.queryParameters);
   return res;
 }

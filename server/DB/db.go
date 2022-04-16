@@ -42,11 +42,15 @@ func InitDB() {
 
 	var err error
 	DBPAth := filepath.Join(GetCurrentDir(), "gorm.db")
-	DB, err = gorm.Open(sqlite.Open(DBPAth+"?_pragma=journal_mode(MEMORY)"), &gorm.Config{})
+	DB, err = gorm.Open(sqlite.Open("file:///"+DBPAth+"?cache=shared&_pragma=journal_mode(MEMORY)&_pragma=busy_timeout(20000)"), &gorm.Config{})
 	if err != nil {
 		log.Println(err)
 		return
 	}
+	SQLDB, _ := DB.DB()
+	SQLDB.SetMaxIdleConns(10)
+	SQLDB.SetMaxOpenConns(100)
+
 	//defer db.Close()
 
 	//db.DropTableIfExist = //.DropTableIfExist(&TodoItemModel{})

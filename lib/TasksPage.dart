@@ -790,7 +790,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
   Widget getSearchField() {
     return Flexible(
         fit: FlexFit.tight,
-        //flex: 4,
+        flex: 4,
         child: GetTextField(
             controller: searchController,
             hintText: "Search",
@@ -824,7 +824,14 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
 
   Widget getAppBarTitle() {
     if (isDesktopMode || !widget.tasksPageState.showSearch) {
-      return Row(children: [getSearchField(), getProjectField()]);
+      return Row(children: [
+        getSearchField(),
+        const Text(
+          "Project: ",
+          style: TextStyle(fontSize: 15),
+        ),
+        getProjectField()
+      ]);
     } else if (widget.tasksPageState.showSearch) {
       return getSearchField();
     } else {

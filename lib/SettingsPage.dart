@@ -57,15 +57,13 @@ class _SettingsPageState extends State<SettingsPage> {
                         validator: (value) =>
                             validateEmpty(value, 'Server address'),
                       )),
-                      GetConnectionIcon()
+                      getConnectionIcon()
                     ]),
                     ElevatedButton(
                         child: const Text('Save and close'),
-                        onPressed: checkingConnection
-                            ? null
-                            : () async {
-                                saveAndClose();
-                              }),
+                        onPressed: () {
+                          saveAndClose();
+                        }),
                   ],
                 ))));
   }
@@ -78,6 +76,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> saveAndClose() async {
+    if (checkingConnection) return;
     var serverURItemp = parseURL(serverAddressController.text);
 
     if (serverURItemp == null) {
@@ -106,8 +105,14 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<bool> checkConnection(Uri uri) async {
     checkingConnection = true;
 
-    var uriHealthz = Uri(
-        scheme: uri.scheme, host: uri.host, port: uri.port, path: "healthz");
+    var uriHealthz;
+
+    if (uri.port != 0 && uri.port != 80) {
+      uriHealthz = Uri(
+          scheme: uri.scheme, host: uri.host, port: uri.port, path: "healthz");
+    } else {
+      uriHealthz = Uri(scheme: uri.scheme, host: uri.host, path: "healthz");
+    }
     http.Response response;
     try {
       response = await httpClient.get(uriHealthz);
@@ -143,7 +148,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return res;
   }
 
-  Widget GetConnectionIcon() {
+  Widget getConnectionIcon() {
     if (checkingConnection) {
       return const CircularProgressIndicator();
     } else if (connected) {
