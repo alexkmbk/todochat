@@ -25,7 +25,15 @@ func main() {
 
 	DB.InitDB()
 
-	http.ListenAndServe(":80", GetRoutesHandler())
+	var err error
+	if len(os.Args) > 1 {
+		err = http.ListenAndServe(":"+os.Args[1], GetRoutesHandler())
+	} else {
+		err = http.ListenAndServe(":80", GetRoutesHandler())
+	}
+	if err != nil {
+		println(err.Error())
+	}
 	//http.ListenAndServeTLS(":8000", "./keys/localhost.crt", "./keys/localhost.key", GetRoutesHandler())
 
 }
