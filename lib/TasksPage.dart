@@ -97,7 +97,7 @@ class _TasksPageState extends State<TasksPage> {
 
     tasksListProvider.projectID = settings.getInt("projectID");
 
-    itemPositionsListener.itemPositions.addListener(() {
+    /*itemPositionsListener.itemPositions.addListener(() {
       if (!tasksListProvider.loading &&
           !tasksListProvider.searchMode &&
           (itemPositionsListener.itemPositions.value.isEmpty ||
@@ -105,7 +105,7 @@ class _TasksPageState extends State<TasksPage> {
                   tasksListProvider.items.length - 10))) {
         requestTasks(tasksListProvider, context);
       }
-    });
+    });*/
 
     requestTasks(tasksListProvider, context);
   }
@@ -147,14 +147,22 @@ class _TasksPageState extends State<TasksPage> {
       children: [
         Consumer<TasksListProvider>(builder: (context, provider, child) {
           return Expanded(
-              child: InifiniteTaskList(
-            scrollController: _scrollController,
-            itemPositionsListener: itemPositionsListener,
-            onDeleteFn: deleteTask,
-            onAddFn: onAddTask,
-            onTap: onTap,
-            onLongPress: onLongPress,
-            taskCompletedOnChanged: taskCompletedOnChanged,
+              child: NotificationListener<ScrollUpdateNotification>(
+            child: InifiniteTaskList(
+                scrollController: _scrollController,
+                itemPositionsListener: itemPositionsListener,
+                onDeleteFn: deleteTask,
+                onAddFn: onAddTask),
+            onNotification: (notification) {
+              if (!tasksListProvider.loading &&
+                  !tasksListProvider.searchMode &&
+                  (itemPositionsListener.itemPositions.value.isEmpty ||
+                      (itemPositionsListener.itemPositions.value.last.index >=
+                          tasksListProvider.items.length - 10))) {
+                requestTasks(tasksListProvider, context);
+              }
+              return true;
+            },
           ));
         }),
       ],
@@ -209,13 +217,6 @@ class _TasksPageState extends State<TasksPage> {
     }
   }
 
-  void OpenTask(BuildContext context, Task task) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => TaskMessagesPage(task: task)),
-    );
-  }
-
   Future<Task?> createTask(String Description) async {
     if (sessionID == "") {
       return null;
@@ -256,28 +257,6 @@ class _TasksPageState extends State<TasksPage> {
 
     tasksListProvider.addItem(task);
     return true;
-  }
-
-  Future<void> onTap(Task task) async {
-    if (isDesktopMode) {
-      setState(() {
-        msgListProvider.clear();
-        tasksListProvider.currentTask = task;
-      });
-    } else {
-      OpenTask(context, task);
-    }
-  }
-
-  void onLongPress(Task task) {
-    setState(() {
-      var foundTask = tasksListProvider.items
-          .firstWhereOrNull((element) => element.ID == task.ID);
-      if (foundTask != null) {
-        foundTask.editMode = true;
-        foundTask.isNewItem = false;
-      }
-    });
   }
 
   Future<bool> deleteTask(int taskID) async {
@@ -324,7 +303,7 @@ class _TasksPageState extends State<TasksPage> {
     try {
       response = await httpClient.get(url);
     } catch (e) {
-      setState(() {});
+      tasksListProvider.refresh();
       return;
     }
 
@@ -334,7 +313,7 @@ class _TasksPageState extends State<TasksPage> {
       var tasks = data["tasks"];
 
       if (tasks == null) {
-        setState(() {});
+        tasksListProvider.refresh();
         return;
       }
 
@@ -364,7 +343,7 @@ class _TasksPageState extends State<TasksPage> {
     if (res.isNotEmpty) {
       tasksListProvider.items = [...tasksListProvider.items, ...res];
     }
-    setState(() {});
+    tasksListProvider.refresh();
   }
 
   Future<void> requestTasks(
@@ -429,20 +408,8 @@ class _TasksPageState extends State<TasksPage> {
     tasksListProvider.loading = false;
 
     if (res.isNotEmpty) {
-      setState(
-          () => tasksListProvider.items = [...tasksListProvider.items, ...res]);
-    }
-  }
-
-  void taskCompletedOnChanged(bool? value, Task task) async {
-    if (value == null) return;
-
-    var res = await updateTask(Task.from(task)..Completed = value);
-
-    if (res) {
-      setState(() {
-        task.Completed = value;
-      });
+      tasksListProvider.items = [...tasksListProvider.items, ...res];
+      tasksListProvider.refresh();
     }
   }
 
@@ -471,6 +438,10 @@ class TasksListProvider extends ChangeNotifier {
   bool searchMode = false;
   List<String> searchHighlightedWords = [];
   Task? currentTask;
+
+  void refresh() {
+    notifyListeners();
+  }
 
   void clear() {
     items.clear();
@@ -517,20 +488,13 @@ class InifiniteTaskList extends StatefulWidget {
   final ItemScrollController scrollController;
   final OnAddFn onAddFn;
   final OnDeleteFn onDeleteFn;
-  final Function taskCompletedOnChanged;
-
-  final Future<void> Function(Task task) onTap;
-  final void Function(Task task) onLongPress;
 
   const InifiniteTaskList(
       {Key? key,
       required this.scrollController,
       required this.itemPositionsListener,
-      required this.onTap,
       required this.onAddFn,
-      required this.onDeleteFn,
-      required this.taskCompletedOnChanged,
-      required this.onLongPress})
+      required this.onDeleteFn})
       : super(key: key);
 
   @override
@@ -541,12 +505,14 @@ class InifiniteTaskList extends StatefulWidget {
 
 class InifiniteTaskListState extends State<InifiniteTaskList> {
   late TasksListProvider _taskListProvider;
+  late MsgListProvider _msgListProvider;
   bool loading = false;
 
   @override
   void initState() {
     super.initState();
     _taskListProvider = Provider.of<TasksListProvider>(context, listen: false);
+    _msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
   }
 
 // This is what you're looking for!
@@ -561,8 +527,12 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
         itemPositionsListener: widget.itemPositionsListener,
         //controller: widget.scrollController,
         itemBuilder: (context, index) {
-          return buildListRow(context, index, _taskListProvider.items[index],
-              _taskListProvider, widget);
+          return TaskListTile(
+              index: index,
+              task: _taskListProvider.items[index],
+              tasksListProvider: _taskListProvider,
+              inifiniteTaskList: widget,
+              msgListProvider: _msgListProvider);
           /*if (index < _taskListProvider.items.length) {
             return buildListRow(context, index, _taskListProvider.items[index],
                 _taskListProvider, widget);
@@ -573,6 +543,33 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
       )),
     ]);
   }
+}
+
+class TaskListTile extends StatefulWidget {
+  final int index;
+  final Task task;
+  final TasksListProvider tasksListProvider;
+  final InifiniteTaskList inifiniteTaskList;
+  final MsgListProvider msgListProvider;
+
+  const TaskListTile(
+      {Key? key,
+      required this.index,
+      required this.task,
+      required this.tasksListProvider,
+      required this.inifiniteTaskList,
+      required this.msgListProvider})
+      : super(key: key);
+
+  @override
+  State<TaskListTile> createState() => _TaskListTileState();
+}
+
+class _TaskListTileState extends State<TaskListTile> {
+  @override
+  Widget build(BuildContext context) {
+    return buildListRow(context);
+  }
 
   Color? getTileColor(bool selected) {
     if (selected) {
@@ -581,69 +578,57 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
     return null;
   }
 
-  Widget buildListRow(
-      BuildContext context,
-      index,
-      Task task,
-      TasksListProvider tasksListProvider,
-      InifiniteTaskList inifiniteTaskList) {
-    if (task.editMode) {
-      return Container(
-          margin: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.blue,
-                width: 2,
-              ),
-              borderRadius: BorderRadius.circular(10)),
-          child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: CallbackShortcuts(
-                  bindings: {
-                    const SingleActivator(LogicalKeyboardKey.escape,
-                        control: false): () {
-                      FocusScope.of(context).unfocus();
-                    },
-                  },
-                  child: Focus(
-                    onFocusChange: (hasFocus) {
-                      if (!hasFocus) {
-                        if (task.isNewItem) {
-                          tasksListProvider.deleteEditorItem();
+  Widget buildListRow(BuildContext context) {
+    if (widget.task.editMode) {
+      return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CallbackShortcuts(
+              bindings: {
+                const SingleActivator(LogicalKeyboardKey.escape,
+                    control: false): () {
+                  FocusScope.of(context).unfocus();
+                },
+              },
+              child: Focus(
+                onFocusChange: (hasFocus) {
+                  if (!hasFocus) {
+                    if (widget.task.isNewItem) {
+                      widget.tasksListProvider.deleteEditorItem();
+                    } else {
+                      setState(() {
+                        widget.task.editMode = false;
+                      });
+                    }
+                  }
+                },
+                child: TextField(
+                    controller: TextEditingController()
+                      ..text = widget.task.Description,
+                    decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText:
+                            widget.task.isNewItem ? "New task name" : null),
+                    autofocus: true,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (value) async {
+                      if (value.isNotEmpty) {
+                        if (widget.task.isNewItem) {
+                          await widget.inifiniteTaskList.onAddFn(value);
+                          widget.tasksListProvider.deleteEditorItem();
                         } else {
-                          setState(() {
-                            task.editMode = false;
-                          });
+                          var tempTask = Task.from(widget.task);
+                          tempTask.Description = value;
+                          var res = await updateTask(tempTask);
+                          if (res) {
+                            setState(() {
+                              widget.task.Description = tempTask.Description;
+                              widget.task.editMode = false;
+                            });
+                          }
                         }
                       }
-                    },
-                    child: TextField(
-                        controller: TextEditingController()
-                          ..text = task.Description,
-                        decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: task.isNewItem ? "New task name" : null),
-                        autofocus: true,
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: (value) async {
-                          if (value.isNotEmpty) {
-                            if (task.isNewItem) {
-                              await inifiniteTaskList.onAddFn(value);
-                              tasksListProvider.deleteEditorItem();
-                            } else {
-                              var tempTask = Task.from(task);
-                              tempTask.Description = value;
-                              var res = await updateTask(tempTask);
-                              if (res) {
-                                setState(() {
-                                  task.Description = tempTask.Description;
-                                  task.editMode = false;
-                                });
-                              }
-                            }
-                          }
-                        }),
-                  ))));
+                    }),
+              )));
     } else {
       return Dismissible(
         key: UniqueKey(),
@@ -653,74 +638,110 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
               "Are you sure you wish to delete this item?", context);
         },
         onDismissed: (direction) async {
-          if (await inifiniteTaskList.onDeleteFn(task.ID)) {
-            tasksListProvider.deleteItem(task.ID);
+          if (await widget.inifiniteTaskList.onDeleteFn(widget.task.ID)) {
+            widget.tasksListProvider.deleteItem(widget.task.ID);
           }
         },
-        child: Container(
+        child: SizedBox(
             height: 70,
             child: ListTile(
-              //visualDensity: VisualDensity(vertical: 2),
-              //contentPadding: EdgeInsets.only(right: 0.0),
-              //visualDensity: VisualDensity(horizontal: -4, vertical: 2),
-
               shape: const Border(bottom: BorderSide(color: Colors.grey)),
-              tileColor: tasksListProvider.currentTask == null
+              tileColor: widget.tasksListProvider.currentTask == null
                   ? null
-                  : getTileColor(tasksListProvider.currentTask!.ID == task.ID),
-              onTap: () => inifiniteTaskList.onTap(task),
-              onLongPress: () => inifiniteTaskList.onLongPress(task),
+                  : getTileColor(widget.tasksListProvider.currentTask!.ID ==
+                      widget.task.ID),
+              onTap: () => onTap(widget.task),
+              onLongPress: () => onLongPress(widget.task),
               title: Row(children: [
                 Checkbox(
                     fillColor: MaterialStateProperty.all(Colors.green),
-                    value: task.Completed,
+                    value: widget.task.Completed,
                     onChanged: (value) =>
-                        widget.taskCompletedOnChanged(value, task)),
-                tasksListProvider.searchMode
+                        taskCompletedOnChanged(value, widget.task)),
+                widget.tasksListProvider.searchMode
                     ? HighlightText(
                         highlightColor: Colors.red,
-                        text: task.Description,
-                        words: tasksListProvider.searchHighlightedWords,
+                        text: widget.task.Description,
+                        words: widget.tasksListProvider.searchHighlightedWords,
                       )
-                    : Text(task.Description, overflow: TextOverflow.ellipsis),
+                    : Flexible(
+                        child: Text(widget.task.Description,
+                            overflow: TextOverflow.ellipsis)),
               ]),
-              subtitle: task.lastMessage.isEmpty
+              subtitle: widget.task.lastMessage.isEmpty
                   ? null
-                  : tasksListProvider.searchMode
+                  : widget.tasksListProvider.searchMode
                       ? HighlightText(
                           highlightColor: Colors.red,
-                          text: task.lastMessage,
-                          words: tasksListProvider.searchHighlightedWords,
+                          text: widget.task.lastMessage.replaceAll("\n", " "),
+                          words:
+                              widget.tasksListProvider.searchHighlightedWords,
                         )
-                      : Text(task.lastMessage, overflow: TextOverflow.ellipsis),
-            )), /*Container(
-            margin: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.blue,
-                  width: 2,
-                ),
-                borderRadius: BorderRadius.circular(10)),
-            child: ListTile(
-              tileColor: tasksListProvider.currentTask == null
-                  ? null
-                  : getTileColor(tasksListProvider.currentTask!.ID == task.ID),
-              onTap: () => inifiniteTaskList.onTap(task),
-              onLongPress: () => inifiniteTaskList.onLongPress(task),
-              title: Row(children: [
-                Checkbox(
-                    fillColor: MaterialStateProperty.all(Colors.green),
-                    value: task.Completed,
-                    onChanged: (value) =>
-                        widget.taskCompletedOnChanged(value, task)),
-                Text(task.Description)
-              ]),
-              subtitle:
-                  task.lastMessage.isEmpty ? null : Text(task.lastMessage),
-              trailing: const Icon(Icons.keyboard_arrow_right),
-            ),
-          )*/
+                      : Text(widget.task.lastMessage.replaceAll("\n", " "),
+                          overflow: TextOverflow.ellipsis),
+            )),
       );
+    }
+  }
+
+  void openTask(BuildContext context, Task task) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TaskMessagesPage(task: task)),
+    );
+  }
+
+  Future<void> onTap(Task task) async {
+    if (isDesktopMode) {
+      if (sessionID == "" || !mounted) {
+        return;
+      }
+      widget.msgListProvider.clear(true);
+      widget.tasksListProvider.currentTask = task;
+      widget.tasksListProvider.refresh();
+      widget.msgListProvider.taskID = task.ID;
+      widget.msgListProvider.loading = true;
+      ws!.sink.add(jsonEncode({
+        "sessionID": sessionID,
+        "command": "getMessages",
+        "lastID": widget.msgListProvider.lastID.toString(),
+        "messageIDPosition": task.lastMessageID.toString(),
+        "limit": "30",
+        "taskID": widget.msgListProvider.taskID.toString(),
+      }));
+      /*setState(() {
+        msgListProvider.clear();
+        tasksListProvider.currentTask = task;
+      });*/
+    } else {
+      openTask(context, task);
+    }
+  }
+
+  void onLongPress(Task task) {
+    setState(() {
+      var foundTask = widget.tasksListProvider.items
+          .firstWhereOrNull((element) => element.ID == task.ID);
+      if (foundTask != null) {
+        foundTask.editMode = true;
+        foundTask.isNewItem = false;
+      }
+    });
+  }
+
+  void taskCompletedOnChanged(bool? value, Task task) async {
+    if (value == null) return;
+
+    setState(() {
+      task.Completed = value;
+    });
+
+    var res = await updateTask(Task.from(task)..Completed = value);
+
+    if (!res) {
+      setState(() {
+        task.Completed = !value;
+      });
     }
   }
 }
@@ -802,19 +823,19 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
               widget.tasksPageState.tasksListProvider.clear();
               widget.tasksPageState.tasksListProvider.searchMode = false;
               widget.tasksPageState.showSearch = isDesktopMode;
-              setState(() {});
+              widget.tasksPageState.tasksListProvider.refresh();
               widget.tasksPageState.requestTasks(
                   widget.tasksPageState.tasksListProvider, context);
             },
             onFieldSubmitted: (value) async {
               if (value.isNotEmpty) {
-                setState(() {
-                  widget.tasksPageState.msgListProvider.clear();
-                  widget.tasksPageState.tasksListProvider.searchMode = true;
-                  widget.tasksPageState.tasksListProvider
-                      .searchHighlightedWords = getHighlightedWords(value);
-                  widget.tasksPageState.tasksListProvider.clear();
-                });
+                widget.tasksPageState.msgListProvider.clear();
+                widget.tasksPageState.tasksListProvider.searchMode = true;
+                widget.tasksPageState.tasksListProvider.searchHighlightedWords =
+                    getHighlightedWords(value);
+                widget.tasksPageState.tasksListProvider.clear();
+                widget.tasksPageState.tasksListProvider.refresh();
+
                 widget.tasksPageState.searchTasks(value, context);
               } else {
                 widget.tasksPageState.tasksListProvider.searchMode = false;

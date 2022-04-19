@@ -28,12 +28,19 @@ class MsgListProvider extends ChangeNotifier {
     }
   }
 
-  void clear() {
+  void refresh() {
+    notifyListeners();
+  }
+
+  void clear([bool refresh = false]) {
     items.clear();
     offset = 0;
     lastID = 0;
     //taskID = 0;
     loading = false;
+    if (refresh) {
+      this.refresh();
+    }
   }
 
   void addItems(dynamic data) {
@@ -46,8 +53,9 @@ class MsgListProvider extends ChangeNotifier {
     loading = false;
     if (data.length > 0) {
       lastID = data[data.length - 1]["ID"];
-      notifyListeners();
+      //notifyListeners();
     }
+    notifyListeners();
   }
 
   void addItem(Message message) {
@@ -83,7 +91,7 @@ class Message {
   bool isImage = false;
 
   Message(
-      {required this.task,
+      {required this.taskID,
       this.text = "",
       this.created_at,
       this.ID = 0,
@@ -96,7 +104,7 @@ class Message {
   Map<String, dynamic> toJson() {
     return {
       'ID': ID,
-      'taskID': task?.ID,
+      'taskID': taskID == 0 ? task?.ID : taskID,
       'projectID': projectID,
       'created_at': created_at,
       'text': text,
@@ -145,8 +153,7 @@ class InifiniteMsgList extends StatefulWidget {
 
   @override
   InifiniteMsgListState createState() {
-    InifiniteMsgListState state = InifiniteMsgListState();
-    return state;
+    return InifiniteMsgListState();
   }
 }
 
@@ -201,9 +208,6 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
         itemPositionsListener: widget.itemPositionsListener,
         itemCount: _msgListProvider.items.length,
         itemBuilder: (context, index) {
-          if (index < 0) {
-            return Text("index < 0");
-          }
           var item = _msgListProvider.items[index];
 
           return ChatBubble(

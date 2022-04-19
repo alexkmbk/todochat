@@ -39,8 +39,8 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
 
   final _messageInputController = TextEditingController();
 
-  //final ScrollController _scrollController = ScrollController();
-  final ItemScrollController _scrollController = ItemScrollController();
+  final ScrollController scrollController = ScrollController();
+  final ItemScrollController itemsScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
 
@@ -64,7 +64,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     _msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
     _msgListProvider.taskID = widget.task.ID;
     _msgListProvider.foundMessageID = widget.task.lastMessageID;
-    _msgListProvider.scrollController = _scrollController;
+    _msgListProvider.scrollController = itemsScrollController;
     /*_msgListProvider.addListener(() {
       _jumpTo(widget.task.lastMessageID);
     });*/
@@ -86,14 +86,14 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       }
     });*/
 
-    itemPositionsListener.itemPositions.addListener(() {
+    /*itemPositionsListener.itemPositions.addListener(() {
       if (!_msgListProvider.loading &&
           (itemPositionsListener.itemPositions.value.isEmpty ||
               (itemPositionsListener.itemPositions.value.last.index >=
                   _msgListProvider.items.length - 10))) {
         requestMessages();
       }
-    });
+    });*/
 
     /*document.onPaste.listen((ClipboardEvent e) {
       var blob = e.clipboardData?.items?[0].getAsFile();
@@ -145,11 +145,23 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                   child: Text(widget.task.Description),
                 )),*/
             Consumer<MsgListProvider>(builder: (context, provider, child) {
-              return InifiniteMsgList(
-                  scrollController: _scrollController,
-                  itemPositionsListener: itemPositionsListener,
-                  onDelete: deleteMesage,
-                  getFile: getFile);
+              return NotificationListener<ScrollUpdateNotification>(
+                child: InifiniteMsgList(
+                    scrollController: itemsScrollController,
+                    itemPositionsListener: itemPositionsListener,
+                    onDelete: deleteMesage,
+                    getFile: getFile),
+                onNotification: (notification) {
+                  if (!_msgListProvider.loading &&
+                      (itemPositionsListener.itemPositions.value.isEmpty ||
+                          (itemPositionsListener
+                                  .itemPositions.value.last.index >=
+                              _msgListProvider.items.length - 10))) {
+                    requestMessages();
+                  }
+                  return true;
+                },
+              );
             }),
             Container(
                 decoration: const BoxDecoration(
@@ -326,7 +338,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     request.headers["content-type"] = "application/json; charset=utf-8";
 
     Message message = Message(
-        task: widget.task,
+        taskID: _msgListProvider.taskID,
         text: text,
         fileName: path.basename(fileName),
         isImage: isImageFile(fileName));
@@ -347,75 +359,6 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       return true;
     }
     return false;
-  }
-
-  Future<void> requestMessages_() async {
-    List<Message> res = [];
-
-    if (sessionID == "" || !mounted) {
-      return;
-    }
-
-    /* Map<String, String> headers = Map<String, String>();
-    headers["sessionID"] = sessionID;
-    //headers["offset"] = _msgListProvider.offset.toString();
-    headers["lastID"] = _msgListProvider.lastID.toString();
-    headers["limit"] = "30";
-    headers["taskID"] = widget.task.ID.toString();
-    headers["content-type"] = "application/json; charset=utf-8";*/
-
-    _msgListProvider.loading = true;
-
-    var response;
-    Stopwatch stopwatch = Stopwatch()..start();
-    var client = HttpClient();
-
-    MultipartRequest request =
-        MultipartRequest('GET', Uri.http(serverURI.authority, '/messages'));
-
-    request.headers["sessionID"] = sessionID;
-    request.headers["lastID"] = _msgListProvider.lastID.toString();
-    request.headers["limit"] = "30";
-    request.headers["taskID"] = widget.task.ID.toString();
-
-    request.headers["content-type"] = "application/json; charset=utf-8";
-
-    var streamedResponse = await request.send();
-
-    /*try {
-      response =
-          await httpClient.get(Uri.http(server, '/messages'), headers: headers);
-    } catch (e) {
-      return;
-    }*/
-
-    if (streamedResponse.statusCode == 200) {
-      var response = await Response.fromStream(streamedResponse);
-      var a = 1; // it is just a binary data, not a list of files
-      toast('doSomething() executed in ${stopwatch.elapsed.inMilliseconds}',
-          context);
-    }
-
-    /*if (response.statusCode == 200) {
-      
-      var data = jsonDecode(response.body);
-
-      _msgListProvider.offset = _msgListProvider.offset + data.length;
-
-      for (var e in data) {
-        res.add(Message.fromJson(e));
-      }
-      if (data.length > 0)
-        _msgListProvider.lastID = data[data.length - 1]["ID"];
-    }*/
-
-    _msgListProvider.loading = false;
-
-    if (res.isEmpty) {
-      return;
-    }
-    setState(
-        () => _msgListProvider.items = [..._msgListProvider.items, ...res]);
   }
 
   Future<bool> deleteMesage(int messageID) async {

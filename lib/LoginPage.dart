@@ -8,6 +8,7 @@ import 'dart:convert' as convert;
 import 'package:crypto/crypto.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import 'SettingsPage.dart';
 import 'customWidgets.dart';
 import 'main.dart';
 import 'utils.dart';
@@ -51,7 +52,8 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
         body: registrationMode
             ? showRegistrationPage()
-            : showLoginPage()); /*Column(
+            : showLoginPage(
+                context)); /*Column(
       children: [
         ElevatedButton(onPressed: ExitApp, child: Text("Exit")),
         registrationMode ? showRegistrationPage() : showLoginPage()
@@ -81,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
     return false;
   }
 
-  Widget showLoginPage() {
+  Widget showLoginPage(BuildContext context) {
     return Scaffold(
         body: Form(
             onWillPop: () async => false,
@@ -100,22 +102,34 @@ class _LoginPageState extends State<LoginPage> {
                   hintText: 'Password',
                   obscureText: true,
                 ),
-                Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                        child: const Text("Registration"),
-                        onPressed: () {
-                          setState(() {
-                            registrationMode = true;
-                          });
-                        })),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                          child: const Text("Settings"),
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (context) => const SettingsPage());
+                            /*MaterialPageRoute(
+                              builder: (context) => const SettingsPage());*/
+                          }),
+                      TextButton(
+                          child: const Text("Registration"),
+                          onPressed: () {
+                            setState(() {
+                              registrationMode = true;
+                            });
+                          })
+                    ]),
                 ElevatedButton(
                     child: const Text('Login'),
                     onPressed: () async {
                       if (_formKey.currentState!.validate() &&
                           await login(
                               userName: userNameController.text,
-                              password: passwordController.text)) {
+                              password: passwordController.text,
+                              context: context)) {
                         Navigator.pop(context, true);
                       }
                     }),
@@ -175,7 +189,10 @@ Future<void> openLoginPage(BuildContext context) async {
   );
 }
 
-Future<bool> login({String? userName = "", String? password = ""}) async {
+Future<bool> login(
+    {String? userName = "",
+    String? password = "",
+    BuildContext? context}) async {
   if (userName == null || userName.isEmpty) {
     const storage = FlutterSecureStorage();
     userName = await storage.read(key: "userName");
@@ -189,11 +206,9 @@ Future<bool> login({String? userName = "", String? password = ""}) async {
   var bytes = utf8.encode(password); // data being hashed
   String passwordHash = sha256.convert(bytes).toString();
 
-  var url = setUriProperty(serverURI, path: "login");
-
   http.Response response;
   try {
-    response = await httpClient.post(url,
+    response = await httpClient.post(setUriProperty(serverURI, path: "login"),
         body: jsonEncode({"UserName": userName, "passwordHash": passwordHash}));
   } catch (e) {
     return Future.error(e.toString());
@@ -215,6 +230,10 @@ Future<bool> login({String? userName = "", String? password = ""}) async {
       print('Number of books about http: $itemCount.');
     } else {
       print('Request failed with status: ${response.statusCode}.');*/
+  } else if (response.statusCode == 404) {
+    if (context != null) {
+      toast("Couldn't connect to the server", context);
+    }
   }
   /*var client = HttpClient();
     try {
