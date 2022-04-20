@@ -580,6 +580,8 @@ class _TaskListTileState extends State<TaskListTile> {
 
   Widget buildListRow(BuildContext context) {
     if (widget.task.editMode) {
+      var textEditingController =
+          TextEditingController(text: widget.task.Description);
       return Card(
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8.0))),
@@ -591,6 +593,14 @@ class _TaskListTileState extends State<TaskListTile> {
                         control: false): () {
                       FocusScope.of(context).unfocus();
                     },
+                    const SingleActivator(LogicalKeyboardKey.enter,
+                        control: true): () {
+                      textEditingController.text =
+                          textEditingController.text + '\n';
+                      textEditingController.selection =
+                          TextSelection.fromPosition(TextPosition(
+                              offset: textEditingController.text.length));
+                    }
                   },
                   child: Focus(
                     onFocusChange: (hasFocus) {
@@ -604,21 +614,10 @@ class _TaskListTileState extends State<TaskListTile> {
                         }
                       }
                     },
-                    child: CallbackShortcuts(
-                    bindings: {
-                      const SingleActivator(LogicalKeyboardKey.enter,
-                          control: false): () {
-                             TextEditingControllerHelper.insertText(controller, '\n');
-                        if (_messageInputController.text.isNotEmpty) {
-                          createMessage(text: _messageInputController.text);
-                          _messageInputController.text = "";
-                        }
-                      }},
-                      child: TextField(
+                    child: TextField(
                         keyboardType: TextInputType.multiline,
                         maxLines: 10,
-                        controller: TextEditingController()
-                          ..text = widget.task.Description,
+                        controller: textEditingController,
                         decoration: InputDecoration(
                             border: InputBorder.none,
                             hintText:
