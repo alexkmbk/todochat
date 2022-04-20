@@ -216,6 +216,20 @@ void OpenFileInApp(String? filePath) {
   }
 }
 
+String getImageURLFromHTML(String html) {
+  final regexp = RegExp(r'(?<=\bimg src=")[^"]*');
+  final match = regexp.firstMatch(html);
+  if (match != null) {
+    final matchedText = match.group(0);
+    return matchedText ?? "";
+  }
+  return "";
+}
+
+bool isWeb() {
+  return kIsWeb;
+}
+
 /*Map<String, HighlightedWord> getHighlightedWords(String? str) {
   Map<String, HighlightedWord> res = {};
   if (str == null) {

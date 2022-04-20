@@ -194,9 +194,11 @@ Future<bool> login(
     String? password = "",
     BuildContext? context}) async {
   if (userName == null || userName.isEmpty) {
-    const storage = FlutterSecureStorage();
-    userName = await storage.read(key: "userName");
-    password = await storage.read(key: "password");
+    if (serverURI.scheme != "http" || !isWeb()) {
+      const storage = FlutterSecureStorage();
+      userName = await storage.read(key: "userName");
+      password = await storage.read(key: "password");
+    }
   }
 
   if (userName == null || userName.isEmpty || password == null) {
@@ -221,9 +223,11 @@ Future<bool> login(
     currentUserID = data["UserID"];
     httpClient.defaultHeaders = {"sessionID": sessionID};
 
-    const storage = FlutterSecureStorage();
-    await storage.write(key: "userName", value: userName);
-    await storage.write(key: "password", value: password);
+    if (serverURI.scheme != "http" || !isWeb()) {
+      const storage = FlutterSecureStorage();
+      await storage.write(key: "userName", value: userName);
+      await storage.write(key: "password", value: password);
+    }
 
     return true;
     /*var itemCount = jsonResponse['totalItems'];

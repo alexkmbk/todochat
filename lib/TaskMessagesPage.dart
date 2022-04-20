@@ -9,7 +9,7 @@ import 'utils.dart';
 import 'package:provider/provider.dart';
 import 'MsgList.dart';
 import 'main.dart';
-import 'dart:io';
+//import 'dart:io';
 import 'dart:convert';
 import 'TasksPage.dart';
 import 'package:file_picker/file_picker.dart';
@@ -205,13 +205,35 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                             ClipboardData? data =
                                 await Clipboard.getData('text/plain');
 
-                            if (data != null && data.text != null) {
+                            if (data != null &&
+                                data.text != null &&
+                                data.text!.trim().isNotEmpty) {
                               String text = data.text ?? "";
                               _messageInputController.text = text.trim();
                               _messageInputController.selection =
                                   TextSelection.fromPosition(TextPosition(
                                       offset:
                                           _messageInputController.text.length));
+                            } else {
+                              var html = await Pasteboard.html;
+                              if (html != null && html.isNotEmpty) {
+                                String imageURL = getImageURLFromHTML(html);
+                                if (imageURL.isNotEmpty) {
+                                  var response = await get(Uri.parse(imageURL));
+                                  if (response.statusCode == 200) {
+                                    createMessage(
+                                        text: "",
+                                        fileData: response.bodyBytes,
+                                        fileName: "clipboard_image.png");
+                                  }
+                                } else {
+                                  _messageInputController.text = html.trim();
+                                  _messageInputController.selection =
+                                      TextSelection.fromPosition(TextPosition(
+                                          offset: _messageInputController
+                                              .text.length));
+                                }
+                              }
                             }
                           }
                         }

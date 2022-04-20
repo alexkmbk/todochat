@@ -250,9 +250,9 @@ packages:
   pasteboard:
     dependency: "direct main"
     description:
-      name: pasteboard
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../pasteboard"
+      relative: true
+    source: path
     version: "0.0.3"
   path:
     dependency: transitive

@@ -116,7 +116,7 @@ class _TasksPageState extends State<TasksPage> {
       tasksListProvider.project = await requestFirstItem();
       if (tasksListProvider.project != null) {
         tasksListProvider.projectID = tasksListProvider.project!.ID;
-        requestTasks(tasksListProvider, context);
+        await requestTasks(tasksListProvider, context);
       }
     }
 
@@ -142,11 +142,11 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Widget renderTasks() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Consumer<TasksListProvider>(builder: (context, provider, child) {
-          return Expanded(
+    return Consumer<TasksListProvider>(builder: (context, provider, child) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
               child: NotificationListener<ScrollUpdateNotification>(
             child: InifiniteTaskList(
                 scrollController: _scrollController,
@@ -163,10 +163,10 @@ class _TasksPageState extends State<TasksPage> {
               }
               return true;
             },
-          ));
-        }),
-      ],
-    );
+          ))
+        ],
+      );
+    });
   }
 
   Widget renderMessages() {
@@ -572,7 +572,7 @@ class _TaskListTileState extends State<TaskListTile> {
   }
 
   Color? getTileColor(bool selected) {
-    if (selected) {
+    if (isDesktopMode && selected) {
       return Colors.blue[50];
     }
     return null;
@@ -580,55 +580,71 @@ class _TaskListTileState extends State<TaskListTile> {
 
   Widget buildListRow(BuildContext context) {
     if (widget.task.editMode) {
-      return Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CallbackShortcuts(
-              bindings: {
-                const SingleActivator(LogicalKeyboardKey.escape,
-                    control: false): () {
-                  FocusScope.of(context).unfocus();
-                },
-              },
-              child: Focus(
-                onFocusChange: (hasFocus) {
-                  if (!hasFocus) {
-                    if (widget.task.isNewItem) {
-                      widget.tasksListProvider.deleteEditorItem();
-                    } else {
-                      setState(() {
-                        widget.task.editMode = false;
-                      });
-                    }
-                  }
-                },
-                child: TextField(
-                    controller: TextEditingController()
-                      ..text = widget.task.Description,
-                    decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText:
-                            widget.task.isNewItem ? "New task name" : null),
-                    autofocus: true,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (value) async {
-                      if (value.isNotEmpty) {
+      return Card(
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8.0))),
+          child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: CallbackShortcuts(
+                  bindings: {
+                    const SingleActivator(LogicalKeyboardKey.escape,
+                        control: false): () {
+                      FocusScope.of(context).unfocus();
+                    },
+                  },
+                  child: Focus(
+                    onFocusChange: (hasFocus) {
+                      if (!hasFocus) {
                         if (widget.task.isNewItem) {
-                          await widget.inifiniteTaskList.onAddFn(value);
                           widget.tasksListProvider.deleteEditorItem();
                         } else {
-                          var tempTask = Task.from(widget.task);
-                          tempTask.Description = value;
-                          var res = await updateTask(tempTask);
-                          if (res) {
-                            setState(() {
-                              widget.task.Description = tempTask.Description;
-                              widget.task.editMode = false;
-                            });
-                          }
+                          setState(() {
+                            widget.task.editMode = false;
+                          });
                         }
                       }
-                    }),
-              )));
+                    },
+                    child: CallbackShortcuts(
+                    bindings: {
+                      const SingleActivator(LogicalKeyboardKey.enter,
+                          control: false): () {
+                             TextEditingControllerHelper.insertText(controller, '\n');
+                        if (_messageInputController.text.isNotEmpty) {
+                          createMessage(text: _messageInputController.text);
+                          _messageInputController.text = "";
+                        }
+                      }},
+                      child: TextField(
+                        keyboardType: TextInputType.multiline,
+                        maxLines: 10,
+                        controller: TextEditingController()
+                          ..text = widget.task.Description,
+                        decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText:
+                                widget.task.isNewItem ? "New task name" : null),
+                        autofocus: true,
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (value) async {
+                          if (value.isNotEmpty) {
+                            if (widget.task.isNewItem) {
+                              await widget.inifiniteTaskList.onAddFn(value);
+                              widget.tasksListProvider.deleteEditorItem();
+                            } else {
+                              var tempTask = Task.from(widget.task);
+                              tempTask.Description = value;
+                              var res = await updateTask(tempTask);
+                              if (res) {
+                                setState(() {
+                                  widget.task.Description =
+                                      tempTask.Description;
+                                  widget.task.editMode = false;
+                                });
+                              }
+                            }
+                          }
+                        }),
+                  ))));
     } else {
       return Dismissible(
         key: UniqueKey(),
@@ -642,42 +658,46 @@ class _TaskListTileState extends State<TaskListTile> {
             widget.tasksListProvider.deleteItem(widget.task.ID);
           }
         },
-        child: SizedBox(
-            height: 70,
+        child: Card(
+            color: Color.fromARGB(255, 253, 253, 242),
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8.0))),
             child: ListTile(
-              shape: const Border(bottom: BorderSide(color: Colors.grey)),
+              //shape: const Border(bottom: BorderSide(color: Colors.grey)),
+
               tileColor: widget.tasksListProvider.currentTask == null
                   ? null
                   : getTileColor(widget.tasksListProvider.currentTask!.ID ==
                       widget.task.ID),
               onTap: () => onTap(widget.task),
               onLongPress: () => onLongPress(widget.task),
-              title: Row(children: [
-                Checkbox(
-                    fillColor: MaterialStateProperty.all(Colors.green),
-                    value: widget.task.Completed,
-                    onChanged: (value) =>
-                        taskCompletedOnChanged(value, widget.task)),
-                widget.tasksListProvider.searchMode
-                    ? HighlightText(
-                        highlightColor: Colors.red,
-                        text: widget.task.Description,
-                        words: widget.tasksListProvider.searchHighlightedWords,
-                      )
-                    : Flexible(
-                        child: Text(widget.task.Description,
-                            overflow: TextOverflow.ellipsis)),
-              ]),
+              leading: Checkbox(
+                  fillColor: MaterialStateProperty.all(Colors.green),
+                  value: widget.task.Completed,
+                  onChanged: (value) =>
+                      taskCompletedOnChanged(value, widget.task)),
+              title: widget.tasksListProvider.searchMode
+                  ? HighlightText(
+                      highlightColor: Colors.red,
+                      text: widget.task.Description,
+                      words: widget.tasksListProvider.searchHighlightedWords,
+                      maxLines: 5,
+                    )
+                  : Text(
+                      widget.task.Description,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 5,
+                    ),
               subtitle: widget.task.lastMessage.isEmpty
                   ? null
                   : widget.tasksListProvider.searchMode
                       ? HighlightText(
                           highlightColor: Colors.red,
-                          text: widget.task.lastMessage.replaceAll("\n", " "),
+                          text: widget.task.lastMessage,
                           words:
                               widget.tasksListProvider.searchHighlightedWords,
                         )
-                      : Text(widget.task.lastMessage.replaceAll("\n", " "),
+                      : Text(widget.task.lastMessage,
                           overflow: TextOverflow.ellipsis),
             )),
       );
@@ -844,7 +864,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
   }
 
   Widget getAppBarTitle() {
-    if (isDesktopMode || !widget.tasksPageState.showSearch) {
+    if (isDesktopMode) {
       return Row(children: [
         getSearchField(),
         const Text(
