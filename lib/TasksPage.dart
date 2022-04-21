@@ -256,6 +256,10 @@ class _TasksPageState extends State<TasksPage> {
     if (task == null) return false;
 
     tasksListProvider.addItem(task);
+    if (!isDesktopMode) {
+      openTask(context, task);
+    }
+
     return true;
   }
 
@@ -597,9 +601,7 @@ class _TaskListTileState extends State<TaskListTile> {
                         control: true): () {
                       textEditingController.text =
                           textEditingController.text + '\n';
-                      textEditingController.selection =
-                          TextSelection.fromPosition(TextPosition(
-                              offset: textEditingController.text.length));
+                      textEditingController.setCursorOnEnd();
                     }
                   },
                   child: Focus(
@@ -632,6 +634,11 @@ class _TaskListTileState extends State<TaskListTile> {
                             } else {
                               var tempTask = Task.from(widget.task);
                               tempTask.Description = value;
+                              if (tempTask.Description.endsWith('\n')) {
+                                tempTask.Description =
+                                    tempTask.Description.substring(
+                                        0, tempTask.Description.length - 1);
+                              }
                               var res = await updateTask(tempTask);
                               if (res) {
                                 setState(() {
@@ -658,7 +665,7 @@ class _TaskListTileState extends State<TaskListTile> {
           }
         },
         child: Card(
-            color: Color.fromARGB(255, 253, 253, 242),
+            color: const Color.fromARGB(255, 253, 253, 242),
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(8.0))),
             child: ListTile(
@@ -701,13 +708,6 @@ class _TaskListTileState extends State<TaskListTile> {
             )),
       );
     }
-  }
-
-  void openTask(BuildContext context, Task task) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => TaskMessagesPage(task: task)),
-    );
   }
 
   Future<void> onTap(Task task) async {
@@ -789,88 +789,84 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
   }*/
 
   Widget getProjectField() {
-    return Flexible(
-        fit: FlexFit.tight,
-        //flex: 6,
-        child: Align(
-            alignment: Alignment.topLeft,
-            child: TextButton.icon(
-              onPressed: () async {
-                var res = await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProjectsPage()),
-                );
-                if (res != null &&
-                    widget.tasksPageState.tasksListProvider.project != res) {
-                  widget.tasksPageState.tasksListProvider.project = res;
-                  widget.tasksPageState.tasksListProvider.projectID = res.ID;
-                  widget.tasksPageState.tasksListProvider.clear();
-                  widget.tasksPageState.requestTasks(
-                      widget.tasksPageState.tasksListProvider, context);
-                  //widget.tasksPageState.tasksListProvider.setProjectID(res.ID);
-                  await settings.setInt("projectID", res.ID);
-                }
-                setState(() {});
-              },
-              label: widget.tasksPageState.tasksListProvider.project == null
-                  ? const Text("")
-                  : Text(
-                      widget.tasksPageState.tasksListProvider.project!
-                          .Description,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-              icon: const Icon(
-                Icons.keyboard_arrow_down,
-                color: Colors.white,
-              ),
-              //style: TextStyle(color: Colors.white),
-            )));
+    return Align(
+        alignment: Alignment.topLeft,
+        child: TextButton.icon(
+          onPressed: () async {
+            var res = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ProjectsPage()),
+            );
+            if (res != null &&
+                widget.tasksPageState.tasksListProvider.project != res) {
+              widget.tasksPageState.tasksListProvider.project = res;
+              widget.tasksPageState.tasksListProvider.projectID = res.ID;
+              widget.tasksPageState.tasksListProvider.clear();
+              widget.tasksPageState.requestTasks(
+                  widget.tasksPageState.tasksListProvider, context);
+              //widget.tasksPageState.tasksListProvider.setProjectID(res.ID);
+              await settings.setInt("projectID", res.ID);
+            }
+            setState(() {});
+          },
+          label: widget.tasksPageState.tasksListProvider.project == null
+              ? const Text("")
+              : Text(
+                  widget.tasksPageState.tasksListProvider.project!.Description,
+                  style: const TextStyle(color: Colors.white),
+                ),
+          icon: const Icon(
+            Icons.keyboard_arrow_down,
+            color: Colors.white,
+          ),
+          //style: TextStyle(color: Colors.white),
+        ));
   }
 
   Widget getSearchField() {
-    return Flexible(
-        fit: FlexFit.tight,
-        flex: 4,
-        child: GetTextField(
-            controller: searchController,
-            hintText: "Search",
-            fillColor: Colors.white,
-            prefixIcon: Icon(Icons.search),
-            onCleared: () {
-              widget.tasksPageState.tasksListProvider.currentTask = null;
-              widget.tasksPageState.msgListProvider.clear();
-              widget.tasksPageState.tasksListProvider.clear();
-              widget.tasksPageState.tasksListProvider.searchMode = false;
-              widget.tasksPageState.showSearch = isDesktopMode;
-              widget.tasksPageState.tasksListProvider.refresh();
-              widget.tasksPageState.requestTasks(
-                  widget.tasksPageState.tasksListProvider, context);
-            },
-            onFieldSubmitted: (value) async {
-              if (value.isNotEmpty) {
-                widget.tasksPageState.msgListProvider.clear();
-                widget.tasksPageState.tasksListProvider.searchMode = true;
-                widget.tasksPageState.tasksListProvider.searchHighlightedWords =
-                    getHighlightedWords(value);
-                widget.tasksPageState.tasksListProvider.clear();
-                widget.tasksPageState.tasksListProvider.refresh();
+    return GetTextField(
+        controller: searchController,
+        hintText: "Search",
+        fillColor: Colors.white,
+        prefixIcon: Icon(Icons.search),
+        onCleared: () {
+          widget.tasksPageState.tasksListProvider.currentTask = null;
+          widget.tasksPageState.msgListProvider.clear();
+          widget.tasksPageState.tasksListProvider.clear();
+          widget.tasksPageState.tasksListProvider.searchMode = false;
+          widget.tasksPageState.showSearch = isDesktopMode;
+          widget.tasksPageState.tasksListProvider.refresh();
+          widget.tasksPageState
+              .requestTasks(widget.tasksPageState.tasksListProvider, context);
+        },
+        onFieldSubmitted: (value) async {
+          if (value.isNotEmpty) {
+            widget.tasksPageState.msgListProvider.clear();
+            widget.tasksPageState.tasksListProvider.searchMode = true;
+            widget.tasksPageState.tasksListProvider.searchHighlightedWords =
+                getHighlightedWords(value);
+            widget.tasksPageState.tasksListProvider.clear();
+            widget.tasksPageState.tasksListProvider.refresh();
 
-                widget.tasksPageState.searchTasks(value, context);
-              } else {
-                widget.tasksPageState.tasksListProvider.searchMode = false;
-              }
-            }));
+            widget.tasksPageState.searchTasks(value, context);
+          } else {
+            widget.tasksPageState.tasksListProvider.searchMode = false;
+          }
+        });
   }
 
   Widget getAppBarTitle() {
     if (isDesktopMode) {
       return Row(children: [
-        getSearchField(),
+        Flexible(fit: FlexFit.tight, flex: 4, child: getSearchField()),
         const Text(
           "Project: ",
           style: TextStyle(fontSize: 15),
         ),
-        getProjectField()
+        Flexible(
+            fit: FlexFit.tight,
+            //flex: 6,
+            child: getProjectField())
       ]);
     } else if (widget.tasksPageState.showSearch) {
       return getSearchField();
@@ -947,4 +943,11 @@ Future<bool> updateTask(Task task) async {
   }
 
   return false;
+}
+
+void openTask(BuildContext context, Task task) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => TaskMessagesPage(task: task)),
+  );
 }

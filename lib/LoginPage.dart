@@ -93,11 +93,13 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 const ElevatedButton(onPressed: ExitApp, child: Text("Exit")),
                 GetTextField(
+                  autofillHints: [AutofillHints.username],
                   controller: userNameController,
                   hintText: 'User name',
                   validator: (value) => validateEmpty(value, 'User name'),
                 ),
                 GetTextField(
+                  autofillHints: [AutofillHints.password],
                   controller: passwordController,
                   hintText: 'Password',
                   obscureText: true,

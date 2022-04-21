@@ -16,10 +16,12 @@ Widget GetTextField(
     TextInputType? keyboardType,
     bool obscureText = false,
     Color? fillColor,
-    Widget? prefixIcon}) {
+    Widget? prefixIcon,
+    Iterable<String>? autofillHints}) {
   return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextFormField(
+        autofillHints: autofillHints,
         decoration: InputDecoration(
           isDense: true,
           filled: fillColor == null ? false : true,

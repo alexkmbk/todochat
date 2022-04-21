@@ -230,6 +230,11 @@ bool isWeb() {
   return kIsWeb;
 }
 
+extension SetCursorOnEnd on TextEditingController {
+  void setCursorOnEnd() {
+    selection = TextSelection.fromPosition(TextPosition(offset: text.length));
+  }
+}
 /*Map<String, HighlightedWord> getHighlightedWords(String? str) {
   Map<String, HighlightedWord> res = {};
   if (str == null) {
