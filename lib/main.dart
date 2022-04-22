@@ -227,7 +227,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var physicalPixelWidth = mediaQuery.size.width;
 
     if (physicalPixelWidth > 1000) {
-      isDesktopMode = true;
+      //isDesktopMode = true;
     }
     appInitialized = true;
     return true;

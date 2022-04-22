@@ -135,9 +135,22 @@ class _TasksPageState extends State<TasksPage> {
           return GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
               child: Scaffold(
-                appBar: TasksPageAppBar(tasksPageState: this),
-                body: renderBody(),
-              ));
+                  appBar: TasksPageAppBar(tasksPageState: this),
+                  body: renderBody(),
+                  floatingActionButton: !isDesktopMode
+                      ? FloatingActionButton(
+                          onPressed: () {
+                            if (!tasksListProvider.taskEditMode) {
+                              tasksListProvider.addEditorItem();
+                              tasksListProvider.taskEditMode = true;
+                            }
+                          },
+                          child: const Icon(
+                            Icons.add,
+                            color: Colors.white,
+                          ),
+                        )
+                      : null));
         });
   }
 
@@ -440,6 +453,7 @@ class TasksListProvider extends ChangeNotifier {
   DateTime? lastCreation_date;
   bool loading = false;
   bool searchMode = false;
+  bool taskEditMode = false;
   List<String> searchHighlightedWords = [];
   Task? currentTask;
 
@@ -451,6 +465,7 @@ class TasksListProvider extends ChangeNotifier {
     items.clear();
     lastID = 0;
     lastCreation_date = null;
+    taskEditMode = false;
   }
 
   void setProjectID(int? value) {
@@ -465,6 +480,7 @@ class TasksListProvider extends ChangeNotifier {
 
   void deleteEditorItem() {
     items.removeWhere((item) => item.editMode == true);
+    taskEditMode = false;
     notifyListeners();
   }
 
@@ -589,68 +605,127 @@ class _TaskListTileState extends State<TaskListTile> {
       return Card(
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8.0))),
-          child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: CallbackShortcuts(
-                  bindings: {
-                    const SingleActivator(LogicalKeyboardKey.escape,
-                        control: false): () {
-                      FocusScope.of(context).unfocus();
-                    },
-                    const SingleActivator(LogicalKeyboardKey.enter,
-                        control: true): () {
-                      textEditingController.text =
-                          textEditingController.text + '\n';
-                      textEditingController.setCursorOnEnd();
-                    }
-                  },
-                  child: Focus(
-                    onFocusChange: (hasFocus) {
-                      if (!hasFocus) {
-                        if (widget.task.isNewItem) {
-                          widget.tasksListProvider.deleteEditorItem();
-                        } else {
-                          setState(() {
-                            widget.task.editMode = false;
-                          });
-                        }
-                      }
-                    },
-                    child: TextField(
-                        keyboardType: TextInputType.multiline,
-                        maxLines: 10,
-                        controller: textEditingController,
-                        decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText:
-                                widget.task.isNewItem ? "New task name" : null),
-                        autofocus: true,
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: (value) async {
-                          if (value.isNotEmpty) {
+          child: Row(children: [
+            Expanded(
+                child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: CallbackShortcuts(
+                        bindings: {
+                          const SingleActivator(LogicalKeyboardKey.escape,
+                              control: false): () {
                             if (widget.task.isNewItem) {
-                              await widget.inifiniteTaskList.onAddFn(value);
                               widget.tasksListProvider.deleteEditorItem();
                             } else {
-                              var tempTask = Task.from(widget.task);
-                              tempTask.Description = value;
-                              if (tempTask.Description.endsWith('\n')) {
-                                tempTask.Description =
-                                    tempTask.Description.substring(
-                                        0, tempTask.Description.length - 1);
-                              }
-                              var res = await updateTask(tempTask);
-                              if (res) {
+                              setState(() {
+                                widget.task.editMode = false;
+                              });
+                            }
+                            FocusScope.of(context).unfocus();
+                          },
+                          const SingleActivator(LogicalKeyboardKey.enter,
+                              control: true): () {
+                            textEditingController.text =
+                                textEditingController.text + '\n';
+                            textEditingController.setCursorOnEnd();
+                          }
+                        },
+                        child: Focus(
+                          onFocusChange: (hasFocus) {
+                            /*  if (!hasFocus) {
+                              if (widget.task.isNewItem) {
+                                widget.tasksListProvider.deleteEditorItem();
+                              } else {
                                 setState(() {
-                                  widget.task.Description =
-                                      tempTask.Description;
                                   widget.task.editMode = false;
                                 });
                               }
-                            }
-                          }
-                        }),
-                  ))));
+                            }*/
+                          },
+                          child: TextField(
+                              keyboardType: TextInputType.multiline,
+                              maxLines: null,
+                              controller: textEditingController,
+                              decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: widget.task.isNewItem
+                                      ? "New task name"
+                                      : null),
+                              autofocus: true,
+                              textInputAction: TextInputAction.newline,
+                              onSubmitted: (value) async {
+                                if (value.isNotEmpty) {
+                                  if (widget.task.isNewItem) {
+                                    await widget.inifiniteTaskList
+                                        .onAddFn(value);
+                                    widget.tasksListProvider.deleteEditorItem();
+                                  } else {
+                                    var tempTask = Task.from(widget.task);
+                                    tempTask.Description = value;
+                                    if (tempTask.Description.endsWith('\n')) {
+                                      tempTask.Description =
+                                          tempTask.Description.substring(0,
+                                              tempTask.Description.length - 1);
+                                    }
+                                    var res = await updateTask(tempTask);
+                                    if (res) {
+                                      setState(() {
+                                        widget.task.Description =
+                                            tempTask.Description;
+                                        widget.task.editMode = false;
+                                      });
+                                    }
+                                  }
+                                }
+                              }),
+                        )))),
+            Row(children: [
+              OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    shape: const StadiumBorder(),
+                  ),
+                  onPressed: () async {
+                    if (textEditingController.text.isNotEmpty) {
+                      if (widget.task.isNewItem) {
+                        await widget.inifiniteTaskList
+                            .onAddFn(textEditingController.text);
+                        widget.tasksListProvider.deleteEditorItem();
+                        widget.tasksListProvider.taskEditMode = false;
+                      } else {
+                        var tempTask = Task.from(widget.task);
+                        tempTask.Description = textEditingController.text;
+                        if (tempTask.Description.endsWith('\n')) {
+                          tempTask.Description = tempTask.Description.substring(
+                              0, tempTask.Description.length - 1);
+                        }
+                        var res = await updateTask(tempTask);
+                        if (res) {
+                          setState(() {
+                            widget.task.Description = tempTask.Description;
+                            widget.task.editMode = false;
+                            widget.tasksListProvider.taskEditMode = false;
+                          });
+                        }
+                      }
+                    }
+                  },
+                  child: const Text("Save")),
+              OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    shape: const StadiumBorder(),
+                  ),
+                  onPressed: () {
+                    widget.tasksListProvider.taskEditMode = false;
+                    if (widget.task.isNewItem) {
+                      widget.tasksListProvider.deleteEditorItem();
+                    } else {
+                      setState(() {
+                        widget.task.editMode = false;
+                      });
+                    }
+                  },
+                  child: const Text("Cancel"))
+            ]),
+          ]));
     } else {
       return Dismissible(
         key: UniqueKey(),
@@ -665,7 +740,9 @@ class _TaskListTileState extends State<TaskListTile> {
           }
         },
         child: Card(
-            color: const Color.fromARGB(255, 253, 253, 242),
+            color: widget.task.Completed
+                ? Color.fromARGB(255, 183, 242, 176)
+                : const Color.fromARGB(255, 253, 253, 242),
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(8.0))),
             child: ListTile(
@@ -678,6 +755,7 @@ class _TaskListTileState extends State<TaskListTile> {
               onTap: () => onTap(widget.task),
               onLongPress: () => onLongPress(widget.task),
               leading: Checkbox(
+                  shape: const CircleBorder(),
                   fillColor: MaterialStateProperty.all(Colors.green),
                   value: widget.task.Completed,
                   onChanged: (value) =>
@@ -809,15 +887,18 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
             }
             setState(() {});
           },
+
           label: widget.tasksPageState.tasksListProvider.project == null
               ? const Text("")
               : Text(
                   widget.tasksPageState.tasksListProvider.project!.Description,
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(
+                    color: Colors.black,
+                  ),
                 ),
           icon: const Icon(
             Icons.keyboard_arrow_down,
-            color: Colors.white,
+            color: Colors.black,
           ),
           //style: TextStyle(color: Colors.white),
         ));
@@ -833,8 +914,10 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
           widget.tasksPageState.tasksListProvider.currentTask = null;
           widget.tasksPageState.msgListProvider.clear();
           widget.tasksPageState.tasksListProvider.clear();
-          widget.tasksPageState.tasksListProvider.searchMode = false;
-          widget.tasksPageState.showSearch = isDesktopMode;
+          setState(() {
+            widget.tasksPageState.tasksListProvider.searchMode = false;
+            widget.tasksPageState.showSearch = isDesktopMode;
+          });
           widget.tasksPageState.tasksListProvider.refresh();
           widget.tasksPageState
               .requestTasks(widget.tasksPageState.tasksListProvider, context);
@@ -861,7 +944,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
         Flexible(fit: FlexFit.tight, flex: 4, child: getSearchField()),
         const Text(
           "Project: ",
-          style: TextStyle(fontSize: 15),
+          style: TextStyle(fontSize: 15, color: Colors.black),
         ),
         Flexible(
             fit: FlexFit.tight,
@@ -878,6 +961,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      backgroundColor: const Color.fromARGB(240, 255, 255, 255),
       //title: Text("ToDo Chat"),
       title: getAppBarTitle(),
       /*const Expanded(
@@ -893,7 +977,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
                       Icons.search,
                     ),
                   )))),*/
-      leading: MainMenu(),
+      leading: const MainMenu(),
       actions: [
         if (!widget.tasksPageState.showSearch)
           IconButton(
@@ -908,16 +992,46 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
             ),
             tooltip: "Search",
           ),
-        IconButton(
-          onPressed: () {
-            widget.tasksPageState.tasksListProvider.addEditorItem();
-          },
-          icon: const Icon(
-            Icons.add,
-            color: Colors.white,
-          ),
-          tooltip: "New task",
-        )
+        if (isDesktopMode)
+          Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(
+                  style: ButtonStyle(
+                      elevation: MaterialStateProperty.resolveWith<double>(
+                        (Set<MaterialState> states) {
+                          // if the button is pressed the elevation is 10.0, if not
+                          // it is 5.0
+                          if (states.contains(MaterialState.pressed))
+                            return 10.0;
+                          return 5.0;
+                        },
+                      ),
+                      backgroundColor: MaterialStateProperty.all(Colors.green)),
+                  /*style: OutlinedButton.styleFrom(
+                  fixedSize: const Size(60, 30),
+                  side: const BorderSide(width: 1.0, color: Colors.white),
+                  shape: const StadiumBorder(),
+                ),*/
+                  onPressed: () {
+                    if (!widget.tasksPageState.tasksListProvider.taskEditMode) {
+                      widget.tasksPageState.tasksListProvider.addEditorItem();
+                      widget.tasksPageState.tasksListProvider.taskEditMode =
+                          true;
+                    }
+                  },
+                  child: Row(
+                    children: const [
+                      Icon(
+                        Icons.add,
+                        color: Colors.white,
+                      ),
+                      Text(
+                        "New task",
+                        style: TextStyle(color: Colors.white),
+                      )
+                    ],
+                    //tooltip: "New task",
+                  )))
       ],
     );
   }

@@ -7,9 +7,9 @@ import 'utils.dart';
 //enum MenuItemsEnum { Exit, Logout }
 
 class MainMenu extends StatelessWidget {
-  List<PopupMenuItem>? items = const <PopupMenuItem>[];
+  final List<PopupMenuItem>? items;
 
-  MainMenu({Key? key, this.items}) : super(key: key);
+  const MainMenu({Key? key, this.items}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -40,14 +40,17 @@ class MainMenu extends StatelessWidget {
 
     return PopupMenuButton(
         // add icon, by default "3 dot" icon
-        // icon: Icon(Icons.book)
+        icon: Icon(
+          Icons.more_vert,
+          color: Colors.grey[800],
+        ),
         itemBuilder: (context) {
-      if (items == null) {
-        return mainMenuCommonItems;
-      } else {
-        return [...mainMenuCommonItems, ...items!];
-      }
-    });
+          if (items == null) {
+            return mainMenuCommonItems;
+          } else {
+            return [...mainMenuCommonItems, ...items!];
+          }
+        });
   }
 }
 

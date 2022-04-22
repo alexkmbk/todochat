@@ -116,7 +116,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       appBar: isDesktopMode
           ? null
           : AppBar(
-              //backgroundColor: Colors.black,
+              backgroundColor: const Color.fromARGB(240, 255, 255, 255),
               title: Row(children: [
                 TextButton.icon(
                     onPressed: () {
@@ -124,14 +124,14 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                     },
                     icon: const Icon(
                       Icons.keyboard_arrow_left,
-                      color: Colors.white,
+                      color: Colors.black,
                     ),
                     label: Text(
                       widget.task.Description,
-                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                      style: const TextStyle(color: Colors.black, fontSize: 18),
                     )),
               ]),
-              leading: MainMenu()),
+              leading: const MainMenu()),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
