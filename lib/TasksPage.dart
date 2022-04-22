@@ -908,7 +908,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
     return GetTextField(
         controller: searchController,
         hintText: "Search",
-        fillColor: Colors.white,
+        fillColor: Colors.grey[800],
         prefixIcon: Icon(Icons.search),
         onCleared: () {
           widget.tasksPageState.tasksListProvider.currentTask = null;
