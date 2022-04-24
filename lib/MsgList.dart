@@ -84,6 +84,7 @@ class Message {
   DateTime? created_at;
   String text = "";
   int userID = 0;
+  String userName = "";
   String fileName = "";
   int fileSize = 0;
   String localFileName = "";
@@ -112,12 +113,15 @@ class Message {
       'created_at': created_at,
       'text': text,
       'userID': userID,
+      'userName': userName,
       'fileName': fileName,
       'fileSize': fileSize,
       'isImage': isImage,
       'smallImageName': smallImageName,
       'localFileName': localFileName,
-      'previewSmallImageBase64': previewSmallImageBase64
+      'previewSmallImageBase64': previewSmallImageBase64,
+      'smallImageWidth': smallImageWidth,
+      'smallImageHeight': smallImageHeight,
     };
   }
 
@@ -128,12 +132,14 @@ class Message {
     taskID = json['TaskID'];
     projectID = json['ProjectID'];
     userID = json['UserID'];
+    userName = json['UserName'];
     isImage = json['IsImage'];
     fileName = json['FileName'];
     fileSize = json['FileSize'];
     smallImageName = json['SmallImageName'];
     localFileName = json['LocalFileName'];
-    previewSmallImageBase64 = json['PreviewSmallImageBase64'];
+    smallImageWidth = json['SmallImageWidth'];
+    smallImageHeight = json['SmallImageHeight'];
   }
 }
 

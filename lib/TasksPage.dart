@@ -21,6 +21,7 @@ class Task {
   int ID = 0;
   int projectID = 0;
   int authorID = 0;
+  String authorName = "";
   bool Completed = false;
   String Description = "";
   String lastMessage = "";
@@ -28,6 +29,8 @@ class Task {
   bool editMode = false;
   DateTime Creation_date = DateTime.utc(0);
   bool isNewItem = false;
+  bool read = false;
+  int unreadMessages = 0;
 
   Task(
       {this.ID = 0,
@@ -46,6 +49,9 @@ class Task {
       'ProjectID': projectID,
       'AuthorID': authorID,
       'Creation_date': Creation_date.toIso8601String(),
+      'AuthorName': authorName,
+      'Read': read,
+      'UnreadMessages': unreadMessages,
     };
   }
 
@@ -58,7 +64,10 @@ class Task {
         lastMessage = json['LastMessage'],
         lastMessageID = json['LastMessageID'],
         projectID = json['ProjectID'],
-        authorID = json['AuthorID'];
+        authorID = json['AuthorID'],
+        authorName = json['AuthorName'],
+        read = json['Read'],
+        unreadMessages = json['UnreadMessages'];
 
   Task.from(Task task) {
     ID = task.ID;
@@ -69,6 +78,9 @@ class Task {
     lastMessageID = task.lastMessageID;
     projectID = task.projectID;
     authorID = task.authorID;
+    authorName = task.authorName;
+    read = task.read;
+    unreadMessages = task.unreadMessages;
   }
 }
 
