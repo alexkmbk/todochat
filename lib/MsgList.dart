@@ -89,6 +89,9 @@ class Message {
   String localFileName = "";
   String smallImageName = "";
   bool isImage = false;
+  String previewSmallImageBase64 = "";
+  int smallImageWidth = 0;
+  int smallImageHeight = 0;
 
   Message(
       {required this.taskID,
@@ -114,6 +117,7 @@ class Message {
       'isImage': isImage,
       'smallImageName': smallImageName,
       'localFileName': localFileName,
+      'previewSmallImageBase64': previewSmallImageBase64
     };
   }
 
@@ -129,6 +133,7 @@ class Message {
     fileSize = json['FileSize'];
     smallImageName = json['SmallImageName'];
     localFileName = json['LocalFileName'];
+    previewSmallImageBase64 = json['PreviewSmallImageBase64'];
   }
 }
 

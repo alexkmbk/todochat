@@ -42,19 +42,26 @@ func GetCurrentDir() string {
 	//filepath.Join()
 }
 
-func ResizeImageByHeight(data []byte, height uint) ([]byte, error) {
+func ResizeImageByHeight(data []byte, height uint) ([]byte, error, int, int) {
 	var newImage []byte
 
-	image, _, err := image.Decode(bytes.NewReader(data))
+	reader := bytes.NewReader(data)
+	imageData, _, err := image.Decode(reader)
 	if err != nil {
-		return newImage, err
+		return newImage, err, 0, 0
 	}
 
-	m := resize.Resize(0, height, image, resize.Lanczos3)
+	m := resize.Resize(0, height, imageData, resize.Lanczos3)
 
 	buf := new(bytes.Buffer)
 	err = jpeg.Encode(buf, m, nil)
 	newImage = buf.Bytes()
+
+	g := m.Bounds()
+
+	// Get height and width
+	resultHeight := g.Dy()
+	resultWidth := g.Dx()
 
 	/*newImage, err := bimg.NewImage(buffer).CropByHeight(200)
 	if err != nil {
@@ -65,7 +72,7 @@ func ResizeImageByHeight(data []byte, height uint) ([]byte, error) {
 	if size.Height != height {
 		return newImage, error()
 	}*/
-	return newImage, nil
+	return newImage, nil, resultHeight, resultWidth
 }
 
 /*

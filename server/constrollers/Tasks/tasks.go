@@ -13,6 +13,7 @@ import (
 
 	. "todochat_server/App"
 	. "todochat_server/DB"
+	"todochat_server/constrollers/Users"
 )
 
 func CreateItem(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +36,17 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 	} else {
 		description := task.Description
 		log.WithFields(log.Fields{"description": description}).Info("Add new TodoItem. Saving to database.")
-		task := &Task{Description: description, Completed: false, Creation_date: time.Now(), AuthorID: userID, ProjectID: projectID}
+		task := &Task{Description: description,
+			Completed:     false,
+			Creation_date: time.Now(),
+			AuthorID:      userID,
+			ProjectID:     projectID}
+
+		user, success := Users.GetItemByID(userID)
+		if success {
+			task.AuthorName = user.Name
+		}
+
 		DB.Create(&task)
 		//DB.Last(&todo)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")

@@ -29,6 +29,7 @@ import (
 	WS "todochat_server/constrollers/WebSocked"
 
 	Tasks "todochat_server/constrollers/Tasks"
+	Users "todochat_server/constrollers/Users"
 )
 
 func GetFile(w http.ResponseWriter, r *http.Request) {
@@ -177,7 +178,7 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 	for i := range messages {
 		data, err_read := os.ReadFile(filepath.Join(FileStoragePath, messages[i].SmallImageName))
 		if err_read == nil {
-			messages[i].SmallImageBase64 = ToBase64(data)
+			messages[i].PreviewSmallImageBase64 = ToBase64(data)
 		}
 
 	}
@@ -269,6 +270,7 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 	var fileData []byte
 	var smallImageData []byte
 	var fileSize int64
+
 	for {
 		part, err_part := read_form.NextPart()
 		if err_part == io.EOF {
@@ -285,7 +287,7 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if message.IsImage {
-				smallImageData, err = ResizeImageByHeight(fileData, 200)
+				smallImageData, err, message.SmallImageHeight, message.SmallImageWidth = ResizeImageByHeight(fileData, 200)
 
 				if err == nil {
 					smallImageFileName = uuid.New().String() + ext
@@ -294,6 +296,13 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 						smallImageFileName = ""
 					}
 				}
+
+				previewSmallImageData, err, _, _ := ResizeImageByHeight(smallImageData, 30)
+
+				if err == nil {
+					message.PreviewSmallImageBase64 = ToBase64(previewSmallImageData)
+				}
+
 			}
 			//buf := new(bytes.Buffer)
 			//buf.ReadFrom(part)
@@ -309,6 +318,11 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	user, success := Users.GetItemByID(message.ID)
+	if success {
+		message.UserName = user.Name
+	}
+
 	message.LocalFileName = fileName
 	message.SmallImageName = smallImageFileName
 	message.Created_at = time.Now()
@@ -319,6 +333,7 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 	if success {
 		task.LastMessage = message.Text
 		task.LastMessageID = message.ID
+		task.LastMessageUserName = message.UserName
 		DB.Save(&task)
 	}
 	message.ProjectID = task.ProjectID

@@ -76,6 +76,16 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}*/
 }
 
+func GetItemByID(ID int64) (*User, bool) {
+	user := &User{}
+	result := DB.First(&user, ID)
+	if result.Error != nil {
+		log.Warn("User not found in database")
+		return user, false
+	}
+	return user, true
+}
+
 func RegisterNewUser(w http.ResponseWriter, r *http.Request) {
 	var user User
 
