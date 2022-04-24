@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'customWidgets.dart';
+import 'inifiniteTaskList.dart';
 import 'utils.dart';
 import 'package:provider/provider.dart';
 
@@ -140,6 +141,7 @@ class Message {
     localFileName = json['LocalFileName'];
     smallImageWidth = json['SmallImageWidth'];
     smallImageHeight = json['SmallImageHeight'];
+    previewSmallImageBase64 = json['PreviewSmallImageBase64'];
   }
 }
 
@@ -298,8 +300,8 @@ class ChatBubble extends StatelessWidget {
         // chat bubble decoration
         decoration: BoxDecoration(
           color: isCurrentUser
-              ? Color.fromARGB(255, 187, 239, 251)
-              : Colors.grey[300],
+              ? const Color.fromARGB(255, 187, 239, 251)
+              : const Color.fromARGB(255, 224, 224, 224),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Padding(
@@ -321,12 +323,17 @@ class ChatBubble extends StatelessWidget {
                 message.smallImageName,
             headers: {"sessionID": sessionID}, onTap: () {
           onTapOnFileMessage(message, context);
-        });
+        },
+            width: message.smallImageWidth.toDouble(),
+            height: message.smallImageHeight.toDouble(),
+            previewImageData: fromBase64(message.previewSmallImageBase64));
       } else {
         return DecoratedBox(
             // chat bubble decoration
             decoration: BoxDecoration(
-              color: isCurrentUser ? Colors.blue : Colors.grey[300],
+              color: isCurrentUser
+                  ? Colors.blue
+                  : const Color.fromARGB(255, 224, 224, 224),
               borderRadius: BorderRadius.circular(8),
             ),
             child: GestureDetector(

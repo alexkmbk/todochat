@@ -40,7 +40,7 @@ type Message struct {
 	Text                    string
 	UserID                  int64
 	UserName                string
-	PreviewSmallImageBase64 string `gorm:"-"`
+	PreviewSmallImageBase64 string
 	SmallImageWidth         int
 	SmallImageHeight        int
 	FileName                string

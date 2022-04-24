@@ -101,7 +101,11 @@ Widget GetTextField(
 }*/
 
 Widget networkImage(String src,
-    {Map<String, String>? headers, GestureTapCallback? onTap}) {
+    {Map<String, String>? headers,
+    GestureTapCallback? onTap,
+    double width = 40,
+    double height = 40,
+    Uint8List? previewImageData}) {
   try {
     return GestureDetector(
         onTap: onTap,
@@ -112,21 +116,29 @@ Widget networkImage(String src,
               headers: headers,
               errorBuilder: (BuildContext context, Object exception,
                   StackTrace? stackTrace) {
-                return const Placeholder(
-                  fallbackHeight: 40,
-                  fallbackWidth: 40,
+                return Placeholder(
+                  fallbackHeight: height,
+                  fallbackWidth: width,
                 );
               },
               loadingBuilder: (BuildContext context, Widget child,
                   ImageChunkEvent? loadingProgress) {
                 if (loadingProgress == null) return child;
                 return Center(
-                  child: CircularProgressIndicator(
+                  child: SizedBox(
+                      width: width,
+                      height: height,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8.0),
+                        child: previewImageData != null
+                            ? Image.memory(previewImageData)
+                            : null,
+                      )), /*CircularProgressIndicator(
                     value: loadingProgress.expectedTotalBytes != null
                         ? loadingProgress.cumulativeBytesLoaded /
                             loadingProgress.expectedTotalBytes!
                         : null,
-                  ),
+                  ),*/
                 );
               },
             )));
