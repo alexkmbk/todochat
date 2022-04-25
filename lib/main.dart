@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'HttpClient.dart';
@@ -216,11 +217,13 @@ class _MyHomePageState extends State<MyHomePage> {
           } else if (wsMsg.command == "createMessage") {
             var message = Message.fromJson(wsMsg.data);
             _msgListProvider.addItem(message);
-            _tasksListProvider.updateLastMessage(message.taskID, message.text);
+            _tasksListProvider.updateLastMessage(message.taskID, message);
           }
         });
       } catch (e) {
-        print(e.toString());
+        if (kDebugMode) {
+          print(e.toString());
+        }
       }
     }
 

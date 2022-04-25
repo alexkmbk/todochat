@@ -118,18 +118,24 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
           : AppBar(
               backgroundColor: const Color.fromARGB(240, 255, 255, 255),
               title: Row(children: [
-                TextButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(
-                      Icons.keyboard_arrow_left,
-                      color: Colors.black,
-                    ),
-                    label: Text(
-                      widget.task.Description,
-                      style: const TextStyle(color: Colors.black, fontSize: 18),
-                    )),
+                Flexible(
+                    child: TextButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: const Icon(
+                          Icons.keyboard_arrow_left,
+                          color: Colors.black,
+                        ),
+                        label: Text(
+                          widget.task.Description,
+                          style: const TextStyle(
+                              color: Colors.black, fontSize: 18),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          //softWrap: false,
+                          //style: Theme.of(context).textTheme.body1,
+                        ))),
               ]),
               leading: const MainMenu()),
       body: Center(
@@ -177,7 +183,9 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                       const SingleActivator(LogicalKeyboardKey.enter,
                           control: false): () {
                         if (_messageInputController.text.isNotEmpty) {
-                          createMessage(text: _messageInputController.text);
+                          createMessage(
+                              text: _messageInputController.text,
+                              taskID: _msgListProvider.taskID);
                           _messageInputController.text = "";
                         }
                       },
@@ -187,6 +195,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                         if (bytes != null) {
                           createMessage(
                               text: _messageInputController.text,
+                              taskID: _msgListProvider.taskID,
                               fileData: bytes,
                               fileName: "clipboard_image.bmp");
                         } else {
@@ -197,6 +206,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                               if (fileData.isNotEmpty) {
                                 createMessage(
                                     text: _messageInputController.text,
+                                    taskID: _msgListProvider.taskID,
                                     fileData: fileData,
                                     fileName: file);
                               }
@@ -223,6 +233,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                                   if (response.statusCode == 200) {
                                     createMessage(
                                         text: "",
+                                        taskID: _msgListProvider.taskID,
                                         fileData: response.bodyBytes,
                                         fileName: "clipboard_image.png");
                                   }
@@ -256,7 +267,9 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                   IconButton(
                     onPressed: () {
                       if (_messageInputController.text.isNotEmpty) {
-                        createMessage(text: _messageInputController.text);
+                        createMessage(
+                            text: _messageInputController.text,
+                            taskID: _msgListProvider.taskID);
                         _messageInputController.text = "";
                       }
                     },
@@ -277,6 +290,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                         var res = await readFile(result.files.single.path);
                         createMessage(
                             text: _messageInputController.text,
+                            taskID: _msgListProvider.taskID,
                             fileData: res,
                             fileName: fileName ?? "");
                         _messageInputController.text = "";
@@ -342,45 +356,6 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       //return true;
     }
     return res;
-  }
-
-  Future<bool> createMessage(
-      {required String text,
-      Uint8List? fileData,
-      String fileName = "",
-      bool isPicture = false}) async {
-    if (sessionID == "") {
-      return false;
-    }
-
-    MultipartRequest request = MultipartRequest(
-        'POST', setUriProperty(serverURI, path: 'createMessage'));
-
-    request.headers["sessionID"] = sessionID;
-    request.headers["content-type"] = "application/json; charset=utf-8";
-
-    Message message = Message(
-        taskID: _msgListProvider.taskID,
-        text: text,
-        fileName: path.basename(fileName),
-        isImage: isImageFile(fileName));
-
-    request.fields["Message"] = jsonEncode(message);
-
-    if (fileData != null) {
-      request.files
-          .add(MultipartFile.fromBytes("File", fileData, filename: fileName));
-    }
-
-    var streamedResponse = await request.send();
-    if (streamedResponse.statusCode == 200) {
-      /*Response response = await Response.fromStream(streamedResponse);
-      var data = jsonDecode(response.body) as Map<String, dynamic>;
-      message.ID = data["ID"];
-      message.userID = data["UserID"];*/
-      return true;
-    }
-    return false;
   }
 
   Future<bool> deleteMesage(int messageID) async {

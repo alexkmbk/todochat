@@ -124,22 +124,25 @@ Widget networkImage(String src,
               loadingBuilder: (BuildContext context, Widget child,
                   ImageChunkEvent? loadingProgress) {
                 if (loadingProgress == null) return child;
-                return Center(
-                  child: SizedBox(
-                      width: width,
-                      height: height,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: previewImageData != null
-                            ? Image.memory(previewImageData)
-                            : null,
-                      )), /*CircularProgressIndicator(
+                return SizedBox(
+                    width: width,
+                    height: height,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: previewImageData != null
+                          ? Image.memory(
+                              previewImageData,
+                              width: width,
+                              height: height,
+                              fit: BoxFit.fill,
+                            )
+                          : null,
+                    )); /*CircularProgressIndicator(
                     value: loadingProgress.expectedTotalBytes != null
                         ? loadingProgress.cumulativeBytesLoaded /
                             loadingProgress.expectedTotalBytes!
                         : null,
                   ),*/
-                );
               },
             )));
   } catch (e) {

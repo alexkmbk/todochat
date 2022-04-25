@@ -73,6 +73,9 @@ Future<bool?> confirmDimissDlg(String queryText, BuildContext context) {
 }
 
 String toBase64<T>(T data) {
+  if (data == null) {
+    return "";
+  }
   if (T == String) {
     return base64.encode(utf8.encode(data as String));
   } else {

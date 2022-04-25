@@ -318,7 +318,7 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	user, success := Users.GetItemByID(message.ID)
+	user, success := Users.GetItemByID(userID)
 	if success {
 		message.UserName = user.Name
 	}

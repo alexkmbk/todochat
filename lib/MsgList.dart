@@ -1,15 +1,16 @@
 //import 'dart:ffi';
 
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'customWidgets.dart';
 import 'inifiniteTaskList.dart';
 import 'utils.dart';
 import 'package:provider/provider.dart';
-
-import 'TasksPage.dart';
+import 'package:path/path.dart' as path;
 import 'main.dart';
 
 class MsgListProvider extends ChangeNotifier {
@@ -91,9 +92,10 @@ class Message {
   String localFileName = "";
   String smallImageName = "";
   bool isImage = false;
-  String previewSmallImageBase64 = "";
+  Uint8List? previewSmallImageData;
   int smallImageWidth = 0;
   int smallImageHeight = 0;
+  bool isTaskDescriptionItem = false;
 
   Message(
       {required this.taskID,
@@ -120,7 +122,7 @@ class Message {
       'isImage': isImage,
       'smallImageName': smallImageName,
       'localFileName': localFileName,
-      'previewSmallImageBase64': previewSmallImageBase64,
+      'previewSmallImageBase64': toBase64(previewSmallImageData),
       'smallImageWidth': smallImageWidth,
       'smallImageHeight': smallImageHeight,
     };
@@ -141,7 +143,10 @@ class Message {
     localFileName = json['LocalFileName'];
     smallImageWidth = json['SmallImageWidth'];
     smallImageHeight = json['SmallImageHeight'];
-    previewSmallImageBase64 = json['PreviewSmallImageBase64'];
+    var PreviewSmallImageBase64 = json['PreviewSmallImageBase64'];
+    if (PreviewSmallImageBase64 != null && PreviewSmallImageBase64 != "") {
+      previewSmallImageData = fromBase64(PreviewSmallImageBase64);
+    }
   }
 }
 
@@ -326,7 +331,7 @@ class ChatBubble extends StatelessWidget {
         },
             width: message.smallImageWidth.toDouble(),
             height: message.smallImageHeight.toDouble(),
-            previewImageData: fromBase64(message.previewSmallImageBase64));
+            previewImageData: message.previewSmallImageData);
       } else {
         return DecoratedBox(
             // chat bubble decoration
@@ -394,4 +399,45 @@ class ChatBubble extends StatelessWidget {
       }
     }
   }
+}
+
+Future<bool> createMessage(
+    {required String text,
+    required int taskID,
+    Uint8List? fileData,
+    String fileName = "",
+    bool isPicture = false,
+    bool isTaskDescriptionItem = false}) async {
+  if (sessionID == "") {
+    return false;
+  }
+
+  MultipartRequest request = MultipartRequest(
+      'POST', setUriProperty(serverURI, path: 'createMessage'));
+
+  request.headers["sessionID"] = sessionID;
+  request.headers["content-type"] = "application/json; charset=utf-8";
+
+  Message message = Message(
+      taskID: taskID,
+      text: text,
+      fileName: path.basename(fileName),
+      isImage: isImageFile(fileName));
+
+  request.fields["Message"] = jsonEncode(message);
+
+  if (fileData != null) {
+    request.files
+        .add(MultipartFile.fromBytes("File", fileData, filename: fileName));
+  }
+
+  var streamedResponse = await request.send();
+  if (streamedResponse.statusCode == 200) {
+    /*Response response = await Response.fromStream(streamedResponse);
+      var data = jsonDecode(response.body) as Map<String, dynamic>;
+      message.ID = data["ID"];
+      message.userID = data["UserID"];*/
+    return true;
+  }
+  return false;
 }

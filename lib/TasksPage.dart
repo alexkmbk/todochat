@@ -198,6 +198,8 @@ class _TasksPageState extends State<TasksPage> {
       task.Creation_date =
           DateTime.tryParse(data["Creation_date"]) ?? DateTime.utc(0);
       task.authorID = data["AuthorID"];
+
+      createMessage(text: task.Description, taskID: task.ID);
       return task;
     }
 
@@ -449,8 +451,8 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
     return GetTextField(
         controller: searchController,
         hintText: "Search",
-        fillColor: Colors.grey[800],
-        prefixIcon: Icon(Icons.search),
+        fillColor: Colors.white,
+        prefixIcon: const Icon(Icons.search),
         onCleared: () {
           widget.tasksPageState.tasksListProvider.currentTask = null;
           widget.tasksPageState.msgListProvider.clear();
@@ -529,7 +531,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
             },
             icon: const Icon(
               Icons.search,
-              color: Colors.white,
+              color: Colors.black,
             ),
             tooltip: "Search",
           ),
@@ -542,8 +544,9 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
                         (Set<MaterialState> states) {
                           // if the button is pressed the elevation is 10.0, if not
                           // it is 5.0
-                          if (states.contains(MaterialState.pressed))
+                          if (states.contains(MaterialState.pressed)) {
                             return 10.0;
+                          }
                           return 5.0;
                         },
                       ),
