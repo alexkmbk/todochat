@@ -24,7 +24,8 @@ String sessionID = "";
 int currentUserID = 0;
 bool isDesktopMode = false;
 bool appInitialized = false;
-
+const Color completedTaskColor = Color.fromARGB(255, 183, 242, 176);
+const Color uncompletedTaskColor = Color.fromARGB(255, 253, 253, 242);
 late SharedPreferences settings;
 
 void main() {
@@ -231,7 +232,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var physicalPixelWidth = mediaQuery.size.width;
 
     if (physicalPixelWidth > 1000) {
-      //isDesktopMode = true;
+      isDesktopMode = true;
     }
     appInitialized = true;
     return true;

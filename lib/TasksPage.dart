@@ -130,6 +130,7 @@ class _TasksPageState extends State<TasksPage> {
   Widget renderMessages() {
     if (tasksListProvider.currentTask != null) {
       msgListProvider.taskID = tasksListProvider.currentTask!.ID;
+      msgListProvider.task = tasksListProvider.currentTask;
       if (tasksListProvider.searchMode) {
         msgListProvider.foundMessageID =
             tasksListProvider.currentTask!.lastMessageID;
@@ -199,7 +200,7 @@ class _TasksPageState extends State<TasksPage> {
           DateTime.tryParse(data["Creation_date"]) ?? DateTime.utc(0);
       task.authorID = data["AuthorID"];
 
-      createMessage(text: task.Description, taskID: task.ID);
+      createMessage(text: "", taskID: task.ID, isTaskDescriptionItem: true);
       return task;
     }
 

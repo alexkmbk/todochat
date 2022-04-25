@@ -13,7 +13,6 @@ import 'main.dart';
 import 'dart:convert';
 import 'inifiniteTaskList.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:path/path.dart' as path;
 import 'package:pasteboard/pasteboard.dart';
 
 //import 'package:web_socket_channel/web_socket_channel.dart';
@@ -63,6 +62,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     super.initState();
     _msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
     _msgListProvider.taskID = widget.task.ID;
+    _msgListProvider.task = widget.task;
     _msgListProvider.foundMessageID = widget.task.lastMessageID;
     _msgListProvider.scrollController = itemsScrollController;
     /*_msgListProvider.addListener(() {

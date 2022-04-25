@@ -19,6 +19,7 @@ class MsgListProvider extends ChangeNotifier {
   int lastID = 0;
   bool loading = false;
   int taskID = 0;
+  Task? task;
   int foundMessageID = 0;
   ItemScrollController? scrollController;
 
@@ -106,7 +107,8 @@ class Message {
       this.smallImageName = "",
       this.localFileName = "",
       this.fileName = "",
-      this.isImage = false});
+      this.isImage = false,
+      this.isTaskDescriptionItem = false});
 
   Map<String, dynamic> toJson() {
     return {
@@ -125,6 +127,7 @@ class Message {
       'previewSmallImageBase64': toBase64(previewSmallImageData),
       'smallImageWidth': smallImageWidth,
       'smallImageHeight': smallImageHeight,
+      'isTaskDescriptionItem': isTaskDescriptionItem,
     };
   }
 
@@ -143,10 +146,11 @@ class Message {
     localFileName = json['LocalFileName'];
     smallImageWidth = json['SmallImageWidth'];
     smallImageHeight = json['SmallImageHeight'];
-    var PreviewSmallImageBase64 = json['PreviewSmallImageBase64'];
-    if (PreviewSmallImageBase64 != null && PreviewSmallImageBase64 != "") {
-      previewSmallImageData = fromBase64(PreviewSmallImageBase64);
+    var previewSmallImageBase64 = json['PreviewSmallImageBase64'];
+    if (previewSmallImageBase64 != null && previewSmallImageBase64 != "") {
+      previewSmallImageData = fromBase64(previewSmallImageBase64);
     }
+    isTaskDescriptionItem = json['IsTaskDescriptionItem'];
   }
 }
 
@@ -231,6 +235,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
           return ChatBubble(
             isCurrentUser: item.userID == currentUserID,
             message: item,
+            msgListProvider: _msgListProvider,
             getFile: widget.getFile,
             onDismissed: (direction) async {
               if (await widget.onDelete(item.ID)) {
@@ -261,10 +266,12 @@ class ChatBubble extends StatelessWidget {
       required this.message,
       required this.onDismissed,
       required this.getFile,
-      required this.isCurrentUser})
+      required this.isCurrentUser,
+      required this.msgListProvider})
       : super(key: key);
   final Message message;
   final bool isCurrentUser;
+  final MsgListProvider msgListProvider;
 
   /*final String text;
   final String isImage = false;
@@ -275,28 +282,48 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dismissible(
-        key: UniqueKey(),
-        direction: DismissDirection.startToEnd,
-        confirmDismiss: (direction) {
-          return confirmDimissDlg(
-              "Are you sure you wish to delete this item?", context);
-        },
-        onDismissed: onDismissed,
+    if (message.isTaskDescriptionItem && msgListProvider.task != null) {
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          color: msgListProvider.task!.Completed
+              ? completedTaskColor
+              : uncompletedTaskColor,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Padding(
-          // asymmetric padding
-          padding: EdgeInsets.fromLTRB(
-            isCurrentUser ? 64.0 : 16.0,
-            4,
-            isCurrentUser ? 16.0 : 64.0,
-            4,
+          padding: const EdgeInsets.all(12),
+          child: SelectableText(
+            msgListProvider.task!.Description,
           ),
-          child: Align(
-              // align the child within the container
-              alignment:
-                  isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
-              child: drawBubble(context)),
-        ));
+        ),
+      );
+    } else {
+      return Dismissible(
+          key: UniqueKey(),
+          direction: DismissDirection.startToEnd,
+          confirmDismiss: (direction) {
+            return confirmDimissDlg(
+                "Are you sure you wish to delete this item?", context);
+          },
+          onDismissed: onDismissed,
+          child: Padding(
+            // asymmetric padding
+            padding: EdgeInsets.fromLTRB(
+              isCurrentUser ? 64.0 : 16.0,
+              4,
+              isCurrentUser ? 16.0 : 64.0,
+              4,
+            ),
+            child: Align(
+                // align the child within the container
+                alignment: message.isTaskDescriptionItem
+                    ? Alignment.center
+                    : isCurrentUser
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                child: drawBubble(context)),
+          ));
+    }
   }
 
   Widget drawBubble(BuildContext context) {
@@ -422,7 +449,8 @@ Future<bool> createMessage(
       taskID: taskID,
       text: text,
       fileName: path.basename(fileName),
-      isImage: isImageFile(fileName));
+      isImage: isImageFile(fileName),
+      isTaskDescriptionItem: isTaskDescriptionItem);
 
   request.fields["Message"] = jsonEncode(message);
 
@@ -433,10 +461,6 @@ Future<bool> createMessage(
 
   var streamedResponse = await request.send();
   if (streamedResponse.statusCode == 200) {
-    /*Response response = await Response.fromStream(streamedResponse);
-      var data = jsonDecode(response.body) as Map<String, dynamic>;
-      message.ID = data["ID"];
-      message.userID = data["UserID"];*/
     return true;
   }
   return false;
