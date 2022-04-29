@@ -143,7 +143,11 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 			if DB.Model(&SeenTask{}).First(&seenTask).Error == nil {
 				tasks[i].Read = true
 			}
-			//tasks[i].UnreadMessages = DB.Model(&SeenMessage{}).Where("user_id = ? AND task_id = ?", UserID, tasks[i].ID).Count()
+			var readCount, total int64
+			DB.Model(&SeenMessage{}).Where("user_id = ? AND task_id = ?", UserID, tasks[i].ID).Count(&readCount)
+			DB.Model(&Message{}).Where("task_id = ?", tasks[i].ID).Count(&total)
+			tasks[i].UnreadMessages = int(total - readCount)
+
 		}
 
 	}

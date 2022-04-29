@@ -65,6 +65,10 @@ func InitDB() {
 	DropUnusedColumns(&Task{})
 	DB.AutoMigrate(&Message{})
 	DropUnusedColumns(&Message{})
+	DB.AutoMigrate(&SeenMessage{})
+	DropUnusedColumns(&SeenMessage{})
+	DB.AutoMigrate(&SeenTask{})
+	DropUnusedColumns(&SeenTask{})
 
 	/*var tasks []*Task
 	DB.Where("last_message_ID = 0").Find(&tasks)
@@ -270,16 +274,19 @@ func GetMessagesDB(SessionID uuid.UUID, lastID int64, limit int64, taskID int64,
 	}
 
 	UserID := GetUserIDBySessionID(SessionID)
-	for i := range messages {
-		seenMessage := SeenMessage{UserID: UserID, TaskID: taskID, MessageID: messages[i].ID}
-		if DB.First(&seenMessage).Error != nil {
-			DB.Save(&seenMessage)
+	if UserID != 0 {
+		for i := range messages {
+			seenMessage := SeenMessage{UserID: UserID, TaskID: taskID, MessageID: messages[i].ID}
+			if DB.First(&seenMessage).Error != nil {
+				DB.Create(&seenMessage)
+			}
 		}
-	}
 
-	seenTask := SeenTask{UserID: UserID, TaskID: taskID}
-	if DB.First(&seenTask).Error != nil {
-		DB.Save(&seenTask)
+		seenTask := SeenTask{UserID: UserID, TaskID: taskID}
+		if DB.First(&seenTask).Error != nil {
+			DB.Create(&seenTask)
+		}
+
 	}
 
 	/*res, err := json.Marshal(messages)
