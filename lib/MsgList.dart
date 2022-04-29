@@ -364,9 +364,9 @@ class ChatBubble extends StatelessWidget {
 
   Widget drawBubble(BuildContext context, BoxConstraints constraints) {
     if (message.fileName.isEmpty) {
-      /*final textSpan = TextSpan(text: message.text);
+      final textSpan = TextSpan(text: message.text);
       final textWidget = SelectableText.rich(textSpan);
-      final TextBox? lastBox =
+      /*final TextBox? lastBox =
           calcLastLineEnd(message.text, textSpan, context, constraints);*/
 
       return DecoratedBox(
