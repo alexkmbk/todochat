@@ -366,8 +366,13 @@ class ChatBubble extends StatelessWidget {
     if (message.fileName.isEmpty) {
       final textSpan = TextSpan(text: message.text);
       final textWidget = SelectableText.rich(textSpan);
-      /*final TextBox? lastBox =
-          calcLastLineEnd(message.text, textSpan, context, constraints);*/
+      final TextBox? lastBox =
+          calcLastLineEnd(message.text, textSpan, context, constraints);
+      bool fitsLastLine = false;
+      if (lastBox != null) {
+        fitsLastLine =
+            constraints.maxWidth - lastBox.right > Timestamp.size.width + 10.0;
+      }
 
       return DecoratedBox(
         // chat bubble decoration
@@ -392,6 +397,13 @@ class ChatBubble extends StatelessWidget {
                       style: const TextStyle(color: Colors.blue),
                     ),
                   textWidget,
+                  Positioned(
+                    left: constraints.maxWidth - (Timestamp.size.width + 10.0),
+                    top: lastBox != null
+                        ? (fitsLastLine ? lastBox.top : lastBox.bottom) + 5.0
+                        : 0,
+                    child: Timestamp(message.created_at ?? DateTime.now()),
+                  ),
                 ]))),
       );
     } else {
