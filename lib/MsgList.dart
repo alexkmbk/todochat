@@ -150,7 +150,8 @@ class Message {
     if (previewSmallImageBase64 != null && previewSmallImageBase64 != "") {
       previewSmallImageData = fromBase64(previewSmallImageBase64);
     }
-    isTaskDescriptionItem = json['IsTaskDescriptionItem'];
+    var value = json['IsTaskDescriptionItem'];
+    isTaskDescriptionItem = value ?? false;
   }
 }
 
@@ -233,6 +234,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
           var item = _msgListProvider.items[index];
 
           return ChatBubble(
+            index: index,
             isCurrentUser: item.userID == currentUserID,
             message: item,
             msgListProvider: _msgListProvider,
@@ -267,12 +269,13 @@ class ChatBubble extends StatelessWidget {
       required this.onDismissed,
       required this.getFile,
       required this.isCurrentUser,
-      required this.msgListProvider})
+      required this.msgListProvider,
+      required this.index})
       : super(key: key);
   final Message message;
   final bool isCurrentUser;
   final MsgListProvider msgListProvider;
-
+  final int index;
   /*final String text;
   final String isImage = false;
   final Uint8List? smallImageData;
@@ -280,54 +283,92 @@ class ChatBubble extends StatelessWidget {
   final DismissDirectionCallback onDismissed;
   final Future<Uint8List> Function(String localFileName) getFile;
 
-  @override
-  Widget build(BuildContext context) {
-    if (message.isTaskDescriptionItem && msgListProvider.task != null) {
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          color: msgListProvider.task!.Completed
-              ? completedTaskColor
-              : uncompletedTaskColor,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: SelectableText(
-            msgListProvider.task!.Description,
-          ),
-        ),
-      );
+  TextBox? calcLastLineEnd(String text, TextSpan textSpan, BuildContext context,
+      BoxConstraints constraints) {
+    final richTextWidget = Text.rich(textSpan).build(context) as RichText;
+    final renderObject = richTextWidget.createRenderObject(context);
+    renderObject.layout(constraints);
+    var boxes = renderObject.getBoxesForSelection(
+        TextSelection(baseOffset: 0, extentOffset: text.length));
+
+/*final TextPainter textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout(minWidth: 0, maxWidth: double.infinity);
+*/
+
+    if (boxes.isEmpty) {
+      return null;
     } else {
-      return Dismissible(
-          key: UniqueKey(),
-          direction: DismissDirection.startToEnd,
-          confirmDismiss: (direction) {
-            return confirmDimissDlg(
-                "Are you sure you wish to delete this item?", context);
-          },
-          onDismissed: onDismissed,
-          child: Padding(
-            // asymmetric padding
-            padding: EdgeInsets.fromLTRB(
-              isCurrentUser ? 64.0 : 16.0,
-              4,
-              isCurrentUser ? 16.0 : 64.0,
-              4,
-            ),
-            child: Align(
-                // align the child within the container
-                alignment: message.isTaskDescriptionItem
-                    ? Alignment.center
-                    : isCurrentUser
-                        ? Alignment.centerRight
-                        : Alignment.centerLeft,
-                child: drawBubble(context)),
-          ));
+      return boxes.last;
     }
   }
 
-  Widget drawBubble(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, constraints) {
+      if (message.isTaskDescriptionItem && msgListProvider.task != null) {
+        return DecoratedBox(
+            decoration: BoxDecoration(
+              color: msgListProvider.task!.Completed
+                  ? completedTaskColor
+                  : uncompletedTaskColor,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(children: [
+                Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      msgListProvider.task!.authorName,
+                      style: const TextStyle(color: Colors.blue),
+                    )),
+                Align(
+                    alignment: Alignment.centerLeft,
+                    child: SelectableText(
+                      msgListProvider.task!.Description,
+                    )),
+              ]),
+            ));
+      } else {
+        return Dismissible(
+            key: UniqueKey(),
+            direction: DismissDirection.startToEnd,
+            confirmDismiss: (direction) {
+              return confirmDimissDlg(
+                  "Are you sure you wish to delete this item?", context);
+            },
+            onDismissed: onDismissed,
+            child: Padding(
+              // asymmetric padding
+              padding: EdgeInsets.fromLTRB(
+                isCurrentUser ? 64.0 : 16.0,
+                4,
+                isCurrentUser ? 16.0 : 64.0,
+                4,
+              ),
+              child: Align(
+                  // align the child within the container
+                  alignment: message.isTaskDescriptionItem
+                      ? Alignment.center
+                      : isCurrentUser
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                  child: drawBubble(context, constraints)),
+            ));
+      }
+    });
+  }
+
+  Widget drawBubble(BuildContext context, BoxConstraints constraints) {
     if (message.fileName.isEmpty) {
+      /*final textSpan = TextSpan(text: message.text);
+      final textWidget = SelectableText.rich(textSpan);
+      final TextBox? lastBox =
+          calcLastLineEnd(message.text, textSpan, context, constraints);*/
+
       return DecoratedBox(
         // chat bubble decoration
         decoration: BoxDecoration(
@@ -337,13 +378,21 @@ class ChatBubble extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: SelectableText(
-            message.text,
-            //style: Theme.of(context).textTheme.bodyText1!
-            //.copyWith(color: isCurrentUser ? Colors.white : Colors.black87),
-          ),
-        ),
+            padding: const EdgeInsets.all(12),
+            child: IntrinsicWidth(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  if (message.userName.isNotEmpty &&
+                      (index == msgListProvider.items.length - 1 ||
+                          msgListProvider.items[index + 1].userID !=
+                              message.userID))
+                    Text(
+                      message.userName,
+                      style: const TextStyle(color: Colors.blue),
+                    ),
+                  textWidget,
+                ]))),
       );
     } else {
       if (message.isImage && message.smallImageName.isNotEmpty) {
