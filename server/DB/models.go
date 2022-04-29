@@ -52,6 +52,17 @@ type Message struct {
 	IsTaskDescriptionItem   bool `gorm:"default:false"`
 }
 
+type SeenTask struct {
+	UserID int64 `sql:"unique_index:idx_userid_taskid"`
+	TaskID int64 `sql:"unique_index:idx_userid_taskid"`
+}
+
+type SeenMessage struct {
+	UserID    int64 `sql:"unique_index:idx_userid_messageid"`
+	TaskID    int64 `sql:"unique_index:idx_userid_messageid"`
+	MessageID int64 `sql:"unique_index:idx_userid_messageid"`
+}
+
 /*type Message struct {
 	ID     int `gorm:"primary_key"`
 	TaskID int

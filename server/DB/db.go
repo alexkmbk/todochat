@@ -2,8 +2,8 @@ package DB
 
 import (
 	"path/filepath"
-	"time"
 
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	. "todochat_server/App"
@@ -245,9 +245,9 @@ func InitDB() {
 
 }
 
-func GetMessagesDB(lastID int64, limit int64, taskID int64, filter string, messageIDPosition int64) []*Message {
+func GetMessagesDB(SessionID uuid.UUID, lastID int64, limit int64, taskID int64, filter string, messageIDPosition int64) []*Message {
 
-	start := time.Now()
+	//	start := time.Now()
 	log.Info("Get Messages")
 
 	var messages []*Message
@@ -269,20 +269,26 @@ func GetMessagesDB(lastID int64, limit int64, taskID int64, filter string, messa
 		DB.Order("ID desc").Where("task_id = ? AND ID < ?", taskID, lastID).Limit(int(limit)).Find(&messages)
 	}
 
-	/*for i := range messages {
-		data, err_read := os.ReadFile(filepath.Join(FileStoragePath, messages[i].SmallImageLocalPath))
-		if err_read == nil {
-			messages[i].SmallImageBase64 = ToBase64(data)
+	UserID := GetUserIDBySessionID(SessionID)
+	for i := range messages {
+		seenMessage := SeenMessage{UserID: UserID, TaskID: taskID, MessageID: messages[i].ID}
+		if DB.First(&seenMessage).Error != nil {
+			DB.Save(&seenMessage)
 		}
+	}
 
-	}*/
+	seenTask := SeenTask{UserID: UserID, TaskID: taskID}
+	if DB.First(&seenTask).Error != nil {
+		DB.Save(&seenTask)
+	}
+
 	/*res, err := json.Marshal(messages)
 
 	if err != nil {
 		res = []byte{}
 	}*/
-	elapsed := time.Since(start)
-	log.Printf("Get messages took %s", elapsed.Seconds())
+	//elapsed := time.Since(start)
+	//log.Printf("Get messages took %s", elapsed.Seconds())
 
 	return messages
 }

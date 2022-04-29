@@ -58,6 +58,17 @@ func GetUserID(w http.ResponseWriter, r *http.Request) int64 {
 	return session.UserID
 }
 
+func GetUserIDBySessionID(sessionID uuid.UUID) int64 {
+	var session Session
+	session.SessionID = sessionID
+
+	var err error
+	if err = sessionDB.First(&session).Error; err != nil {
+		return 0
+	}
+	return session.UserID
+}
+
 func SessionIDExists(sessionID uuid.UUID) bool {
 	var session Session
 	session.SessionID = sessionID

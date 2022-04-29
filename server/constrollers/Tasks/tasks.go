@@ -136,6 +136,18 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
+	UserID := GetUserID(w, r)
+	if UserID != 0 {
+		for i := range tasks {
+			seenTask := SeenTask{UserID: UserID, TaskID: tasks[i].ID}
+			if DB.Model(&SeenTask{}).First(&seenTask).Error == nil {
+				tasks[i].Read = true
+			}
+			//tasks[i].UnreadMessages = DB.Model(&SeenMessage{}).Where("user_id = ? AND task_id = ?", UserID, tasks[i].ID).Count()
+		}
+
+	}
+
 	m := make(map[string]interface{})
 	m["tasks"] = tasks
 	json.NewEncoder(w).Encode(m)
