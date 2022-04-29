@@ -396,14 +396,30 @@ class ChatBubble extends StatelessWidget {
                       message.userName,
                       style: const TextStyle(color: Colors.blue),
                     ),
-                  textWidget,
-                  Positioned(
-                    left: constraints.maxWidth - (Timestamp.size.width + 10.0),
-                    top: lastBox != null
-                        ? (fitsLastLine ? lastBox.top : lastBox.bottom) + 5.0
-                        : 0,
-                    child: Timestamp(message.created_at ?? DateTime.now()),
-                  ),
+                  Stack(children: [
+                    if (lastBox != null)
+                      SizedBox.fromSize(
+                          size: Size(
+                            Timestamp.size.width + lastBox.right,
+                            (fitsLastLine ? lastBox.top : lastBox.bottom) +
+                                Timestamp.size.height +
+                                5,
+                          ),
+                          child: Container()),
+                    textWidget,
+                    Positioned(
+                      left: lastBox != null ? lastBox.right + 5 : 0,
+                      //constraints.maxWidth - (Timestamp.size.width + 10.0),
+                      top: lastBox != null
+                          ? (fitsLastLine ? lastBox.top : lastBox.bottom) + 5
+                          : 0.0,
+                      child: Timestamp(message.created_at ?? DateTime.now()),
+                    ),
+                    /*Align(
+                      alignment: Alignment.bottomRight,
+                      child: Timestamp(message.created_at ?? DateTime.now()),
+                    )*/
+                  ]),
                 ]))),
       );
     } else {
