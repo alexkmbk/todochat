@@ -292,6 +292,8 @@ class _TasksPageState extends State<TasksPage> {
         res.add(Task.fromJson(item));
       }
       if (tasks.length > 0) {
+        res[0].read = true;
+        res[0].unreadMessages = 0;
         tasksListProvider.currentTask = Task.fromJson(tasks[0]);
       } else {
         tasksListProvider.currentTask = null;
@@ -358,10 +360,16 @@ class _TasksPageState extends State<TasksPage> {
         tasksListProvider.lastID = lastItem["ID"];
         tasksListProvider.lastCreation_date =
             DateTime.tryParse(lastItem["Creation_date"]);
-        tasksListProvider.currentTask ??= Task.fromJson(tasks[0]);
-      }
-      for (var item in tasks) {
-        res.add(Task.fromJson(item));
+
+        for (var item in tasks) {
+          res.add(Task.fromJson(item));
+        }
+
+        if (tasksListProvider.currentTask == null) {
+          tasksListProvider.currentTask = Task.fromJson(tasks[0]);
+          res[0].read = true;
+          res[0].unreadMessages = 0;
+        }
       }
     } else if (response.statusCode == 401) {
       bool result = await Navigator.push(

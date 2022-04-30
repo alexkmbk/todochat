@@ -500,6 +500,7 @@ class _TaskListTileState extends State<TaskListTile> {
         "limit": "30",
         "taskID": widget.msgListProvider.taskID.toString(),
       }));
+
       /*setState(() {
         msgListProvider.clear();
         tasksListProvider.currentTask = task;
@@ -507,6 +508,9 @@ class _TaskListTileState extends State<TaskListTile> {
     } else {
       openTask(context, task);
     }
+
+    task.read = true;
+    task.unreadMessages = 0;
   }
 
   void onLongPress(Task task) {
