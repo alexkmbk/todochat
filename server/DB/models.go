@@ -53,14 +53,14 @@ type Message struct {
 }
 
 type SeenTask struct {
-	UserID int64 `sql:"unique_index:idx_userid_taskid"`
-	TaskID int64 `sql:"unique_index:idx_userid_taskid"`
+	UserID int64 `gorm:"primaryKey;autoIncrement:false;uniqueIndex:idx_userid_taskid"`
+	TaskID int64 `gorm:"primaryKey;autoIncrement:false;uniqueIndex:idx_userid_taskid"`
 }
 
 type SeenMessage struct {
-	UserID    int64 `sql:"unique_index:idx_userid_messageid"`
-	TaskID    int64 `sql:"unique_index:idx_userid_messageid"`
-	MessageID int64 `sql:"unique_index:idx_userid_messageid"`
+	UserID    int64 `gorm:"primaryKey;autoIncrement:false;uniqueIndex:idx_userid_messageid"`
+	TaskID    int64 `gorm:"primaryKey;autoIncrement:false;uniqueIndex:idx_userid_messageid"`
+	MessageID int64 `gorm:"primaryKey;autoIncrement:false;uniqueIndex:idx_userid_messageid"`
 }
 
 /*type Message struct {

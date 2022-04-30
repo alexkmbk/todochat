@@ -140,13 +140,19 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 	if UserID != 0 {
 		for i := range tasks {
 			seenTask := SeenTask{UserID: UserID, TaskID: tasks[i].ID}
-			if DB.Model(&SeenTask{}).First(&seenTask).Error == nil {
+			if DB.First(&seenTask).Error == nil {
 				tasks[i].Read = true
 			}
 			var readCount, total int64
 			DB.Model(&SeenMessage{}).Where("user_id = ? AND task_id = ?", UserID, tasks[i].ID).Count(&readCount)
-			DB.Model(&Message{}).Where("task_id = ?", tasks[i].ID).Count(&total)
-			tasks[i].UnreadMessages = int(total - readCount)
+			DB.Model(&Message{}).Where("task_id = ? AND NOT Is_Task_Description_Item", tasks[i].ID).Count(&total)
+
+			UnreadMessages := int(total - readCount)
+
+			if UnreadMessages < 0 {
+				UnreadMessages = 0
+			}
+			tasks[i].UnreadMessages = UnreadMessages
 
 		}
 
