@@ -252,33 +252,34 @@ class _TaskListTileState extends State<TaskListTile> {
       return Card(
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8.0))),
-          child: Row(children: [
-            Expanded(
-                child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: CallbackShortcuts(
-                        bindings: {
-                          const SingleActivator(LogicalKeyboardKey.escape,
-                              control: false): () {
-                            if (widget.task.isNewItem) {
-                              widget.tasksListProvider.deleteEditorItem();
-                            } else {
-                              setState(() {
-                                widget.task.editMode = false;
-                              });
+          child: Column(children: [
+            Row(children: [
+              Expanded(
+                  child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: CallbackShortcuts(
+                          bindings: {
+                            const SingleActivator(LogicalKeyboardKey.escape,
+                                control: false): () {
+                              if (widget.task.isNewItem) {
+                                widget.tasksListProvider.deleteEditorItem();
+                              } else {
+                                setState(() {
+                                  widget.task.editMode = false;
+                                });
+                              }
+                              FocusScope.of(context).unfocus();
+                            },
+                            const SingleActivator(LogicalKeyboardKey.enter,
+                                control: true): () {
+                              textEditingController.text =
+                                  textEditingController.text + '\n';
+                              textEditingController.setCursorOnEnd();
                             }
-                            FocusScope.of(context).unfocus();
                           },
-                          const SingleActivator(LogicalKeyboardKey.enter,
-                              control: true): () {
-                            textEditingController.text =
-                                textEditingController.text + '\n';
-                            textEditingController.setCursorOnEnd();
-                          }
-                        },
-                        child: Focus(
-                          onFocusChange: (hasFocus) {
-                            /*  if (!hasFocus) {
+                          child: Focus(
+                            onFocusChange: (hasFocus) {
+                              /*  if (!hasFocus) {
                               if (widget.task.isNewItem) {
                                 widget.tasksListProvider.deleteEditorItem();
                               } else {
@@ -287,45 +288,49 @@ class _TaskListTileState extends State<TaskListTile> {
                                 });
                               }
                             }*/
-                          },
-                          child: TextField(
-                              keyboardType: TextInputType.multiline,
-                              maxLines: null,
-                              controller: textEditingController,
-                              decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: widget.task.isNewItem
-                                      ? "New task name"
-                                      : null),
-                              autofocus: true,
-                              textInputAction: TextInputAction.newline,
-                              onSubmitted: (value) async {
-                                if (value.isNotEmpty) {
-                                  if (widget.task.isNewItem) {
-                                    await widget.inifiniteTaskList
-                                        .onAddFn(value);
-                                    widget.tasksListProvider.deleteEditorItem();
-                                  } else {
-                                    var tempTask = Task.from(widget.task);
-                                    tempTask.Description = value;
-                                    if (tempTask.Description.endsWith('\n')) {
-                                      tempTask.Description =
-                                          tempTask.Description.substring(0,
-                                              tempTask.Description.length - 1);
-                                    }
-                                    var res = await updateTask(tempTask);
-                                    if (res) {
-                                      setState(() {
-                                        widget.task.Description =
-                                            tempTask.Description;
-                                        widget.task.editMode = false;
-                                      });
+                            },
+                            child: TextField(
+                                keyboardType: TextInputType.multiline,
+                                maxLines: null,
+                                controller: textEditingController,
+                                decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: widget.task.isNewItem
+                                        ? "New task name"
+                                        : null),
+                                autofocus: true,
+                                textInputAction: TextInputAction.newline,
+                                onSubmitted: (value) async {
+                                  if (value.isNotEmpty) {
+                                    if (widget.task.isNewItem) {
+                                      await widget.inifiniteTaskList
+                                          .onAddFn(value);
+                                      widget.tasksListProvider
+                                          .deleteEditorItem();
+                                    } else {
+                                      var tempTask = Task.from(widget.task);
+                                      tempTask.Description = value;
+                                      if (tempTask.Description.endsWith('\n')) {
+                                        tempTask.Description =
+                                            tempTask.Description.substring(
+                                                0,
+                                                tempTask.Description.length -
+                                                    1);
+                                      }
+                                      var res = await updateTask(tempTask);
+                                      if (res) {
+                                        setState(() {
+                                          widget.task.Description =
+                                              tempTask.Description;
+                                          widget.task.editMode = false;
+                                        });
+                                      }
                                     }
                                   }
-                                }
-                              }),
-                        )))),
-            Row(children: [
+                                }),
+                          )))),
+            ]),
+            Wrap(alignment: WrapAlignment.spaceAround, children: [
               OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     shape: const StadiumBorder(),
@@ -356,6 +361,7 @@ class _TaskListTileState extends State<TaskListTile> {
                     }
                   },
                   child: const Text("Save")),
+              const SizedBox(width: 10),
               OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     shape: const StadiumBorder(),
