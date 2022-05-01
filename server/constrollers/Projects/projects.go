@@ -99,8 +99,7 @@ func GetItem(w http.ResponseWriter, r *http.Request) {
 
 	item := getItemByID(id)
 	if item == nil {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		io.WriteString(w, `{"deleted": false, "error": "Record Not Found"}`)
+		http.Error(w, "Record Not Found", http.StatusNotFound)
 	} else {
 
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")

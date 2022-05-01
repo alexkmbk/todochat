@@ -82,6 +82,13 @@ class _TasksPageState extends State<TasksPage> {
     if (tasksListProvider.projectID != null &&
         tasksListProvider.project == null) {
       tasksListProvider.project = await getProject(tasksListProvider.projectID);
+      if (tasksListProvider.project == null) {
+        tasksListProvider.project = await requestFirstItem();
+        if (tasksListProvider.project != null) {
+          tasksListProvider.projectID = tasksListProvider.project!.ID;
+          await requestTasks(tasksListProvider, context);
+        }
+      }
     }
     return true;
   }

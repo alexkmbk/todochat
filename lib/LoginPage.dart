@@ -77,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
     if (response.statusCode == 200) {
       var data = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
       sessionID = data["sessionID"];
-      currentUserID = data["UserID"];
+      currentUserID = data["userID"];
       httpClient.defaultHeaders = {"sessionID": sessionID};
 
       if (serverURI.scheme != "http" || !isWeb()) {

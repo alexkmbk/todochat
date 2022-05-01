@@ -63,7 +63,9 @@ class TasksListProvider extends ChangeNotifier {
       item.lastMessage = message.text;
       item.lastMessageID = message.ID;
       item.lastMessageUserName = message.userName;
-      item.unreadMessages++;
+      if (message.userID != currentUserID) {
+        item.unreadMessages++;
+      }
       notifyListeners();
     }
   }
@@ -340,7 +342,7 @@ class _TaskListTileState extends State<TaskListTile> {
                     if (textEditingController.text.isNotEmpty) {
                       if (widget.task.isNewItem) {
                         await widget.inifiniteTaskList
-                            .onAddFn(textEditingController.text);
+                            .onAddFn(textEditingController.text.trim());
                         widget.tasksListProvider.deleteEditorItem();
                         widget.tasksListProvider.taskEditMode = false;
                       } else {

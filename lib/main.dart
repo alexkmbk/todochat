@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
       var physicalPixelWidth = mediaQueryData.size.width;
 
       if (physicalPixelWidth > 1000) {
-        //isDesktopMode = true;
+        isDesktopMode = true;
       }
     }
 

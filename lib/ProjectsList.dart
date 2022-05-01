@@ -392,8 +392,7 @@ Future<Project?> getProject(int? projectID) async {
   Response response;
   try {
     response = await httpClient.get(
-        setUriProperty(serverURI, path: 'project/' + projectID.toString()),
-        headers: {"sessionID": sessionID});
+        setUriProperty(serverURI, path: 'project/' + projectID.toString()));
   } catch (e) {
     return null;
   }
