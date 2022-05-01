@@ -77,6 +77,17 @@ class _LoginPageState extends State<LoginPage> {
     if (response.statusCode == 200) {
       var data = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
       sessionID = data["sessionID"];
+      currentUserID = data["UserID"];
+      httpClient.defaultHeaders = {"sessionID": sessionID};
+
+      if (serverURI.scheme != "http" || !isWeb()) {
+        const storage = FlutterSecureStorage();
+        await storage.write(
+            key: "userName", value: userNameController.text.trim());
+        await storage.write(
+            key: "password", value: passwordController.text.trim());
+      }
+
       return true;
     }
 

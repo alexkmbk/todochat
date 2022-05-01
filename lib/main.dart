@@ -38,6 +38,16 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    var instance = WidgetsBinding.instance;
+    if (instance != null) {
+      var mediaQueryData = MediaQueryData.fromWindow(instance.window);
+      var physicalPixelWidth = mediaQueryData.size.width;
+
+      if (physicalPixelWidth > 1000) {
+        //isDesktopMode = true;
+      }
+    }
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(
@@ -226,13 +236,6 @@ class _MyHomePageState extends State<MyHomePage> {
           print(e.toString());
         }
       }
-    }
-
-    var mediaQuery = MediaQuery.of(context);
-    var physicalPixelWidth = mediaQuery.size.width;
-
-    if (physicalPixelWidth > 1000) {
-      isDesktopMode = true;
     }
     appInitialized = true;
     return true;

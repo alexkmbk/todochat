@@ -63,6 +63,7 @@ class TasksListProvider extends ChangeNotifier {
       item.lastMessage = message.text;
       item.lastMessageID = message.ID;
       item.lastMessageUserName = message.userName;
+      item.unreadMessages++;
       notifyListeners();
     }
   }
@@ -468,7 +469,7 @@ class _TaskListTileState extends State<TaskListTile> {
                                           color: Colors.white, fontSize: 12),
                                     )),
                                     decoration: const BoxDecoration(
-                                        color: Colors.grey,
+                                        color: Colors.blue,
                                         borderRadius: BorderRadius.only(
                                           topLeft: Radius.circular(12),
                                           bottomLeft: Radius.circular(12),
@@ -487,6 +488,8 @@ class _TaskListTileState extends State<TaskListTile> {
         return;
       }
       widget.msgListProvider.clear(true);
+      task.read = true;
+      task.unreadMessages = 0;
       widget.tasksListProvider.currentTask = task;
       widget.tasksListProvider.refresh();
       widget.msgListProvider.taskID = task.ID;
@@ -507,10 +510,11 @@ class _TaskListTileState extends State<TaskListTile> {
       });*/
     } else {
       openTask(context, task);
+      setState(() {
+        task.read = true;
+        task.unreadMessages = 0;
+      });
     }
-
-    task.read = true;
-    task.unreadMessages = 0;
   }
 
   void onLongPress(Task task) {

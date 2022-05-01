@@ -216,7 +216,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
   Widget build(BuildContext context) {
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       if (_msgListProvider.foundMessageID > 0 &&
-          _msgListProvider.items.isNotEmpty) {
+          _msgListProvider.items.length > 1) {
         _msgListProvider.jumpTo(_msgListProvider.foundMessageID);
         _msgListProvider.foundMessageID = 0;
       }
@@ -366,13 +366,13 @@ class ChatBubble extends StatelessWidget {
     if (message.fileName.isEmpty) {
       final textSpan = TextSpan(text: message.text);
       final textWidget = SelectableText.rich(textSpan);
-      final TextBox? lastBox =
+      /*final TextBox? lastBox =
           calcLastLineEnd(message.text, textSpan, context, constraints);
       bool fitsLastLine = false;
       if (lastBox != null) {
         fitsLastLine =
             constraints.maxWidth - lastBox.right > Timestamp.size.width + 10.0;
-      }
+      }*/
 
       return DecoratedBox(
         // chat bubble decoration
@@ -397,7 +397,7 @@ class ChatBubble extends StatelessWidget {
                       style: const TextStyle(color: Colors.blue),
                     ),
                   Stack(children: [
-                    if (lastBox != null)
+                    /*if (lastBox != null)
                       SizedBox.fromSize(
                           size: Size(
                             Timestamp.size.width + lastBox.right,
@@ -405,16 +405,16 @@ class ChatBubble extends StatelessWidget {
                                 Timestamp.size.height +
                                 5,
                           ),
-                          child: Container()),
+                          child: Container()),*/
                     textWidget,
-                    Positioned(
+                    /*Positioned(
                       left: lastBox != null ? lastBox.right + 5 : 0,
                       //constraints.maxWidth - (Timestamp.size.width + 10.0),
                       top: lastBox != null
                           ? (fitsLastLine ? lastBox.top : lastBox.bottom) + 5
                           : 0.0,
                       child: Timestamp(message.created_at ?? DateTime.now()),
-                    ),
+                    ),*/
                     /*Align(
                       alignment: Alignment.bottomRight,
                       child: Timestamp(message.created_at ?? DateTime.now()),

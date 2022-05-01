@@ -30,8 +30,9 @@ class _TasksPageState extends State<TasksPage> {
   final ItemScrollController _scrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
-
   bool showSearch = isDesktopMode;
+
+  late FloatingActionButton floatingActionButton;
 
   @override
   void initState() {
@@ -39,6 +40,19 @@ class _TasksPageState extends State<TasksPage> {
 
     tasksListProvider = Provider.of<TasksListProvider>(context, listen: false);
     msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
+
+    floatingActionButton = FloatingActionButton(
+      onPressed: () {
+        if (!tasksListProvider.taskEditMode) {
+          tasksListProvider.addEditorItem();
+          tasksListProvider.taskEditMode = true;
+        }
+      },
+      child: const Icon(
+        Icons.add,
+        color: Colors.white,
+      ),
+    );
 
     tasksListProvider.projectID = settings.getInt("projectID");
 
@@ -82,20 +96,8 @@ class _TasksPageState extends State<TasksPage> {
               child: Scaffold(
                   appBar: TasksPageAppBar(tasksPageState: this),
                   body: renderBody(),
-                  floatingActionButton: !isDesktopMode
-                      ? FloatingActionButton(
-                          onPressed: () {
-                            if (!tasksListProvider.taskEditMode) {
-                              tasksListProvider.addEditorItem();
-                              tasksListProvider.taskEditMode = true;
-                            }
-                          },
-                          child: const Icon(
-                            Icons.add,
-                            color: Colors.white,
-                          ),
-                        )
-                      : null));
+                  floatingActionButton:
+                      !isDesktopMode ? floatingActionButton : null));
         });
   }
 
@@ -199,6 +201,8 @@ class _TasksPageState extends State<TasksPage> {
       task.Creation_date =
           DateTime.tryParse(data["Creation_date"]) ?? DateTime.utc(0);
       task.authorID = data["AuthorID"];
+      task.authorName = data["AuthorName"];
+      task.read = true;
 
       createMessage(text: "", taskID: task.ID, isTaskDescriptionItem: true);
       return task;
@@ -207,12 +211,12 @@ class _TasksPageState extends State<TasksPage> {
     return null;
   }
 
-  Future<bool> onAddTask(String Description) async {
+  Future<bool> onAddTask(String description) async {
     if (sessionID == "") {
       return false;
     }
 
-    Task? task = await createTask(Description);
+    Task? task = await createTask(description);
 
     if (task == null) return false;
 
