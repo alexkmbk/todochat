@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -91,6 +92,10 @@ class Task {
   bool read = false;
   int unreadMessages = 0;
   String lastMessageUserName = "";
+  String fileName = "";
+  int fileSize = 0;
+  String localFileName = "";
+  Uint8List? previewSmallImageData;
 
   Task(
       {this.ID = 0,
@@ -113,23 +118,35 @@ class Task {
       'Read': read,
       'UnreadMessages': unreadMessages,
       'LastMessageUserName': lastMessageUserName,
+      'FileName': fileName,
+      'FileSize': fileSize,
+      'LocalFileName': localFileName,
+      'previewSmallImageBase64': toBase64(previewSmallImageData),
     };
   }
 
-  Task.fromJson(Map<String, dynamic> json)
-      : ID = json['ID'],
-        Creation_date =
-            DateTime.tryParse(json['Creation_date']) ?? DateTime.utc(0),
-        Completed = json['Completed'],
-        Description = json['Description'],
-        lastMessage = json['LastMessage'],
-        lastMessageID = json['LastMessageID'],
-        projectID = json['ProjectID'],
-        authorID = json['AuthorID'],
-        authorName = json['AuthorName'],
-        read = json['Read'],
-        unreadMessages = json['UnreadMessages'],
-        lastMessageUserName = json['LastMessageUserName'];
+  Task.fromJson(Map<String, dynamic> json) {
+    ID = json['ID'];
+    Creation_date = DateTime.tryParse(json['Creation_date']) ?? DateTime.utc(0);
+    Completed = json['Completed'];
+    Description = json['Description'];
+    lastMessage = json['LastMessage'];
+    lastMessageID = json['LastMessageID'];
+    projectID = json['ProjectID'];
+    authorID = json['AuthorID'];
+    authorName = json['AuthorName'];
+    read = json['Read'];
+    unreadMessages = json['UnreadMessages'];
+    lastMessageUserName = json['LastMessageUserName'];
+    fileName = json['FileName'];
+    fileSize = json['FileSize'];
+    localFileName = json['LocalFileName'];
+
+    var previewSmallImageBase64 = json['PreviewSmallImageBase64'];
+    if (previewSmallImageBase64 != null && previewSmallImageBase64 != "") {
+      previewSmallImageData = fromBase64(previewSmallImageBase64);
+    }
+  }
 
   Task.from(Task task) {
     ID = task.ID;
@@ -144,6 +161,10 @@ class Task {
     read = task.read;
     unreadMessages = task.unreadMessages;
     lastMessageUserName = task.lastMessageUserName;
+    fileName = task.fileName;
+    fileSize = task.fileSize;
+    localFileName = task.localFileName;
+    previewSmallImageData = task.previewSmallImageData;
   }
 }
 
@@ -333,6 +354,42 @@ class _TaskListTileState extends State<TaskListTile> {
                                 }),
                           )))),
             ]),
+            if (widget.task.fileSize > 0) ...[
+              const Expanded(child: Divider()),
+              if (widget.task.previewSmallImageData != null)
+                Image.memory(widget.task.previewSmallImageData as Uint8List)
+              else if (widget.task.fileName.isNotEmpty)
+                DecoratedBox(
+                    // chat bubble decoration
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: GestureDetector(
+                      //onTap: () => onTapOnFileMessage(widget.task, context),
+                      child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Icon(Icons.file_present_rounded,
+                                    color: Colors.white),
+                                const SizedBox(width: 10),
+                                FittedBox(
+                                    fit: BoxFit.fill,
+                                    alignment: Alignment.center,
+                                    child: SelectableText(
+                                      widget.task.fileName,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyText1!
+                                          .copyWith(color: Colors.white),
+                                    )),
+                              ])),
+                    )),
+            ],
             Wrap(alignment: WrapAlignment.spaceAround, children: [
               OutlinedButton(
                   style: OutlinedButton.styleFrom(

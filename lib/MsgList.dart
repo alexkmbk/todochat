@@ -312,29 +312,40 @@ class ChatBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       if (message.isTaskDescriptionItem && msgListProvider.task != null) {
-        return DecoratedBox(
-            decoration: BoxDecoration(
+        return Column(children: [
+          /*Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Created by ${msgListProvider.task!.authorName} at ${dateFormat(msgListProvider.task!.Creation_date)}",
+                style: const TextStyle(color: Colors.grey),
+              )),*/
+          //const SizedBox(height: 5),
+          Card(
               color: msgListProvider.task!.Completed
                   ? completedTaskColor
                   : uncompletedTaskColor,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(children: [
-                Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      msgListProvider.task!.authorName,
-                      style: const TextStyle(color: Colors.blue),
-                    )),
-                Align(
-                    alignment: Alignment.centerLeft,
-                    child: SelectableText(
-                      msgListProvider.task!.Description,
-                    )),
-              ]),
-            ));
+              /*shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(8.0))),*/
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(children: [
+                  Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Created by ${msgListProvider.task!.authorName} at ${dateFormat(msgListProvider.task!.Creation_date)}",
+                        style: const TextStyle(color: Colors.grey),
+                      )),
+                  const SizedBox(height: 5),
+                  Align(
+                      alignment: Alignment.centerLeft,
+                      child: SelectableText(
+                        msgListProvider.task!.Description,
+                      )),
+                ]),
+              )),
+          const SizedBox(height: 5),
+          const Text("***", style: TextStyle(color: Colors.grey)),
+        ]);
       } else {
         return Dismissible(
             key: UniqueKey(),

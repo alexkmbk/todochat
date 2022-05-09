@@ -12,6 +12,7 @@ import 'package:file_saver/file_saver.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart';
 import 'highlight_text.dart';
+import 'package:intl/intl.dart';
 
 class WSMessage {
   String command = "";
@@ -237,6 +238,11 @@ extension SetCursorOnEnd on TextEditingController {
   void setCursorOnEnd() {
     selection = TextSelection.fromPosition(TextPosition(offset: text.length));
   }
+}
+
+String dateFormat(DateTime datetime, [String format = 'yyyy-MM-dd HH:mm']) {
+  final DateFormat formatter = DateFormat(format);
+  return formatter.format(datetime);
 }
 /*Map<String, HighlightedWord> getHighlightedWords(String? str) {
   Map<String, HighlightedWord> res = {};
