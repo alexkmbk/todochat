@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'dart:io';
+//import 'dart:io';
 
 import 'package:http/http.dart' as http;
-import 'dart:convert' as convert;
+//import 'dart:convert' as convert;
 import 'package:crypto/crypto.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -12,6 +12,8 @@ import 'SettingsPage.dart';
 import 'customWidgets.dart';
 import 'main.dart';
 import 'utils.dart';
+
+//import 'dart:html' as html;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -99,7 +101,8 @@ class _LoginPageState extends State<LoginPage> {
         body: Form(
             onWillPop: () async => false,
             key: _formKey,
-            child: Column(
+            child: AutofillGroup(
+                child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const ElevatedButton(onPressed: ExitApp, child: Text("Exit")),
@@ -147,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
                       }
                     }),
               ],
-            )));
+            ))));
   }
 
   Widget showRegistrationPage() {
@@ -214,6 +217,15 @@ Future<bool> login(
     }
   }
 
+  /*if (isWeb()) {
+    var credentials = html.window.navigator.credentials;
+
+    if (credentials != null) {
+      html.Credential credential = await credentials.get({password: true});
+      userName = credential.id;
+      password = credential.type;
+    }
+  }*/
   if (userName == null || userName.isEmpty || password == null) {
     return false;
   }

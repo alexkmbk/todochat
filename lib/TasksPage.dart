@@ -227,8 +227,13 @@ class _TasksPageState extends State<TasksPage> {
 
     if (task == null) return false;
 
+    tasksListProvider.currentTask = task;
     tasksListProvider.addItem(task);
-    if (!isDesktopMode) {
+    if (isDesktopMode) {
+      msgListProvider.taskID = task.ID;
+      msgListProvider.task = task;
+      msgListProvider.clear(true);
+    } else {
       openTask(context, task);
     }
 

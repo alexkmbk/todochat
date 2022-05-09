@@ -12,6 +12,7 @@ import 'utils.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as path;
 import 'main.dart';
+import 'package:collection/collection.dart';
 
 class MsgListProvider extends ChangeNotifier {
   List<Message> items = [];
@@ -67,8 +68,10 @@ class MsgListProvider extends ChangeNotifier {
     if (message.taskID != taskID) {
       return;
     }
-    items.insert(0, message);
-    notifyListeners();
+    if (items.firstWhereOrNull((element) => element.ID == message.ID) == null) {
+      items.insert(0, message);
+      notifyListeners();
+    }
   }
 
   void deleteItem(int messageID) async {
