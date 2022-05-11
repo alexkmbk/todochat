@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
+import 'package:pasteboard/pasteboard.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'MsgList.dart';
@@ -138,14 +139,14 @@ class Task {
     read = json['Read'];
     unreadMessages = json['UnreadMessages'];
     lastMessageUserName = json['LastMessageUserName'];
-    fileName = json['FileName'];
+    /*fileName = json['FileName'];
     fileSize = json['FileSize'];
     localFileName = json['LocalFileName'];
 
     var previewSmallImageBase64 = json['PreviewSmallImageBase64'];
     if (previewSmallImageBase64 != null && previewSmallImageBase64 != "") {
       previewSmallImageData = fromBase64(previewSmallImageBase64);
-    }
+    }*/
   }
 
   Task.from(Task task) {
@@ -299,7 +300,7 @@ class _TaskListTileState extends State<TaskListTile> {
                               textEditingController.text =
                                   textEditingController.text + '\n';
                               textEditingController.setCursorOnEnd();
-                            }
+                            },
                           },
                           child: Focus(
                             onFocusChange: (hasFocus) {

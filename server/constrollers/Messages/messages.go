@@ -253,6 +253,7 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 }*/
 
 func CreateMessage(w http.ResponseWriter, r *http.Request) {
+
 	userID := GetUserID(w, r)
 	if userID == 0 {
 		return
@@ -278,22 +279,29 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 		}
 		if part.FormName() == "File" {
 			ext := filepath.Ext(part.FileName())
+
 			fileData, _ = ioutil.ReadAll(part)
+
 			fileName = uuid.New().String() + ext
 			fileSize = int64(len(fileData))
+
 			err = os.WriteFile(filepath.Join(FileStoragePath, fileName), fileData, 0644)
+
 			if err != nil {
 				fileName = ""
 			}
 
 			if message.IsImage {
+
 				smallImageData, err, message.SmallImageHeight, message.SmallImageWidth = ResizeImageByHeight(fileData, 200)
 
 				if err == nil {
 					smallImageFileName = uuid.New().String() + ext
 					err = os.WriteFile(filepath.Join(FileStoragePath, smallImageFileName), smallImageData, 0644)
+
 					if err != nil {
 						smallImageFileName = ""
+						log.Info("Resize image error: " + err.Error())
 					}
 				}
 
@@ -317,7 +325,6 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-
 	user, success := Users.GetItemByID(userID)
 	if success {
 		message.UserName = user.Name
@@ -370,6 +377,13 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 		log.WithFields(log.Fields{"ID": id}).Info("Deleting TodoItem")
 
 		DB.First(&message, id)
+
+		if message.SmallImageName != "" {
+			err := os.Remove(filepath.Join(FileStoragePath, message.SmallImageName))
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
 		DB.Delete(&message)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		io.WriteString(w, `{"deleted": true}`)

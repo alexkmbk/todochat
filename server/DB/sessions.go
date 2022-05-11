@@ -78,6 +78,12 @@ func SessionIDExists(sessionID uuid.UUID) bool {
 	return true
 }
 
+func DeleteSession(sessionID uuid.UUID) {
+	var session Session
+	session.SessionID = sessionID
+	sessionDB.Delete(&session)
+}
+
 // CreateNewSession ...
 func CreateNewSession(user User) uuid.UUID {
 	var session Session

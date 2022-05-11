@@ -180,6 +180,22 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
+  void connectWebSocketChannel() {
+    if (ws != null) {
+      ws!.sink.close();
+    }
+
+    var scheme = serverURI.scheme == "http" ? "ws" : "wss";
+    ws = WebSocketChannel.connect(
+        setUriProperty(serverURI, scheme: scheme, path: "initMessagesWS"));
+    if (ws != null) {
+      ws!.sink.add(jsonEncode({"command": "init", "sessionID": sessionID}));
+    }
+
+    /*ws = WebSocketChannel.connect(
+          Uri.parse('ws://' + serverURI.authority + "/initMessagesWS"));*/
+  }
+
   Future<bool> initApp(BuildContext context) async {
     if (appInitialized) return true;
     bool res;
@@ -202,12 +218,6 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       serverURI = Uri(scheme: httpScheme, host: host, port: port);
     }
-    if (isServerURI) {
-      ws = WebSocketChannel.connect(
-          setUriProperty(serverURI, scheme: "ws", path: "initMessagesWS"));
-      /*ws = WebSocketChannel.connect(
-          Uri.parse('ws://' + serverURI.authority + "/initMessagesWS"));*/
-    }
     try {
       res = await login();
     } catch (e) {
@@ -217,10 +227,12 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!res) {
       await openLoginPage(context);
     }
+    if (isServerURI && sessionID.isNotEmpty) {
+      connectWebSocketChannel();
+    }
 
     if (sessionID.isNotEmpty && ws != null) {
       try {
-        ws!.sink.add(jsonEncode({"command": "init", "sessionID": sessionID}));
         ws!.stream.listen((messageJson) {
           WSMessage wsMsg = WSMessage.fromJson(messageJson);
           if (wsMsg.command == "getMessages") {
@@ -230,6 +242,14 @@ class _MyHomePageState extends State<MyHomePage> {
             _msgListProvider.addItem(message);
             _tasksListProvider.updateLastMessage(message.taskID, message);
           }
+        }, onDone: () {
+          connectWebSocketChannel();
+        }, onError: (error) {
+          if (kDebugMode) {
+            print(error.toString());
+          }
+          connectWebSocketChannel();
+          //ws!.sink.add(jsonEncode({"command": "init", "sessionID": sessionID}));
         });
       } catch (e) {
         if (kDebugMode) {

@@ -3,6 +3,7 @@ package WS
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -23,6 +24,7 @@ var Upgrader = websocket.Upgrader{
 	WriteBufferSize: 100000,
 } // use default options
 var WSConnections = make(map[uuid.UUID]*websocket.Conn)
+var WSIDs = make(map[*websocket.Conn]uuid.UUID)
 
 func InitMessagesWS(w http.ResponseWriter, r *http.Request) {
 
@@ -36,6 +38,8 @@ func InitMessagesWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	keepAlive(conn, 10*time.Second)
+
 	var sessionID uuid.UUID
 	var message []byte
 
@@ -44,6 +48,7 @@ func InitMessagesWS(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			//log.Println("read:", err)
 			delete(WSConnections, sessionID)
+			delete(WSIDs, conn)
 			conn.Close()
 			break
 		}
@@ -52,6 +57,7 @@ func InitMessagesWS(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			delete(WSConnections, sessionID)
+			delete(WSIDs, conn)
 			conn.Close()
 			break
 		}
@@ -59,13 +65,16 @@ func InitMessagesWS(w http.ResponseWriter, r *http.Request) {
 		if query["command"] == "init" {
 			sessionID, err = uuid.Parse(query["sessionID"])
 			if sessionID == uuid.Nil || !SessionIDExists(sessionID) {
+				println("CLOSE WS CONNECTION ON INIT!")
 				conn.Close()
 				break
 			}
 			WSConnections[sessionID] = conn
+			WSIDs[conn] = sessionID
 		} else if query["command"] == "getMessages" {
 			sessionID, err = uuid.Parse(query["sessionID"])
 			if sessionID == uuid.Nil || !SessionIDExists(sessionID) {
+				println("CLOSE WS CONNECTION ON getMessages!")
 				conn.Close()
 				break
 			}
@@ -96,6 +105,34 @@ func SendWSMessage(message *Message) {
 			conn.WriteJSON(WSMessage{"createMessage", message})
 		}
 	}
+}
+
+func keepAlive(conn *websocket.Conn, timeout time.Duration) {
+	lastResponse := time.Now()
+	conn.SetPongHandler(func(msg string) error {
+		lastResponse = time.Now()
+		return nil
+	})
+
+	go func() {
+		for {
+			err := conn.WriteMessage(websocket.PingMessage, []byte("keepalive"))
+			if err != nil {
+				return
+			}
+			time.Sleep(timeout / 2)
+			if time.Since(lastResponse) > timeout {
+				sessionID, ok := WSIDs[conn]
+				if ok {
+					delete(WSConnections, sessionID)
+					DeleteSession(sessionID)
+				}
+				delete(WSIDs, conn)
+				conn.Close()
+				return
+			}
+		}
+	}()
 }
 
 func Echo(w http.ResponseWriter, r *http.Request) {

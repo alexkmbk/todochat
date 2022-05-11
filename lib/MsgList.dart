@@ -4,8 +4,10 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
+//import 'package:http/http.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'HttpClient.dart';
+import 'package:http/http.dart' as http;
 import 'customWidgets.dart';
 import 'inifiniteTaskList.dart';
 import 'utils.dart';
@@ -525,12 +527,28 @@ Future<bool> createMessage(
     Uint8List? fileData,
     String fileName = "",
     bool isPicture = false,
-    bool isTaskDescriptionItem = false}) async {
+    bool isTaskDescriptionItem = false,
+    Function(int bytes, int totalBytes)? onProgress}) async {
   if (sessionID == "") {
     return false;
   }
 
-  MultipartRequest request = MultipartRequest(
+  final request = MultipartRequest(
+    'POST',
+    setUriProperty(serverURI, path: 'createMessage'),
+    onProgress: onProgress,
+  );
+
+  request.headers['HeaderKey'] = 'header_value';
+  request.fields['form_key'] = 'form_value';
+  if (fileData != null) {
+    request.files.add(
+        http.MultipartFile.fromBytes("File", fileData, filename: fileName));
+  }
+
+  final streamedResponse = await request.send();
+
+  /* MultipartRequest request = MultipartRequest(
       'POST', setUriProperty(serverURI, path: 'createMessage'));
 
   request.headers["sessionID"] = sessionID;
@@ -550,7 +568,7 @@ Future<bool> createMessage(
         .add(MultipartFile.fromBytes("File", fileData, filename: fileName));
   }
 
-  var streamedResponse = await request.send();
+  var streamedResponse = await request.send();*/
   if (streamedResponse.statusCode == 200) {
     return true;
   }

@@ -18,7 +18,7 @@ func main() {
 	FileStoragePath = filepath.Join(GetCurrentDir(), "FileStorage")
 
 	if !FileExists(FileStoragePath) {
-		os.Mkdir(FileStoragePath, 0644)
+		os.Mkdir(FileStoragePath, 0777)
 	}
 
 	log.Info("Starting Todolist API server")
@@ -29,7 +29,11 @@ func main() {
 	if len(os.Args) > 1 {
 		err = http.ListenAndServe(":"+os.Args[1], GetRoutesHandler())
 	} else {
-		err = http.ListenAndServe(":80", GetRoutesHandler())
+		port := os.Getenv("PORT")
+		if port == "" {
+			port = "80"
+		}
+		err = http.ListenAndServe(":"+port, GetRoutesHandler())
 	}
 	if err != nil {
 		println(err.Error())

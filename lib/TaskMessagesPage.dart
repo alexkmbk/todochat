@@ -292,7 +292,8 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                             text: _messageInputController.text,
                             taskID: _msgListProvider.taskID,
                             fileData: res,
-                            fileName: fileName ?? "");
+                            fileName: fileName ?? "",
+                            onProgress: fileUploadProgress);
                         _messageInputController.text = "";
                       }
                     },
@@ -311,6 +312,11 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
         ),
       ),*/
     );
+  }
+
+  void fileUploadProgress(int bytes, int total) {
+    final progress = bytes / total;
+    print('progress: $progress ($bytes/$total)');
   }
 
   Future<void> requestMessages([int messageIDPosition = 0]) async {
@@ -370,8 +376,11 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
 
     try {
       response = await httpClient.delete(
-          Uri.http(
-              serverURI.authority, '/deleteMessage/' + messageID.toString()),
+          setUriProperty(serverURI,
+              path: 'deleteMessage/' + messageID.toString())
+          /*  Uri.http(
+              serverURI.authority, '/deleteMessage/' + messageID.toString())*/
+          ,
           headers: headers);
     } catch (e) {
       return false;
