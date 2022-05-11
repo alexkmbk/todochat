@@ -185,12 +185,12 @@ class _TasksPageState extends State<TasksPage> {
     }
   }
 
-  Future<Task?> createTask(String Description) async {
+  Future<Task?> createTask(String description) async {
     if (sessionID == "") {
       return null;
     }
 
-    Task task = Task(Description: Description);
+    Task task = Task(Description: description);
     Response response;
     try {
       response = await httpClient.post(setUriProperty(serverURI, path: 'todo'),
@@ -210,8 +210,12 @@ class _TasksPageState extends State<TasksPage> {
       task.authorID = data["AuthorID"];
       task.authorName = data["AuthorName"];
       task.read = true;
-
-      createMessage(text: "", taskID: task.ID, isTaskDescriptionItem: true);
+      msgListProvider.task = task;
+      msgListProvider.taskID = task.ID;
+      createMessage(
+          text: "",
+          msgListProvider: msgListProvider,
+          isTaskDescriptionItem: true);
       return task;
     }
 

@@ -70,7 +70,8 @@ class MsgListProvider extends ChangeNotifier {
     if (message.taskID != taskID) {
       return;
     }
-    if (items.firstWhereOrNull((element) => element.ID == message.ID) == null) {
+    if (message.loadingFile ||
+        items.firstWhereOrNull((element) => element.ID == message.ID) == null) {
       items.insert(0, message);
       notifyListeners();
     }
@@ -102,6 +103,9 @@ class Message {
   int smallImageWidth = 0;
   int smallImageHeight = 0;
   bool isTaskDescriptionItem = false;
+  bool loadingFile = false;
+  Uint8List? loadingFileData;
+  Function(int bytes, int totalBytes)? onProgressHandler;
 
   Message(
       {required this.taskID,
@@ -113,7 +117,9 @@ class Message {
       this.localFileName = "",
       this.fileName = "",
       this.isImage = false,
-      this.isTaskDescriptionItem = false});
+      this.isTaskDescriptionItem = false,
+      this.loadingFile = false,
+      this.loadingFileData});
 
   Map<String, dynamic> toJson() {
     return {
@@ -237,19 +243,28 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
         itemCount: _msgListProvider.items.length,
         itemBuilder: (context, index) {
           var item = _msgListProvider.items[index];
-
-          return ChatBubble(
-            index: index,
-            isCurrentUser: item.userID == currentUserID,
-            message: item,
-            msgListProvider: _msgListProvider,
-            getFile: widget.getFile,
-            onDismissed: (direction) async {
-              if (await widget.onDelete(item.ID)) {
-                _msgListProvider.deleteItem(item.ID);
-              }
-            },
-          );
+          if (item.loadingFile) {
+            return LoadingFileBubble(
+              index: index,
+              isCurrentUser: item.userID == currentUserID,
+              message: item,
+              msgListProvider: _msgListProvider,
+              getFile: widget.getFile,
+            );
+          } else {
+            return ChatBubble(
+              index: index,
+              isCurrentUser: item.userID == currentUserID,
+              message: item,
+              msgListProvider: _msgListProvider,
+              getFile: widget.getFile,
+              onDismissed: (direction) async {
+                if (await widget.onDelete(item.ID)) {
+                  _msgListProvider.deleteItem(item.ID);
+                }
+              },
+            );
+          }
           /*} else if (index == items.length && end) {
             return const Center(child: Text('End of list'));*/
           //}
@@ -521,14 +536,121 @@ class ChatBubble extends StatelessWidget {
   }
 }
 
+class LoadingFileBubble extends StatefulWidget {
+  const LoadingFileBubble(
+      {Key? key,
+      required this.message,
+      required this.getFile,
+      required this.isCurrentUser,
+      required this.msgListProvider,
+      required this.index})
+      : super(key: key);
+  final Message message;
+  final bool isCurrentUser;
+  final MsgListProvider msgListProvider;
+  final int index;
+  /*final String text;
+  final String isImage = false;
+  final Uint8List? smallImageData;
+  final bool isCurrentUser;*/
+  final Future<Uint8List> Function(String localFileName) getFile;
+
+  @override
+  State<LoadingFileBubble> createState() => _LoadingFileBubbleState();
+}
+
+class _LoadingFileBubbleState extends State<LoadingFileBubble> {
+  TextBox? calcLastLineEnd(String text, TextSpan textSpan, BuildContext context,
+      BoxConstraints constraints) {
+    final richTextWidget = Text.rich(textSpan).build(context) as RichText;
+    final renderObject = richTextWidget.createRenderObject(context);
+    renderObject.layout(constraints);
+    var boxes = renderObject.getBoxesForSelection(
+        TextSelection(baseOffset: 0, extentOffset: text.length));
+
+/*final TextPainter textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout(minWidth: 0, maxWidth: double.infinity);
+*/
+
+    if (boxes.isEmpty) {
+      return null;
+    } else {
+      return boxes.last;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, constraints) {
+      return Padding(
+        // asymmetric padding
+        padding: EdgeInsets.fromLTRB(
+          widget.isCurrentUser ? 64.0 : 16.0,
+          4,
+          widget.isCurrentUser ? 16.0 : 64.0,
+          4,
+        ),
+        child: Align(
+            // align the child within the container
+            alignment: widget.message.isTaskDescriptionItem
+                ? Alignment.center
+                : widget.isCurrentUser
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+            child: drawBubble(context, constraints)),
+      );
+    });
+  }
+
+  Widget drawBubble(BuildContext context, BoxConstraints constraints) {
+    if (widget.message.isImage && widget.message.loadingFileData != null) {
+      createMessage(
+          text: widget.message.text, msgListProvider: widget.msgListProvider);
+      return Image.memory(widget.message.loadingFileData as Uint8List);
+    } else {
+      return DecoratedBox(
+        // chat bubble decoration
+        decoration: BoxDecoration(
+          color: widget.isCurrentUser
+              ? Colors.blue
+              : const Color.fromARGB(255, 224, 224, 224),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Icon(Icons.file_present_rounded, color: Colors.white),
+                  const SizedBox(width: 10),
+                  FittedBox(
+                      fit: BoxFit.fill,
+                      alignment: Alignment.center,
+                      child: SelectableText(
+                        widget.message.fileName,
+                        style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                            color: widget.isCurrentUser
+                                ? Colors.white
+                                : Colors.black87),
+                      )),
+                ])),
+      );
+    }
+  }
+}
+
 Future<bool> createMessage(
     {required String text,
-    required int taskID,
+    required MsgListProvider msgListProvider,
     Uint8List? fileData,
     String fileName = "",
     bool isPicture = false,
-    bool isTaskDescriptionItem = false,
-    Function(int bytes, int totalBytes)? onProgress}) async {
+    bool isTaskDescriptionItem = false}) async {
   if (sessionID == "") {
     return false;
   }
@@ -536,11 +658,19 @@ Future<bool> createMessage(
   final request = MultipartRequest(
     'POST',
     setUriProperty(serverURI, path: 'createMessage'),
-    onProgress: onProgress,
   );
 
-  request.headers['HeaderKey'] = 'header_value';
-  request.fields['form_key'] = 'form_value';
+  request.headers["sessionID"] = sessionID;
+  request.headers["content-type"] = "application/json; charset=utf-8";
+
+  Message message = Message(
+      taskID: msgListProvider.taskID,
+      text: text,
+      fileName: path.basename(fileName),
+      isImage: isImageFile(fileName),
+      isTaskDescriptionItem: isTaskDescriptionItem);
+
+  request.fields["Message"] = jsonEncode(message);
   if (fileData != null) {
     request.files.add(
         http.MultipartFile.fromBytes("File", fileData, filename: fileName));

@@ -184,8 +184,9 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                           control: false): () {
                         if (_messageInputController.text.isNotEmpty) {
                           createMessage(
-                              text: _messageInputController.text,
-                              taskID: _msgListProvider.taskID);
+                            text: _messageInputController.text,
+                            msgListProvider: _msgListProvider,
+                          );
                           _messageInputController.text = "";
                         }
                       },
@@ -195,7 +196,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                         if (bytes != null) {
                           createMessage(
                               text: _messageInputController.text,
-                              taskID: _msgListProvider.taskID,
+                              msgListProvider: _msgListProvider,
                               fileData: bytes,
                               fileName: "clipboard_image.bmp");
                         } else {
@@ -206,7 +207,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                               if (fileData.isNotEmpty) {
                                 createMessage(
                                     text: _messageInputController.text,
-                                    taskID: _msgListProvider.taskID,
+                                    msgListProvider: _msgListProvider,
                                     fileData: fileData,
                                     fileName: file);
                               }
@@ -233,7 +234,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                                   if (response.statusCode == 200) {
                                     createMessage(
                                         text: "",
-                                        taskID: _msgListProvider.taskID,
+                                        msgListProvider: _msgListProvider,
                                         fileData: response.bodyBytes,
                                         fileName: "clipboard_image.png");
                                   }
@@ -269,7 +270,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                       if (_messageInputController.text.isNotEmpty) {
                         createMessage(
                             text: _messageInputController.text,
-                            taskID: _msgListProvider.taskID);
+                            msgListProvider: _msgListProvider);
                         _messageInputController.text = "";
                       }
                     },
@@ -285,15 +286,11 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                           await FilePicker.platform.pickFiles();
 
                       if (result != null && result.files.single.path != null) {
-                        //File file = File([], result.files.single.path as String);
-                        var fileName = result.files.single.path;
                         var res = await readFile(result.files.single.path);
-                        createMessage(
-                            text: _messageInputController.text,
+                        _msgListProvider.addItem(Message(
                             taskID: _msgListProvider.taskID,
-                            fileData: res,
-                            fileName: fileName ?? "",
-                            onProgress: fileUploadProgress);
+                            loadingFile: true,
+                            loadingFileData: res));
                         _messageInputController.text = "";
                       }
                     },
