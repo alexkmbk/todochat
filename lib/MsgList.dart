@@ -59,27 +59,32 @@ class MsgListProvider extends ChangeNotifier {
     loading = false;
     if (data.length > 0) {
       lastID = data[data.length - 1]["ID"];
-      //notifyListeners();
     }
     notifyListeners();
   }
 
   void addItem(Message message) {
-    //offset++;
-    //lastID = message.ID;
     if (message.taskID != taskID) {
       return;
     }
-    if (message.loadingFile ||
-        items.firstWhereOrNull((element) => element.ID == message.ID) == null) {
+    if (message.tempID.isNotEmpty) {
+      int foundIndex =
+          items.indexWhere((element) => element.tempID == message.tempID);
+      if (foundIndex >= 0) {
+        items[foundIndex] = message;
+      }
+    } else if (message.loadingFile) {
+      message.tempID = UniqueKey().toString();
+      items.insert(0, message);
+      notifyListeners();
+    } else if (items.firstWhereOrNull((element) => element.ID == message.ID) ==
+        null) {
       items.insert(0, message);
       notifyListeners();
     }
   }
 
   void deleteItem(int messageID) async {
-    offset--;
-    if (offset < 0) offset = 0;
     items.removeWhere((item) => item.ID == messageID);
     notifyListeners();
   }
@@ -105,7 +110,8 @@ class Message {
   bool isTaskDescriptionItem = false;
   bool loadingFile = false;
   Uint8List? loadingFileData;
-  Function(int bytes, int totalBytes)? onProgressHandler;
+  bool loadinInProcess = false;
+  String tempID = "";
 
   Message(
       {required this.taskID,
@@ -119,7 +125,8 @@ class Message {
       this.isImage = false,
       this.isTaskDescriptionItem = false,
       this.loadingFile = false,
-      this.loadingFileData});
+      this.loadingFileData,
+      this.tempID = ""});
 
   Map<String, dynamic> toJson() {
     return {
@@ -139,6 +146,7 @@ class Message {
       'smallImageWidth': smallImageWidth,
       'smallImageHeight': smallImageHeight,
       'isTaskDescriptionItem': isTaskDescriptionItem,
+      'TempID': tempID,
     };
   }
 
@@ -163,6 +171,7 @@ class Message {
     }
     var value = json['IsTaskDescriptionItem'];
     isTaskDescriptionItem = value ?? false;
+    tempID = json["TempID"];
   }
 }
 
@@ -560,30 +569,29 @@ class LoadingFileBubble extends StatefulWidget {
 }
 
 class _LoadingFileBubbleState extends State<LoadingFileBubble> {
-  TextBox? calcLastLineEnd(String text, TextSpan textSpan, BuildContext context,
-      BoxConstraints constraints) {
-    final richTextWidget = Text.rich(textSpan).build(context) as RichText;
-    final renderObject = richTextWidget.createRenderObject(context);
-    renderObject.layout(constraints);
-    var boxes = renderObject.getBoxesForSelection(
-        TextSelection(baseOffset: 0, extentOffset: text.length));
-
-/*final TextPainter textPainter = TextPainter(
-      text: textSpan,
-      textDirection: TextDirection.ltr,
-      maxLines: 1,
-    )..layout(minWidth: 0, maxWidth: double.infinity);
-*/
-
-    if (boxes.isEmpty) {
-      return null;
-    } else {
-      return boxes.last;
-    }
-  }
+  double progress = 0.0;
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.message.loadinInProcess) {
+      widget.message.loadinInProcess = true;
+      createMessage(
+          text: widget.message.text,
+          fileData: widget.message.loadingFileData,
+          fileName: widget.message.fileName,
+          msgListProvider: widget.msgListProvider,
+          tempID: widget.message.tempID,
+          onProgress: (int bytes, int totalBytes) {
+            setState(() {
+              if (totalBytes == 0) {
+                progress = 0.0;
+              } else {
+                progress = bytes / totalBytes;
+              }
+            });
+          });
+    }
+
     return LayoutBuilder(builder: (context, constraints) {
       return Padding(
         // asymmetric padding
@@ -607,39 +615,55 @@ class _LoadingFileBubbleState extends State<LoadingFileBubble> {
 
   Widget drawBubble(BuildContext context, BoxConstraints constraints) {
     if (widget.message.isImage && widget.message.loadingFileData != null) {
-      createMessage(
-          text: widget.message.text, msgListProvider: widget.msgListProvider);
-      return Image.memory(widget.message.loadingFileData as Uint8List);
-    } else {
-      return DecoratedBox(
-        // chat bubble decoration
-        decoration: BoxDecoration(
-          color: widget.isCurrentUser
-              ? Colors.blue
-              : const Color.fromARGB(255, 224, 224, 224),
-          borderRadius: BorderRadius.circular(8),
+      return Column(children: [
+        memoryImage(
+          widget.message.loadingFileData as Uint8List,
+          height: 200,
         ),
-        child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Icon(Icons.file_present_rounded, color: Colors.white),
-                  const SizedBox(width: 10),
-                  FittedBox(
-                      fit: BoxFit.fill,
-                      alignment: Alignment.center,
-                      child: SelectableText(
-                        widget.message.fileName,
-                        style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                            color: widget.isCurrentUser
-                                ? Colors.white
-                                : Colors.black87),
-                      )),
-                ])),
-      );
+        if (progress < 1)
+          LinearProgressIndicator(
+            value: progress,
+          )
+      ]);
+    } else {
+      return Column(children: [
+        DecoratedBox(
+          // chat bubble decoration
+          decoration: BoxDecoration(
+            color: widget.isCurrentUser
+                ? Colors.blue
+                : const Color.fromARGB(255, 224, 224, 224),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Icon(Icons.file_present_rounded, color: Colors.white),
+                    const SizedBox(width: 10),
+                    FittedBox(
+                        fit: BoxFit.fill,
+                        alignment: Alignment.center,
+                        child: SelectableText(
+                          widget.message.fileName,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyText1!
+                              .copyWith(
+                                  color: widget.isCurrentUser
+                                      ? Colors.white
+                                      : Colors.black87),
+                        )),
+                  ])),
+        ),
+        if (progress < 1)
+          LinearProgressIndicator(
+            value: progress,
+          )
+      ]);
     }
   }
 }
@@ -650,7 +674,9 @@ Future<bool> createMessage(
     Uint8List? fileData,
     String fileName = "",
     bool isPicture = false,
-    bool isTaskDescriptionItem = false}) async {
+    bool isTaskDescriptionItem = false,
+    Function(int bytes, int totalBytes)? onProgress,
+    String tempID = ""}) async {
   if (sessionID == "") {
     return false;
   }
@@ -658,6 +684,7 @@ Future<bool> createMessage(
   final request = MultipartRequest(
     'POST',
     setUriProperty(serverURI, path: 'createMessage'),
+    onProgress: onProgress,
   );
 
   request.headers["sessionID"] = sessionID;
@@ -668,7 +695,8 @@ Future<bool> createMessage(
       text: text,
       fileName: path.basename(fileName),
       isImage: isImageFile(fileName),
-      isTaskDescriptionItem: isTaskDescriptionItem);
+      isTaskDescriptionItem: isTaskDescriptionItem,
+      tempID: tempID);
 
   request.fields["Message"] = jsonEncode(message);
   if (fileData != null) {

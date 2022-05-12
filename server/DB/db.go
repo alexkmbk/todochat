@@ -1,6 +1,8 @@
 package DB
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"path/filepath"
 
 	"github.com/google/uuid"
@@ -89,6 +91,15 @@ func InitDB() {
 		var project Project
 		project.Description = "Default project"
 		DB.Create(&project)
+	}
+
+	DB.Model(&User{}).Count(&count)
+	if count == 0 {
+		var user User
+		hash := sha256.Sum256([]byte(""))
+		user.PasswordHash = hex.EncodeToString(hash[:])
+		user.Name = "admin"
+		DB.Create(&user)
 	}
 
 	/*var messages []*Message

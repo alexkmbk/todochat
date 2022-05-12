@@ -285,12 +285,17 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                       FilePickerResult? result =
                           await FilePicker.platform.pickFiles();
 
-                      if (result != null && result.files.single.path != null) {
-                        var res = await readFile(result.files.single.path);
+                      var fileName = result?.files.single.path?.trim() ?? "";
+
+                      if (fileName.isNotEmpty) {
+                        var res = await readFile(fileName);
                         _msgListProvider.addItem(Message(
                             taskID: _msgListProvider.taskID,
+                            userID: currentUserID,
+                            fileName: fileName,
                             loadingFile: true,
-                            loadingFileData: res));
+                            loadingFileData: res,
+                            isImage: isImageFile(fileName)));
                         _messageInputController.text = "";
                       }
                     },

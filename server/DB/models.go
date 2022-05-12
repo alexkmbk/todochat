@@ -49,7 +49,8 @@ type Message struct {
 	SmallImageName          string
 	IsImage                 bool
 	Created_at              time.Time
-	IsTaskDescriptionItem   bool `gorm:"default:false"`
+	IsTaskDescriptionItem   bool   `gorm:"default:false"`
+	TempID                  string `gorm:"-"`
 }
 
 type SeenTask struct {

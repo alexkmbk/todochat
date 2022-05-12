@@ -150,6 +150,26 @@ Widget networkImage(String src,
   }
 }
 
+Widget memoryImage(Uint8List data,
+    {Map<String, String>? headers,
+    GestureTapCallback? onTap,
+    double? width,
+    double? height}) {
+  try {
+    return GestureDetector(
+        onTap: onTap,
+        child: ClipRRect(
+            borderRadius: BorderRadius.circular(8.0),
+            child: Image.memory(
+              data,
+              width: width,
+              height: height,
+            )));
+  } catch (e) {
+    return const Placeholder();
+  }
+}
+
 class ImageDialog extends StatelessWidget {
   final FocusNode focusNode = FocusNode();
   final ImageProvider imageProvider;
