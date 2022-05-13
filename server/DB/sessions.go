@@ -41,6 +41,10 @@ func CheckSessionID(w http.ResponseWriter, r *http.Request, udateLastVisit bool)
 	return true //session.UserID
 }
 
+func CheckLogin(w http.ResponseWriter, r *http.Request) {
+	CheckSessionID(w, r, true)
+}
+
 // GetUserID returns user id by given sessionID from htt request
 func GetUserID(w http.ResponseWriter, r *http.Request) int64 {
 	SessionID := r.Header.Get("SessionID")

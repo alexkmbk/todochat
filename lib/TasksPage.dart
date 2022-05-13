@@ -148,11 +148,14 @@ class _TasksPageState extends State<TasksPage> {
       }
     }
 
-    return Expanded(
+    var currentTask = tasksListProvider.currentTask;
+    currentTask ??= Task(ID: 0);
+    return Expanded(flex: 6, child: TaskMessagesPage(task: currentTask));
+    /*return Expanded(
         flex: 6,
         child: tasksListProvider.currentTask != null
             ? TaskMessagesPage(task: tasksListProvider.currentTask!)
-            : const Center(child: Text("No any task was selected")));
+            : const Center(child: Text("No any task was selected")));*/
   }
 
   Widget renderBody() {
@@ -389,6 +392,9 @@ class _TasksPageState extends State<TasksPage> {
           tasksListProvider.currentTask = Task.fromJson(tasks[0]);
           res[0].read = true;
           res[0].unreadMessages = 0;
+          msgListProvider.task = tasksListProvider.currentTask;
+          msgListProvider.taskID = msgListProvider.task?.ID ?? 0;
+          msgListProvider.requestMessages();
         }
       }
     } else if (response.statusCode == 401) {

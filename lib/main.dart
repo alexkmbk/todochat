@@ -243,7 +243,17 @@ class _MyHomePageState extends State<MyHomePage> {
             _tasksListProvider.updateLastMessage(message.taskID, message);
           }
         }, onDone: () {
-          connectWebSocketChannel();
+          checkLogin().then((value) {
+            if (value) {
+              connectWebSocketChannel();
+            } else {
+              login().then((isLogin) {
+                if (isLogin) {
+                  connectWebSocketChannel();
+                }
+              });
+            }
+          });
         }, onError: (error) {
           if (kDebugMode) {
             print(error.toString());

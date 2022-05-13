@@ -555,14 +555,15 @@ class _TaskListTileState extends State<TaskListTile> {
       widget.msgListProvider.taskID = task.ID;
       widget.msgListProvider.task = task;
       widget.msgListProvider.loading = true;
-      ws!.sink.add(jsonEncode({
+      widget.msgListProvider.requestMessages();
+      /*ws!.sink.add(jsonEncode({
         "sessionID": sessionID,
         "command": "getMessages",
         "lastID": widget.msgListProvider.lastID.toString(),
         "messageIDPosition": task.lastMessageID.toString(),
         "limit": "30",
         "taskID": widget.msgListProvider.taskID.toString(),
-      }));
+      }));*/
 
       /*setState(() {
         msgListProvider.clear();

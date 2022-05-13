@@ -60,6 +60,7 @@ func GetRoutesHandler() http.Handler {
 
 	router.HandleFunc("/healthz", App.Healthz).Methods("GET")
 	router.HandleFunc("/login", Users.Login).Methods("POST")
+	router.HandleFunc("/checkLogin", CheckLogin).Methods("GET")
 	router.HandleFunc("/tasks", CommonHandler(Tasks.GetItems)).Methods("GET")
 	router.HandleFunc("/searchTasks", CommonHandler(Tasks.SearchItems)).Methods("GET")
 

@@ -3,10 +3,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart';
+import 'package:pasteboard/pasteboard.dart';
 //import 'package:http/http.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'HttpClient.dart';
+import 'HttpClient.dart' as HttpClient;
 import 'package:http/http.dart' as http;
 import 'customWidgets.dart';
 import 'inifiniteTaskList.dart';
@@ -87,6 +91,17 @@ class MsgListProvider extends ChangeNotifier {
   void deleteItem(int messageID) async {
     items.removeWhere((item) => item.ID == messageID);
     notifyListeners();
+  }
+
+  void requestMessages() {
+    ws!.sink.add(jsonEncode({
+      "sessionID": sessionID,
+      "command": "getMessages",
+      "lastID": lastID.toString(),
+      "messageIDPosition": task?.lastMessageID.toString() ?? "0",
+      "limit": "30",
+      "taskID": taskID.toString(),
+    }));
   }
 }
 
@@ -183,6 +198,7 @@ class InifiniteMsgList extends StatefulWidget {
 
   final Future<bool> Function(int messageID) onDelete;
   final Future<Uint8List> Function(String localFileName) getFile;
+  final MsgListProvider msgListProvider;
 
   //final ItemBuilder itemBuilder;
   //final Task task;
@@ -191,7 +207,8 @@ class InifiniteMsgList extends StatefulWidget {
       required this.scrollController,
       required this.itemPositionsListener,
       required this.onDelete,
-      required this.getFile})
+      required this.getFile,
+      required this.msgListProvider})
       : super(key: key);
 
   @override
@@ -201,13 +218,19 @@ class InifiniteMsgList extends StatefulWidget {
 }
 
 class InifiniteMsgListState extends State<InifiniteMsgList> {
-  late MsgListProvider _msgListProvider;
+  //late MsgListProvider _msgListProvider;
+
+  final _messageInputController = TextEditingController();
+  final ScrollController scrollController = ScrollController();
+  final ItemScrollController itemsScrollController = ItemScrollController();
+  final ItemPositionsListener itemPositionsListener =
+      ItemPositionsListener.create();
 
   @override
   void initState() {
     super.initState();
 
-    _msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
+    //_msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
     //getMoreItems();
     /*WidgetsBinding.instance?.addPostFrameCallback((_) {
       getMoreItems();
@@ -234,60 +257,198 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
-      if (_msgListProvider.foundMessageID > 0 &&
-          _msgListProvider.items.length > 1) {
-        _msgListProvider.jumpTo(_msgListProvider.foundMessageID);
-        _msgListProvider.foundMessageID = 0;
-      }
-    });
+    if (widget.msgListProvider.task == null ||
+        widget.msgListProvider.task?.ID == 0) {
+      return const Center(child: Text("No any task was selected"));
+    } else {
+      WidgetsBinding.instance!.addPostFrameCallback((_) {
+        if (widget.msgListProvider.foundMessageID > 0 &&
+            widget.msgListProvider.items.length > 1) {
+          widget.msgListProvider.jumpTo(widget.msgListProvider.foundMessageID);
+          widget.msgListProvider.foundMessageID = 0;
+        }
+      });
 
-    return Expanded(
-        child: Column(children: <Widget>[
-      Expanded(
-          child: ScrollablePositionedList.builder(
-        reverse: true,
-        itemScrollController: widget.scrollController,
-        itemPositionsListener: widget.itemPositionsListener,
-        itemCount: _msgListProvider.items.length,
-        itemBuilder: (context, index) {
-          var item = _msgListProvider.items[index];
-          if (item.loadingFile) {
-            return LoadingFileBubble(
-              index: index,
-              isCurrentUser: item.userID == currentUserID,
-              message: item,
-              msgListProvider: _msgListProvider,
-              getFile: widget.getFile,
-            );
-          } else {
-            return ChatBubble(
-              index: index,
-              isCurrentUser: item.userID == currentUserID,
-              message: item,
-              msgListProvider: _msgListProvider,
-              getFile: widget.getFile,
-              onDismissed: (direction) async {
-                if (await widget.onDelete(item.ID)) {
-                  _msgListProvider.deleteItem(item.ID);
-                }
-              },
-            );
-          }
-          /*} else if (index == items.length && end) {
+      return Expanded(
+          child: Column(children: <Widget>[
+        Expanded(
+            child: ScrollablePositionedList.builder(
+          reverse: true,
+          itemScrollController: widget.scrollController,
+          itemPositionsListener: widget.itemPositionsListener,
+          itemCount: widget.msgListProvider.items.length,
+          itemBuilder: (context, index) {
+            var item = widget.msgListProvider.items[index];
+            if (item.loadingFile) {
+              return LoadingFileBubble(
+                index: index,
+                isCurrentUser: item.userID == currentUserID,
+                message: item,
+                msgListProvider: widget.msgListProvider,
+                getFile: widget.getFile,
+              );
+            } else {
+              return ChatBubble(
+                index: index,
+                isCurrentUser: item.userID == currentUserID,
+                message: item,
+                msgListProvider: widget.msgListProvider,
+                getFile: widget.getFile,
+                onDismissed: (direction) async {
+                  if (await widget.onDelete(item.ID)) {
+                    widget.msgListProvider.deleteItem(item.ID);
+                  }
+                },
+              );
+            }
+            /*} else if (index == items.length && end) {
             return const Center(child: Text('End of list'));*/
-          //}
-          /*else {
+            //}
+            /*else {
             _getMoreItems();
             return const SizedBox(
               height: 80,
               child: Center(child: CircularProgressIndicator()),
             );
           }*/
-          //return const Center(child: Text('End of list'));
-        },
-      )),
-    ]));
+            //return const Center(child: Text('End of list'));
+          },
+        )),
+        Container(
+            decoration: const BoxDecoration(
+              border: Border(
+                top: BorderSide(color: Colors.grey),
+                bottom: BorderSide(color: Colors.grey),
+              ),
+            ),
+            child: Row(children: [
+              Expanded(
+                  child: CallbackShortcuts(
+                bindings: {
+                  const SingleActivator(LogicalKeyboardKey.enter,
+                      control: false): () {
+                    if (_messageInputController.text.isNotEmpty) {
+                      createMessage(
+                        text: _messageInputController.text,
+                        msgListProvider: widget.msgListProvider,
+                      );
+                      _messageInputController.text = "";
+                    }
+                  },
+                  const SingleActivator(LogicalKeyboardKey.keyV, control: true):
+                      () async {
+                    final bytes = await Pasteboard.image;
+                    if (bytes != null) {
+                      createMessage(
+                          text: _messageInputController.text,
+                          msgListProvider: widget.msgListProvider,
+                          fileData: bytes,
+                          fileName: "clipboard_image.bmp");
+                    } else {
+                      final files = await Pasteboard.files();
+                      if (files.isNotEmpty) {
+                        for (final file in files) {
+                          var fileData = await readFile(file);
+                          if (fileData.isNotEmpty) {
+                            createMessage(
+                                text: _messageInputController.text,
+                                msgListProvider: widget.msgListProvider,
+                                fileData: fileData,
+                                fileName: file);
+                          }
+                        }
+                      } else {
+                        ClipboardData? data =
+                            await Clipboard.getData('text/plain');
+
+                        if (data != null &&
+                            data.text != null &&
+                            data.text!.trim().isNotEmpty) {
+                          String text = data.text ?? "";
+                          _messageInputController.text = text.trim();
+                          _messageInputController.selection =
+                              TextSelection.fromPosition(TextPosition(
+                                  offset: _messageInputController.text.length));
+                        } else {
+                          var html = await Pasteboard.html;
+                          if (html != null && html.isNotEmpty) {
+                            String imageURL = getImageURLFromHTML(html);
+                            if (imageURL.isNotEmpty) {
+                              var response = await get(Uri.parse(imageURL));
+                              if (response.statusCode == 200) {
+                                createMessage(
+                                    text: "",
+                                    msgListProvider: widget.msgListProvider,
+                                    fileData: response.bodyBytes,
+                                    fileName: "clipboard_image.png");
+                              }
+                            } else {
+                              _messageInputController.text = html.trim();
+                              _messageInputController.selection =
+                                  TextSelection.fromPosition(TextPosition(
+                                      offset:
+                                          _messageInputController.text.length));
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                },
+                child: Focus(
+                  autofocus: true,
+                  child: TextField(
+                    autofocus: true,
+                    controller: _messageInputController,
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none, // OutlineInputBorder(),
+                      hintText: 'Message',
+                    ),
+                  ),
+                ),
+              )),
+              IconButton(
+                onPressed: () {
+                  if (_messageInputController.text.isNotEmpty) {
+                    createMessage(
+                        text: _messageInputController.text,
+                        msgListProvider: widget.msgListProvider);
+                    _messageInputController.text = "";
+                  }
+                },
+                tooltip: 'New message',
+                icon: const Icon(
+                  Icons.send,
+                  color: Colors.blue,
+                ),
+              ),
+              IconButton(
+                onPressed: () async {
+                  FilePickerResult? result =
+                      await FilePicker.platform.pickFiles();
+
+                  var fileName = result?.files.single.path?.trim() ?? "";
+
+                  if (fileName.isNotEmpty) {
+                    var res = await readFile(fileName);
+                    widget.msgListProvider.addItem(Message(
+                        taskID: widget.msgListProvider.taskID,
+                        userID: currentUserID,
+                        fileName: fileName,
+                        loadingFile: true,
+                        loadingFileData: res,
+                        isImage: isImageFile(fileName)));
+                    _messageInputController.text = "";
+                  }
+                },
+                tooltip: 'Add file',
+                icon: const Icon(Icons.attach_file),
+              )
+            ]))
+      ]));
+    }
   }
 }
 
@@ -615,15 +776,19 @@ class _LoadingFileBubbleState extends State<LoadingFileBubble> {
 
   Widget drawBubble(BuildContext context, BoxConstraints constraints) {
     if (widget.message.isImage && widget.message.loadingFileData != null) {
-      return Column(children: [
+      return Stack(children: [
         memoryImage(
           widget.message.loadingFileData as Uint8List,
           height: 200,
         ),
         if (progress < 1)
-          LinearProgressIndicator(
-            value: progress,
-          )
+          Positioned(
+              width: 20,
+              right: 10,
+              bottom: 10,
+              child: CircularProgressIndicator(
+                value: progress,
+              ))
       ]);
     } else {
       return Column(children: [
@@ -681,7 +846,7 @@ Future<bool> createMessage(
     return false;
   }
 
-  final request = MultipartRequest(
+  final request = HttpClient.MultipartRequest(
     'POST',
     setUriProperty(serverURI, path: 'createMessage'),
     onProgress: onProgress,

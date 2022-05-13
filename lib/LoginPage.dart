@@ -285,3 +285,19 @@ Future<bool> login(
     }*/
   return false;
 }
+
+Future<bool> checkLogin() async {
+  http.Response response;
+  try {
+    response =
+        await httpClient.get(setUriProperty(serverURI, path: "checkLogin"));
+  } catch (e) {
+    return Future.error(e.toString());
+  }
+
+  if (response.statusCode == 200) {
+    return true;
+  }
+
+  return false;
+}
