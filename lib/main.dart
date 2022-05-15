@@ -234,14 +234,14 @@ class _MyHomePageState extends State<MyHomePage> {
       ws!.sink.close();
       ws = null;
     }
-    //Future.delayed(const Duration(seconds: 4)).then((value) {
+    //Future.delayed(const Duration(seconds: 1)).then((value) {
     var scheme = serverURI.scheme == "http" ? "ws" : "wss";
     ws = WebSocketChannel.connect(
         setUriProperty(serverURI, scheme: scheme, path: "initMessagesWS"));
 
     listenWs();
     //ws!.sink.add(jsonEncode({"command": "init", "sessionID": sessionID}));
-    // });
+    //});
 
     /*ws = WebSocketChannel.connect(
           Uri.parse('ws://' + serverURI.authority + "/initMessagesWS"));*/

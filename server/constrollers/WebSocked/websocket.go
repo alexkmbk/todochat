@@ -28,11 +28,13 @@ type Client struct {
 
 	// Buffered channel of outbound messages.
 	send chan *WSMessage
+
+	sessionID uuid.UUID
 }
 
 var Upgrader = websocket.Upgrader{
-	ReadBufferSize:  50000,
-	WriteBufferSize: 50000,
+	ReadBufferSize:  1024,
+	WriteBufferSize: 65536,
 }
 
 // use default options
@@ -202,6 +204,11 @@ func (c *Client) readPump() {
 	defer func() {
 		c.hub.unregister <- c
 		c.conn.Close()
+		if c.sessionID != uuid.Nil {
+			DeleteSession(c.sessionID)
+			c.sessionID = uuid.Nil
+		}
+
 	}()
 
 	var sessionID uuid.UUID
@@ -255,10 +262,10 @@ func (c *Client) readPump() {
 			sessionID, err = uuid.Parse(query["sessionID"])
 			if sessionID == uuid.Nil || !SessionIDExists(sessionID) {
 				println("CLOSE WS CONNECTION ON getMessages!")
-				//conn.Close()
 				break
 			}
 
+			c.sessionID = sessionID
 			lastID := ToInt64(query["lastID"])
 			limit := ToInt64(query["limit"])
 			taskID := ToInt64(query["taskID"])
@@ -283,6 +290,10 @@ func (c *Client) writePump() {
 	defer func() {
 		ticker.Stop()
 		c.conn.Close()
+		if c.sessionID != uuid.Nil {
+			DeleteSession(c.sessionID)
+			c.sessionID = uuid.Nil
+		}
 	}()
 	for {
 		select {

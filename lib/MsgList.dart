@@ -109,22 +109,25 @@ class MsgListProvider extends ChangeNotifier {
           Uri.parse('ws://' + serverURI.authority + "/initMessagesWS"));*/
   }
 
-  void requestMessages() {
-    /*if (ws == null) {
-      connectWebSocketChannel();
+  void requestMessages() async {
+    if (ws == null) {
+      //connectWebSocketChannel();
+      await Future.delayed(const Duration(seconds: 2));
     }
-    if (ws != null) {
+    /*if (ws != null) {
       if (ws!.closeCode != null) {
         connectWebSocketChannel();
       }*/
-    ws!.sink.add(jsonEncode({
-      "sessionID": sessionID,
-      "command": "getMessages",
-      "lastID": lastID.toString(),
-      "messageIDPosition": task?.lastMessageID.toString() ?? "0",
-      "limit": "30",
-      "taskID": taskID.toString(),
-    }));
+    if (ws != null) {
+      ws!.sink.add(jsonEncode({
+        "sessionID": sessionID,
+        "command": "getMessages",
+        "lastID": lastID.toString(),
+        "messageIDPosition": task?.lastMessageID.toString() ?? "0",
+        "limit": "30",
+        "taskID": taskID.toString(),
+      }));
+    }
     // }
   }
 }
