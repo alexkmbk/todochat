@@ -135,13 +135,13 @@ func InitMessagesWS(w http.ResponseWriter, r *http.Request) {
 }
 
 func SendWSMessage(message *Message) {
-	for key, conn := range WSConnections {
+	/*for key, conn := range WSConnections {
 		if SessionIDExists(key) {
 			conn.WriteJSON(WSMessage{"createMessage", message})
 		}
-	}
+	}*/
 
-	WSHub.broadcast <- &WSMessage{"getMessages", message}
+	WSHub.broadcast <- &WSMessage{"createMessage", message}
 }
 
 func keepAlive(conn *websocket.Conn, timeout time.Duration) {
