@@ -94,30 +94,10 @@ class MsgListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void connectWebSocketChannel() {
-    if (ws != null) {
-      ws!.sink.close();
-      ws = null;
-    }
-
-    var scheme = serverURI.scheme == "http" ? "ws" : "wss";
-    ws = WebSocketChannel.connect(
-        setUriProperty(serverURI, scheme: scheme, path: "initMessagesWS"));
-    //ws!.sink.add(jsonEncode({"command": "init", "sessionID": sessionID}));
-
-    /*ws = WebSocketChannel.connect(
-          Uri.parse('ws://' + serverURI.authority + "/initMessagesWS"));*/
-  }
-
   void requestMessages() async {
     if (ws == null) {
-      //connectWebSocketChannel();
       await Future.delayed(const Duration(seconds: 2));
     }
-    /*if (ws != null) {
-      if (ws!.closeCode != null) {
-        connectWebSocketChannel();
-      }*/
     if (ws != null) {
       ws!.sink.add(jsonEncode({
         "sessionID": sessionID,
