@@ -4,6 +4,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'HttpClient.dart';
 import 'LoginPage.dart';
 import 'SettingsPage.dart';
+import 'customWidgets.dart';
 import 'inifiniteTaskList.dart';
 import 'utils.dart';
 //import 'TaskMessagesPage.dart';
@@ -29,7 +30,16 @@ const Color uncompletedTaskColor = Color.fromARGB(255, 253, 253, 242);
 late SharedPreferences settings;
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    RestartWidget(
+      child: const MyApp(),
+      beforeRestart: () {
+        appInitialized = false;
+        sessionID = "";
+        ws = null;
+      },
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -70,7 +80,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
-
   final String title;
 
   @override
@@ -86,6 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
     _tasksListProvider = Provider.of<TasksListProvider>(context, listen: false);
+
     //Login(_tasksListProvider);
   }
 
@@ -180,17 +190,58 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
+  void listenWs() {
+    if (sessionID.isNotEmpty && ws != null) {
+      try {
+        ws!.stream.listen((messageJson) {
+          WSMessage wsMsg = WSMessage.fromJson(messageJson);
+          if (wsMsg.command == "getMessages") {
+            _msgListProvider.addItems(wsMsg.data);
+          } else if (wsMsg.command == "createMessage") {
+            var message = Message.fromJson(wsMsg.data);
+            _msgListProvider.addItem(message);
+            _tasksListProvider.updateLastMessage(message.taskID, message);
+          }
+        }, onDone: () {
+          checkLogin().then((value) async {
+            if (value) {
+              connectWebSocketChannel();
+            } else {
+              login().then((isLogin) async {
+                if (isLogin) {
+                  connectWebSocketChannel();
+                }
+              });
+            }
+          });
+        }, onError: (error) {
+          if (kDebugMode) {
+            print(error.toString());
+          }
+          connectWebSocketChannel();
+          //ws!.sink.add(jsonEncode({"command": "init", "sessionID": sessionID}));
+        });
+      } catch (e) {
+        if (kDebugMode) {
+          print(e.toString());
+        }
+      }
+    }
+  }
+
   void connectWebSocketChannel() {
     if (ws != null) {
       ws!.sink.close();
+      ws = null;
     }
-
+    //Future.delayed(const Duration(seconds: 4)).then((value) {
     var scheme = serverURI.scheme == "http" ? "ws" : "wss";
     ws = WebSocketChannel.connect(
         setUriProperty(serverURI, scheme: scheme, path: "initMessagesWS"));
-    if (ws != null) {
-      ws!.sink.add(jsonEncode({"command": "init", "sessionID": sessionID}));
-    }
+
+    listenWs();
+    //ws!.sink.add(jsonEncode({"command": "init", "sessionID": sessionID}));
+    // });
 
     /*ws = WebSocketChannel.connect(
           Uri.parse('ws://' + serverURI.authority + "/initMessagesWS"));*/
@@ -229,43 +280,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     if (isServerURI && sessionID.isNotEmpty) {
       connectWebSocketChannel();
-    }
-
-    if (sessionID.isNotEmpty && ws != null) {
-      try {
-        ws!.stream.listen((messageJson) {
-          WSMessage wsMsg = WSMessage.fromJson(messageJson);
-          if (wsMsg.command == "getMessages") {
-            _msgListProvider.addItems(wsMsg.data);
-          } else if (wsMsg.command == "createMessage") {
-            var message = Message.fromJson(wsMsg.data);
-            _msgListProvider.addItem(message);
-            _tasksListProvider.updateLastMessage(message.taskID, message);
-          }
-        }, onDone: () {
-          checkLogin().then((value) {
-            if (value) {
-              connectWebSocketChannel();
-            } else {
-              login().then((isLogin) {
-                if (isLogin) {
-                  connectWebSocketChannel();
-                }
-              });
-            }
-          });
-        }, onError: (error) {
-          if (kDebugMode) {
-            print(error.toString());
-          }
-          connectWebSocketChannel();
-          //ws!.sink.add(jsonEncode({"command": "init", "sessionID": sessionID}));
-        });
-      } catch (e) {
-        if (kDebugMode) {
-          print(e.toString());
-        }
-      }
     }
     appInitialized = true;
     return true;

@@ -10,7 +10,7 @@ import 'package:http/http.dart';
 import 'package:pasteboard/pasteboard.dart';
 //import 'package:http/http.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'HttpClient.dart' as HttpClient;
+import 'HttpClient.dart' as HTTPClient;
 import 'package:http/http.dart' as http;
 import 'customWidgets.dart';
 import 'inifiniteTaskList.dart';
@@ -19,6 +19,7 @@ import 'package:provider/provider.dart';
 import 'package:path/path.dart' as path;
 import 'main.dart';
 import 'package:collection/collection.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class MsgListProvider extends ChangeNotifier {
   List<Message> items = [];
@@ -93,7 +94,29 @@ class MsgListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void connectWebSocketChannel() {
+    if (ws != null) {
+      ws!.sink.close();
+      ws = null;
+    }
+
+    var scheme = serverURI.scheme == "http" ? "ws" : "wss";
+    ws = WebSocketChannel.connect(
+        setUriProperty(serverURI, scheme: scheme, path: "initMessagesWS"));
+    //ws!.sink.add(jsonEncode({"command": "init", "sessionID": sessionID}));
+
+    /*ws = WebSocketChannel.connect(
+          Uri.parse('ws://' + serverURI.authority + "/initMessagesWS"));*/
+  }
+
   void requestMessages() {
+    /*if (ws == null) {
+      connectWebSocketChannel();
+    }
+    if (ws != null) {
+      if (ws!.closeCode != null) {
+        connectWebSocketChannel();
+      }*/
     ws!.sink.add(jsonEncode({
       "sessionID": sessionID,
       "command": "getMessages",
@@ -102,6 +125,7 @@ class MsgListProvider extends ChangeNotifier {
       "limit": "30",
       "taskID": taskID.toString(),
     }));
+    // }
   }
 }
 
@@ -782,12 +806,15 @@ class _LoadingFileBubbleState extends State<LoadingFileBubble> {
           height: 200,
         ),
         if (progress < 1)
-          Positioned(
-              width: 20,
+          const Positioned(
+              width: 15,
+              height: 15,
               right: 10,
               bottom: 10,
               child: CircularProgressIndicator(
-                value: progress,
+                strokeWidth: 2,
+                color: Colors.white,
+                //value: progress,
               ))
       ]);
     } else {
@@ -846,7 +873,7 @@ Future<bool> createMessage(
     return false;
   }
 
-  final request = HttpClient.MultipartRequest(
+  final request = HTTPClient.MultipartRequest(
     'POST',
     setUriProperty(serverURI, path: 'createMessage'),
     onProgress: onProgress,

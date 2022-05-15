@@ -99,6 +99,7 @@ class _SettingsPageState extends State<SettingsPage> {
     settings.setString("httpScheme", serverURI.scheme);
     settings.setString("host", serverURI.host);
     settings.setInt("port", serverURI.port);
+    RestartWidget.restartApp(context);
     Navigator.pop(context, true);
   }
 

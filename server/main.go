@@ -9,6 +9,7 @@ import (
 	//"gorm.io/driver/postgres"
 	. "todochat_server/App"
 	"todochat_server/DB"
+	WS "todochat_server/constrollers/WebSocked"
 )
 
 func main() {
@@ -24,6 +25,10 @@ func main() {
 	log.Info("Starting Todolist API server")
 
 	DB.InitDB()
+
+	WS.WSHub = WS.NewHub()
+
+	go WS.WSHub.Run()
 
 	var err error
 	if len(os.Args) > 1 {

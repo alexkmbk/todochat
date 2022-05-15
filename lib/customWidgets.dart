@@ -244,3 +244,41 @@ class Timestamp extends StatelessWidget {
     );
   }
 }
+
+class RestartWidget extends StatefulWidget {
+  RestartWidget({Key? key, required this.child, this.beforeRestart})
+      : super(key: key);
+
+  Function? beforeRestart;
+
+  final Widget child;
+
+  static void restartApp(BuildContext context) {
+    context.findAncestorStateOfType<_RestartWidgetState>()?.restartApp();
+  }
+
+  @override
+  _RestartWidgetState createState() => _RestartWidgetState();
+}
+
+class _RestartWidgetState extends State<RestartWidget> {
+  Key key = UniqueKey();
+
+  void restartApp() {
+    if (widget.beforeRestart != null) {
+      widget.beforeRestart!();
+    }
+
+    setState(() {
+      key = UniqueKey();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return KeyedSubtree(
+      key: key,
+      child: widget.child,
+    );
+  }
+}

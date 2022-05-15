@@ -56,6 +56,7 @@ func originRequest(r *http.Request, origin string) bool {
 
 //GetRoutesHandler inits router
 func GetRoutesHandler() http.Handler {
+
 	router := mux.NewRouter()
 
 	router.HandleFunc("/healthz", App.Healthz).Methods("GET")
@@ -81,7 +82,10 @@ func GetRoutesHandler() http.Handler {
 
 	router.HandleFunc("/registerNewUser", Users.RegisterNewUser).Methods("POST")
 
-	router.HandleFunc("/initMessagesWS", WS.InitMessagesWS).Methods("GET")
+	//router.HandleFunc("/initMessagesWS", WS.InitMessagesWS).Methods("GET")
+	router.HandleFunc("/initMessagesWS", func(w http.ResponseWriter, r *http.Request) {
+		WS.ServeWs(WS.WSHub, w, r)
+	}).Methods("GET")
 	//router.HandleFunc("/echo", WS.Echo).Methods("GET")
 	router.HandleFunc("/getFile", CommonHandler(Messages.GetFile)).Methods("GET")
 
