@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'MainMenu.dart';
@@ -10,10 +9,7 @@ import 'package:provider/provider.dart';
 import 'MsgList.dart';
 import 'main.dart';
 //import 'dart:io';
-import 'dart:convert';
 import 'inifiniteTaskList.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:pasteboard/pasteboard.dart';
 
 //import 'package:web_socket_channel/web_socket_channel.dart';
 //import 'package:web_socket_channel/status.dart' as status;
@@ -248,7 +244,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     try {
       response = await httpClient.delete(
           setUriProperty(serverURI,
-              path: 'deleteMessage/' + messageID.toString())
+              path: 'deleteMessage/$messageID')
           /*  Uri.http(
               serverURI.authority, '/deleteMessage/' + messageID.toString())*/
           ,

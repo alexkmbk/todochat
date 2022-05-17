@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
-import 'package:pasteboard/pasteboard.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'MsgList.dart';
@@ -298,7 +297,7 @@ class _TaskListTileState extends State<TaskListTile> {
                             const SingleActivator(LogicalKeyboardKey.enter,
                                 control: true): () {
                               textEditingController.text =
-                                  textEditingController.text + '\n';
+                                  '${textEditingController.text}\n';
                               textEditingController.setCursorOnEnd();
                             },
                           },
@@ -492,7 +491,7 @@ class _TaskListTileState extends State<TaskListTile> {
                       ? HighlightText(
                           leading: widget.task.lastMessageUserName.isNotEmpty
                               ? TextSpan(
-                                  text: widget.task.lastMessageUserName + ": ",
+                                  text: "${widget.task.lastMessageUserName}: ",
                                   style: const TextStyle(color: Colors.blue))
                               : null,
                           highlightColor: Colors.red,
@@ -509,8 +508,7 @@ class _TaskListTileState extends State<TaskListTile> {
                                   if (widget
                                       .task.lastMessageUserName.isNotEmpty)
                                     TextSpan(
-                                        text: widget.task.lastMessageUserName +
-                                            ": ",
+                                        text: "${widget.task.lastMessageUserName}: ",
                                         style: const TextStyle(
                                             color: Colors.blue)),
                                   TextSpan(text: widget.task.lastMessage)
@@ -522,12 +520,6 @@ class _TaskListTileState extends State<TaskListTile> {
                                 Container(
                                     padding: const EdgeInsets.only(
                                         left: 5, right: 5),
-                                    child: Center(
-                                        child: Text(
-                                      widget.task.unreadMessages.toString(),
-                                      style: const TextStyle(
-                                          color: Colors.white, fontSize: 12),
-                                    )),
                                     decoration: const BoxDecoration(
                                         color: Colors.blue,
                                         borderRadius: BorderRadius.only(
@@ -535,7 +527,13 @@ class _TaskListTileState extends State<TaskListTile> {
                                           bottomLeft: Radius.circular(12),
                                           topRight: Radius.circular(12),
                                           bottomRight: Radius.circular(12),
-                                        ))),
+                                        )),
+                                    child: Center(
+                                        child: Text(
+                                      widget.task.unreadMessages.toString(),
+                                      style: const TextStyle(
+                                          color: Colors.white, fontSize: 12),
+                                    ))),
                             ])),
         ),
       );

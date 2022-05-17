@@ -83,7 +83,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                   Icons.search,
                 ),
               )),
-          leading: MainMenu(),
+          leading: const MainMenu(),
           actions: [
             IconButton(
               onPressed: () {
@@ -290,7 +290,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
     try {
       response = await httpClient.delete(
           setUriProperty(serverURI,
-              path: 'deleteProject/' + projectID.toString()),
+              path: 'deleteProject/$projectID'),
           headers: headers);
     } catch (e) {
       return false;
@@ -392,7 +392,7 @@ Future<Project?> getProject(int? projectID) async {
   Response response;
   try {
     response = await httpClient.get(
-        setUriProperty(serverURI, path: 'project/' + projectID.toString()));
+        setUriProperty(serverURI, path: 'project/$projectID'));
   } catch (e) {
     return null;
   }

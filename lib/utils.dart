@@ -11,7 +11,6 @@ import 'package:mime/mime.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart';
-import 'highlight_text.dart';
 import 'package:intl/intl.dart';
 
 class WSMessage {
@@ -115,10 +114,10 @@ String toUrlParams(Map<String, String> params) {
 String getUriFullPath(Uri? uri) {
   if (uri == null) return "";
 
-  String res = uri.scheme.isNotEmpty ? uri.scheme + "://" : "";
+  String res = uri.scheme.isNotEmpty ? "${uri.scheme}://" : "";
   res += uri.host;
-  res += uri.port == 0 ? "" : ":" + uri.port.toString();
-  res += res.isNotEmpty && uri.path.isNotEmpty ? "/" + uri.path : "";
+  res += uri.port == 0 ? "" : ":${uri.port}";
+  res += res.isNotEmpty && uri.path.isNotEmpty ? "/${uri.path}" : "";
   res += toUrlParams(uri.queryParameters);
   return res;
 }
@@ -159,10 +158,11 @@ Uri? parseURL(String URL,
 }
 
 int toInt(String? str) {
-  if (str == null || str.isEmpty)
+  if (str == null || str.isEmpty) {
     return 0;
-  else
+  } else {
     return int.parse(str);
+  }
 }
 
 bool isImageFile(String? fileName) {

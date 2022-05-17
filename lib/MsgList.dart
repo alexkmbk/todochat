@@ -15,11 +15,9 @@ import 'package:http/http.dart' as http;
 import 'customWidgets.dart';
 import 'inifiniteTaskList.dart';
 import 'utils.dart';
-import 'package:provider/provider.dart';
 import 'package:path/path.dart' as path;
 import 'main.dart';
 import 'package:collection/collection.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 class MsgListProvider extends ChangeNotifier {
   List<Message> items = [];
@@ -321,139 +319,146 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
             //return const Center(child: Text('End of list'));
           },
         )),
-        Container(
-            decoration: const BoxDecoration(
-              border: Border(
+        Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Container(
+                padding: const EdgeInsets.only(left: 10, right: 10),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(30),
+                  /*border: Border(
+                
                 top: BorderSide(color: Colors.grey),
                 bottom: BorderSide(color: Colors.grey),
-              ),
-            ),
-            child: Row(children: [
-              Expanded(
-                  child: CallbackShortcuts(
-                bindings: {
-                  const SingleActivator(LogicalKeyboardKey.enter,
-                      control: false): () {
-                    if (_messageInputController.text.isNotEmpty) {
-                      createMessage(
-                        text: _messageInputController.text,
-                        msgListProvider: widget.msgListProvider,
-                      );
-                      _messageInputController.text = "";
-                    }
-                  },
-                  const SingleActivator(LogicalKeyboardKey.keyV, control: true):
-                      () async {
-                    final bytes = await Pasteboard.image;
-                    if (bytes != null) {
-                      createMessage(
-                          text: _messageInputController.text,
-                          msgListProvider: widget.msgListProvider,
-                          fileData: bytes,
-                          fileName: "clipboard_image.bmp");
-                    } else {
-                      final files = await Pasteboard.files();
-                      if (files.isNotEmpty) {
-                        for (final file in files) {
-                          var fileData = await readFile(file);
-                          if (fileData.isNotEmpty) {
-                            createMessage(
-                                text: _messageInputController.text,
-                                msgListProvider: widget.msgListProvider,
-                                fileData: fileData,
-                                fileName: file);
-                          }
+              ),*/
+                ),
+                child: Row(children: [
+                  Expanded(
+                      child: CallbackShortcuts(
+                    bindings: {
+                      const SingleActivator(LogicalKeyboardKey.enter,
+                          control: false): () {
+                        if (_messageInputController.text.isNotEmpty) {
+                          createMessage(
+                            text: _messageInputController.text,
+                            msgListProvider: widget.msgListProvider,
+                          );
+                          _messageInputController.text = "";
                         }
-                      } else {
-                        ClipboardData? data =
-                            await Clipboard.getData('text/plain');
-
-                        if (data != null &&
-                            data.text != null &&
-                            data.text!.trim().isNotEmpty) {
-                          String text = data.text ?? "";
-                          _messageInputController.text = text.trim();
-                          _messageInputController.selection =
-                              TextSelection.fromPosition(TextPosition(
-                                  offset: _messageInputController.text.length));
+                      },
+                      const SingleActivator(LogicalKeyboardKey.keyV,
+                          control: true): () async {
+                        final bytes = await Pasteboard.image;
+                        if (bytes != null) {
+                          createMessage(
+                              text: _messageInputController.text,
+                              msgListProvider: widget.msgListProvider,
+                              fileData: bytes,
+                              fileName: "clipboard_image.bmp");
                         } else {
-                          var html = await Pasteboard.html;
-                          if (html != null && html.isNotEmpty) {
-                            String imageURL = getImageURLFromHTML(html);
-                            if (imageURL.isNotEmpty) {
-                              var response = await get(Uri.parse(imageURL));
-                              if (response.statusCode == 200) {
+                          final files = await Pasteboard.files();
+                          if (files.isNotEmpty) {
+                            for (final file in files) {
+                              var fileData = await readFile(file);
+                              if (fileData.isNotEmpty) {
                                 createMessage(
-                                    text: "",
+                                    text: _messageInputController.text,
                                     msgListProvider: widget.msgListProvider,
-                                    fileData: response.bodyBytes,
-                                    fileName: "clipboard_image.png");
+                                    fileData: fileData,
+                                    fileName: file);
                               }
-                            } else {
-                              _messageInputController.text = html.trim();
+                            }
+                          } else {
+                            ClipboardData? data =
+                                await Clipboard.getData('text/plain');
+
+                            if (data != null &&
+                                data.text != null &&
+                                data.text!.trim().isNotEmpty) {
+                              String text = data.text ?? "";
+                              _messageInputController.text = text.trim();
                               _messageInputController.selection =
                                   TextSelection.fromPosition(TextPosition(
                                       offset:
                                           _messageInputController.text.length));
+                            } else {
+                              var html = await Pasteboard.html;
+                              if (html != null && html.isNotEmpty) {
+                                String imageURL = getImageURLFromHTML(html);
+                                if (imageURL.isNotEmpty) {
+                                  var response = await get(Uri.parse(imageURL));
+                                  if (response.statusCode == 200) {
+                                    createMessage(
+                                        text: "",
+                                        msgListProvider: widget.msgListProvider,
+                                        fileData: response.bodyBytes,
+                                        fileName: "clipboard_image.png");
+                                  }
+                                } else {
+                                  _messageInputController.text = html.trim();
+                                  _messageInputController.selection =
+                                      TextSelection.fromPosition(TextPosition(
+                                          offset: _messageInputController
+                                              .text.length));
+                                }
+                              }
                             }
                           }
                         }
+                      },
+                    },
+                    child: Focus(
+                      autofocus: true,
+                      child: TextField(
+                        autofocus: true,
+                        controller: _messageInputController,
+                        keyboardType: TextInputType.multiline,
+                        maxLines: null,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none, // OutlineInputBorder(),
+                          hintText: 'Message',
+                        ),
+                      ),
+                    ),
+                  )),
+                  IconButton(
+                    onPressed: () {
+                      if (_messageInputController.text.isNotEmpty) {
+                        createMessage(
+                            text: _messageInputController.text,
+                            msgListProvider: widget.msgListProvider);
+                        _messageInputController.text = "";
                       }
-                    }
-                  },
-                },
-                child: Focus(
-                  autofocus: true,
-                  child: TextField(
-                    autofocus: true,
-                    controller: _messageInputController,
-                    keyboardType: TextInputType.multiline,
-                    maxLines: null,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none, // OutlineInputBorder(),
-                      hintText: 'Message',
+                    },
+                    tooltip: 'New message',
+                    icon: const Icon(
+                      Icons.send,
+                      color: Colors.blue,
                     ),
                   ),
-                ),
-              )),
-              IconButton(
-                onPressed: () {
-                  if (_messageInputController.text.isNotEmpty) {
-                    createMessage(
-                        text: _messageInputController.text,
-                        msgListProvider: widget.msgListProvider);
-                    _messageInputController.text = "";
-                  }
-                },
-                tooltip: 'New message',
-                icon: const Icon(
-                  Icons.send,
-                  color: Colors.blue,
-                ),
-              ),
-              IconButton(
-                onPressed: () async {
-                  FilePickerResult? result =
-                      await FilePicker.platform.pickFiles();
+                  IconButton(
+                    onPressed: () async {
+                      FilePickerResult? result =
+                          await FilePicker.platform.pickFiles();
 
-                  var fileName = result?.files.single.path?.trim() ?? "";
+                      var fileName = result?.files.single.path?.trim() ?? "";
 
-                  if (fileName.isNotEmpty) {
-                    var res = await readFile(fileName);
-                    widget.msgListProvider.addItem(Message(
-                        taskID: widget.msgListProvider.taskID,
-                        userID: currentUserID,
-                        fileName: fileName,
-                        loadingFile: true,
-                        loadingFileData: res,
-                        isImage: isImageFile(fileName)));
-                    _messageInputController.text = "";
-                  }
-                },
-                tooltip: 'Add file',
-                icon: const Icon(Icons.attach_file),
-              )
-            ]))
+                      if (fileName.isNotEmpty) {
+                        var res = await readFile(fileName);
+                        widget.msgListProvider.addItem(Message(
+                            taskID: widget.msgListProvider.taskID,
+                            userID: currentUserID,
+                            fileName: fileName,
+                            loadingFile: true,
+                            loadingFileData: res,
+                            isImage: isImageFile(fileName)));
+                        _messageInputController.text = "";
+                      }
+                    },
+                    tooltip: 'Add file',
+                    icon: const Icon(Icons.attach_file),
+                  )
+                ])))
       ]));
     }
   }
@@ -688,11 +693,7 @@ class ChatBubble extends StatelessWidget {
     if (message.isImage && message.localFileName.isNotEmpty) {
       // var res = await getFile(message.localFileName);
       var res = NetworkImage(
-          serverURI.scheme +
-              "://" +
-              serverURI.authority +
-              "/FileStorage/" +
-              message.localFileName,
+          "${serverURI.scheme}://${serverURI.authority}/FileStorage/${message.localFileName}",
           headers: {"sessionID": sessionID});
       //if (res.isNotEmpty) {
       await Navigator.push(

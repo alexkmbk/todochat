@@ -97,12 +97,12 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget showLoginPage(BuildContext context) {
+    final focus = FocusNode();
     return Scaffold(
         body: Form(
             onWillPop: () async => false,
             key: _formKey,
-            child: AutofillGroup(
-                child: Column(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const ElevatedButton(onPressed: ExitApp, child: Text("Exit")),
@@ -111,13 +111,25 @@ class _LoginPageState extends State<LoginPage> {
                   controller: userNameController,
                   hintText: 'User name',
                   validator: (value) => validateEmpty(value, 'User name'),
+                  onFieldSubmitted: (value) {
+                    FocusScope.of(context).nextFocus();
+                  },
                 ),
                 GetTextField(
-                  autofillHints: [AutofillHints.password],
-                  controller: passwordController,
-                  hintText: 'Password',
-                  obscureText: true,
-                ),
+                    autofillHints: [AutofillHints.password],
+                    controller: passwordController,
+                    hintText: 'Password',
+                    obscureText: true,
+                    textInputAction: TextInputAction.send,
+                    onFieldSubmitted: (value) async {
+                      if (_formKey.currentState!.validate() &&
+                          await login(
+                              userName: userNameController.text,
+                              password: value,
+                              context: context)) {
+                        Navigator.pop(context, true);
+                      }
+                    }),
                 Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -150,7 +162,7 @@ class _LoginPageState extends State<LoginPage> {
                       }
                     }),
               ],
-            ))));
+            )));
   }
 
   Widget showRegistrationPage() {
@@ -262,6 +274,10 @@ Future<bool> login(
   } else if (response.statusCode == 404) {
     if (context != null) {
       toast("Couldn't connect to the server", context);
+    }
+  } else if (response.statusCode == 401) {
+    if (context != null) {
+      toast("Wrong password or user name.", context);
     }
   }
   /*var client = HttpClient();

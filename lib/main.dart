@@ -12,7 +12,6 @@ import 'TasksPage.dart';
 import 'package:provider/provider.dart';
 //import 'package:flutter/services.dart';
 //import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'MsgList.dart';
@@ -49,13 +48,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var instance = WidgetsBinding.instance;
-    if (instance != null) {
-      var mediaQueryData = MediaQueryData.fromWindow(instance.window);
-      var physicalPixelWidth = mediaQueryData.size.width;
+    var mediaQueryData = MediaQueryData.fromWindow(instance!.window);
+    var physicalPixelWidth = mediaQueryData.size.width;
 
-      if (physicalPixelWidth > 1000) {
-        isDesktopMode = true;
-      }
+    if (physicalPixelWidth > 1000) {
+      isDesktopMode = true;
     }
 
     return MultiProvider(

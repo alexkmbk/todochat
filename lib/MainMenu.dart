@@ -33,8 +33,8 @@ class MainMenu extends StatelessWidget {
         },
       ),
       const PopupMenuItem(
-        child: Text("Exit"),
         onTap: ExitApp,
+        child: Text("Exit"),
       ),
     ];
 

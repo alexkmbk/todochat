@@ -256,7 +256,7 @@ class _TasksPageState extends State<TasksPage> {
 
     try {
       response = await httpClient
-          .delete(setUriProperty(serverURI, path: 'todo/' + taskID.toString()));
+          .delete(setUriProperty(serverURI, path: 'todo/$taskID'));
     } catch (e) {
       return false;
     }

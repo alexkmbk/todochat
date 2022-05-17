@@ -63,9 +63,9 @@ class HighlightText extends StatelessWidget {
       if (wordToSearch.isEmpty) {
         spans.add(_normalSpan(' '));
       } else if (words.contains(wordToSearch)) {
-        spans.add(_highlightSpan(word + ' '));
+        spans.add(_highlightSpan('$word '));
       } else {
-        spans.add(_normalSpan(word + ' '));
+        spans.add(_normalSpan('$word '));
       }
     }
 

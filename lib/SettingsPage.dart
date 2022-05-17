@@ -106,7 +106,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<bool> checkConnection(Uri uri) async {
     checkingConnection = true;
 
-    var uriHealthz;
+    Uri uriHealthz;
 
     if (uri.port != 0 && uri.port != 80) {
       uriHealthz = Uri(

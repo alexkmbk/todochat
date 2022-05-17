@@ -1,26 +1,29 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:photo_view/photo_view.dart';
 
-Widget GetTextField(
-    {TextEditingController? controller,
-    String? hintText,
-    String? labelText,
-    FormFieldValidator<String>? validator,
-    ValueChanged<String>? onFieldSubmitted,
-    ValueChanged<String>? onChanged,
-    final VoidCallback? onCleared,
-    bool showClearButton = false,
-    TextInputType? keyboardType,
-    bool obscureText = false,
-    Color? fillColor,
-    Widget? prefixIcon,
-    Iterable<String>? autofillHints}) {
+Widget GetTextField({
+  TextEditingController? controller,
+  String? hintText,
+  String? labelText,
+  FormFieldValidator<String>? validator,
+  ValueChanged<String>? onFieldSubmitted,
+  ValueChanged<String>? onChanged,
+  final VoidCallback? onCleared,
+  bool showClearButton = false,
+  TextInputType? keyboardType,
+  bool obscureText = false,
+  Color? fillColor,
+  Widget? prefixIcon,
+  Iterable<String>? autofillHints,
+  FocusNode? focusNode,
+  TextInputAction? textInputAction,
+}) {
   return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextFormField(
+        focusNode: focusNode,
         autofillHints: autofillHints,
         decoration: InputDecoration(
           isDense: true,
@@ -45,6 +48,7 @@ Widget GetTextField(
         keyboardType: keyboardType,
         obscureText: obscureText,
         autofocus: true,
+        textInputAction: textInputAction ?? TextInputAction.next,
       ));
 }
 
@@ -103,8 +107,8 @@ Widget GetTextField(
 Widget networkImage(String src,
     {Map<String, String>? headers,
     GestureTapCallback? onTap,
-    double width = 40,
-    double height = 40,
+    double? width,
+    double? height,
     Uint8List? previewImageData}) {
   try {
     return GestureDetector(
@@ -113,12 +117,14 @@ Widget networkImage(String src,
             borderRadius: BorderRadius.circular(8.0),
             child: Image.network(
               src,
+              height: height,
               headers: headers,
               errorBuilder: (BuildContext context, Object exception,
                   StackTrace? stackTrace) {
-                return Placeholder(
-                  fallbackHeight: height,
-                  fallbackWidth: width,
+                return Image.asset(
+                  'assets/images/image_error.png',
+                  height: height ?? 200,
+                  width: width,
                 );
               },
               loadingBuilder: (BuildContext context, Widget child,
@@ -146,7 +152,11 @@ Widget networkImage(String src,
               },
             )));
   } catch (e) {
-    return const Placeholder();
+    return Image.asset(
+      'assets/images/image_error.png',
+      height: height ?? 200,
+      width: width,
+    );
   }
 }
 
@@ -201,7 +211,7 @@ class ImageDialog extends StatelessWidget {
       PhotoView(
         imageProvider: imageProvider,
         loadingBuilder: (context, event) => Center(
-          child: Container(
+          child: SizedBox(
             width: 20.0,
             height: 20.0,
             child: CircularProgressIndicator(
