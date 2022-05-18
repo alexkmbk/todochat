@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'MsgList.dart';
 import 'TaskMessagesPage.dart';
+import 'customWidgets.dart';
 import 'highlight_text.dart';
 import 'utils.dart';
 import 'package:collection/collection.dart';
@@ -508,7 +509,8 @@ class _TaskListTileState extends State<TaskListTile> {
                                   if (widget
                                       .task.lastMessageUserName.isNotEmpty)
                                     TextSpan(
-                                        text: "${widget.task.lastMessageUserName}: ",
+                                        text:
+                                            "${widget.task.lastMessageUserName}: ",
                                         style: const TextStyle(
                                             color: Colors.blue)),
                                   TextSpan(text: widget.task.lastMessage)
@@ -616,6 +618,7 @@ Future<bool> updateTask(Task task) async {
         setUriProperty(serverURI, path: 'updateTask'),
         body: jsonEncode(task));
   } catch (e) {
+    RestartWidget.restartApp();
     return false;
   }
 

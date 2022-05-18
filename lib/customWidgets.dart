@@ -255,6 +255,10 @@ class Timestamp extends StatelessWidget {
   }
 }
 
+class NavigationService {
+  static GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+}
+
 class RestartWidget extends StatefulWidget {
   RestartWidget({Key? key, required this.child, this.beforeRestart})
       : super(key: key);
@@ -263,8 +267,9 @@ class RestartWidget extends StatefulWidget {
 
   final Widget child;
 
-  static void restartApp(BuildContext context) {
-    context.findAncestorStateOfType<_RestartWidgetState>()?.restartApp();
+  static void restartApp([BuildContext? context]) {
+    context ??= NavigationService.navigatorKey.currentContext;
+    context!.findAncestorStateOfType<_RestartWidgetState>()?.restartApp();
   }
 
   @override

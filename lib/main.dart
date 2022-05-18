@@ -65,6 +65,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
+          navigatorKey: NavigationService.navigatorKey,
           title: 'ToDo Chat',
           theme: ThemeData(
             primarySwatch: Colors.blue,
@@ -207,9 +208,13 @@ class _MyHomePageState extends State<MyHomePage> {
               login().then((isLogin) async {
                 if (isLogin) {
                   connectWebSocketChannel();
+                } else {
+                  RestartWidget.restartApp();
                 }
               });
             }
+          }).onError((error, stackTrace) {
+            RestartWidget.restartApp();
           });
         }, onError: (error) {
           if (kDebugMode) {

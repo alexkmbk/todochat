@@ -72,6 +72,7 @@ func GetRoutesHandler() http.Handler {
 
 	router.HandleFunc("/messages", CommonHandler(Messages.GetMessages)).Methods("GET")
 	router.HandleFunc("/createMessage", CommonHandler(Messages.CreateMessage)).Methods("POST")
+	router.HandleFunc("/createMessageWithFile", CommonHandler(Messages.CreateMessageWithFile)).Methods("POST")
 	router.HandleFunc("/deleteMessage/{id}", CommonHandler(Messages.DeleteItem)).Methods("DELETE")
 
 	router.HandleFunc("/projects", CommonHandler(Projects.GetItems)).Methods("GET")

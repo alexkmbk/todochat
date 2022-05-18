@@ -350,22 +350,26 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                           control: true): () async {
                         final bytes = await Pasteboard.image;
                         if (bytes != null) {
-                          createMessage(
-                              text: _messageInputController.text,
-                              msgListProvider: widget.msgListProvider,
-                              fileData: bytes,
-                              fileName: "clipboard_image.bmp");
+                          widget.msgListProvider.addItem(Message(
+                              taskID: widget.msgListProvider.taskID,
+                              userID: currentUserID,
+                              fileName: "clipboard_image.png",
+                              loadingFile: true,
+                              loadingFileData: bytes,
+                              isImage: true));
                         } else {
                           final files = await Pasteboard.files();
                           if (files.isNotEmpty) {
                             for (final file in files) {
                               var fileData = await readFile(file);
                               if (fileData.isNotEmpty) {
-                                createMessage(
-                                    text: _messageInputController.text,
-                                    msgListProvider: widget.msgListProvider,
-                                    fileData: fileData,
-                                    fileName: file);
+                                widget.msgListProvider.addItem(Message(
+                                    taskID: widget.msgListProvider.taskID,
+                                    userID: currentUserID,
+                                    fileName: file,
+                                    loadingFile: true,
+                                    loadingFileData: bytes,
+                                    isImage: isImageFile(file)));
                               }
                             }
                           } else {
@@ -388,11 +392,13 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                                 if (imageURL.isNotEmpty) {
                                   var response = await get(Uri.parse(imageURL));
                                   if (response.statusCode == 200) {
-                                    createMessage(
-                                        text: "",
-                                        msgListProvider: widget.msgListProvider,
-                                        fileData: response.bodyBytes,
-                                        fileName: "clipboard_image.png");
+                                    widget.msgListProvider.addItem(Message(
+                                        taskID: widget.msgListProvider.taskID,
+                                        userID: currentUserID,
+                                        fileName: "clipboard_image.png",
+                                        loadingFile: true,
+                                        loadingFileData: response.bodyBytes,
+                                        isImage: true));
                                   }
                                 } else {
                                   _messageInputController.text = html.trim();
@@ -744,7 +750,7 @@ class _LoadingFileBubbleState extends State<LoadingFileBubble> {
   Widget build(BuildContext context) {
     if (!widget.message.loadinInProcess) {
       widget.message.loadinInProcess = true;
-      createMessage(
+      createMessageWithFile(
           text: widget.message.text,
           fileData: widget.message.loadingFileData,
           fileName: widget.message.fileName,
@@ -847,6 +853,43 @@ class _LoadingFileBubbleState extends State<LoadingFileBubble> {
 Future<bool> createMessage(
     {required String text,
     required MsgListProvider msgListProvider,
+    bool isTaskDescriptionItem = false}) async {
+  if (sessionID == "") {
+    return false;
+  }
+
+  Message message = Message(
+      taskID: msgListProvider.taskID,
+      text: text,
+      fileName: "",
+      isImage: false,
+      isTaskDescriptionItem: isTaskDescriptionItem,
+      tempID: "");
+
+  Response response;
+  try {
+    response = await httpClient.post(
+        setUriProperty(serverURI, path: 'createMessage'),
+        body: jsonEncode(message));
+  } catch (e) {
+    return false;
+  }
+  //request.headers.contentLength = utf8.encode(body).length;
+
+  if (response.statusCode == 200) {
+    var data = jsonDecode(response.body) as Map<String, dynamic>;
+
+    Message message = Message.fromJson(data);
+    msgListProvider.addItem(message);
+    return true;
+  }
+
+  return false;
+}
+
+Future<bool> createMessageWithFile(
+    {required String text,
+    required MsgListProvider msgListProvider,
     Uint8List? fileData,
     String fileName = "",
     bool isPicture = false,
@@ -859,7 +902,7 @@ Future<bool> createMessage(
 
   final request = HTTPClient.MultipartRequest(
     'POST',
-    setUriProperty(serverURI, path: 'createMessage'),
+    setUriProperty(serverURI, path: 'createMessageWithFile'),
     onProgress: onProgress,
   );
 
@@ -880,29 +923,13 @@ Future<bool> createMessage(
         http.MultipartFile.fromBytes("File", fileData, filename: fileName));
   }
 
-  final streamedResponse = await request.send();
-
-  /* MultipartRequest request = MultipartRequest(
-      'POST', setUriProperty(serverURI, path: 'createMessage'));
-
-  request.headers["sessionID"] = sessionID;
-  request.headers["content-type"] = "application/json; charset=utf-8";
-
-  Message message = Message(
-      taskID: taskID,
-      text: text,
-      fileName: path.basename(fileName),
-      isImage: isImageFile(fileName),
-      isTaskDescriptionItem: isTaskDescriptionItem);
-
-  request.fields["Message"] = jsonEncode(message);
-
-  if (fileData != null) {
-    request.files
-        .add(MultipartFile.fromBytes("File", fileData, filename: fileName));
+  StreamedResponse streamedResponse;
+  try {
+    streamedResponse = await request.send();
+  } catch (e) {
+    return false;
   }
 
-  var streamedResponse = await request.send();*/
   if (streamedResponse.statusCode == 200) {
     return true;
   }

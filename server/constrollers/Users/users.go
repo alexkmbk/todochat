@@ -97,16 +97,21 @@ func RegisterNewUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Json parsing error", http.StatusBadRequest)
 	} else {
 		log.WithFields(log.Fields{"User": data["Name"]}).Info("Add new User. Saving to database.")
-		//message := &Message{Description: description, Completed: false, Creation_date: time.Now()}
 		user.Name = data["Name"]
 		user.PasswordHash = data["passwordHash"]
-		DB.Create(&user)
-		//DB.Last(&todo)
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		//io.WriteString(w, `{result: true}`)
-		//json.NewEncoder(w).Encode(user)
-		sessionID := CreateNewSession(user)
-		io.WriteString(w, "{\"sessionID\":\""+sessionID.String()+"\",\"userID\":"+strconv.FormatInt(user.ID, 10)+"}")
+
+		var count int64
+		DB.Model(&User{}).Where("Name = ?", user.Name).Count(&count)
+
+		if count > 0 {
+			http.Error(w, "User already exists", http.StatusBadRequest)
+		} else {
+			DB.Create(&user)
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			sessionID := CreateNewSession(user)
+			io.WriteString(w, "{\"sessionID\":\""+sessionID.String()+"\",\"userID\":"+strconv.FormatInt(user.ID, 10)+"}")
+
+		}
 
 	}
 }

@@ -91,13 +91,14 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       return true;
+    } else {
+      toast(utf8.decode(response.bodyBytes), context);
     }
 
     return false;
   }
 
   Widget showLoginPage(BuildContext context) {
-    final focus = FocusNode();
     return Scaffold(
         body: Form(
             onWillPop: () async => false,
@@ -177,12 +178,19 @@ class _LoginPageState extends State<LoginPage> {
               controller: userNameController,
               hintText: 'User name',
               validator: (value) => validateEmpty(value, 'User name'),
+              onFieldSubmitted: (value) {
+                FocusScope.of(context).nextFocus();
+              },
             ),
             GetTextField(
-                controller: emailController,
-                hintText: 'Email',
-                keyboardType: TextInputType.emailAddress,
-                showClearButton: true),
+              controller: emailController,
+              hintText: 'Email',
+              keyboardType: TextInputType.emailAddress,
+              showClearButton: true,
+              onFieldSubmitted: (value) {
+                FocusScope.of(context).nextFocus();
+              },
+            ),
             GetTextField(
               controller: passwordController,
               hintText: 'Password',

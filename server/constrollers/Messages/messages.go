@@ -259,6 +259,50 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	decoder := json.NewDecoder(r.Body)
+	var message Message
+
+	err := decoder.Decode(&message)
+	if err != nil {
+		http.Error(w, "Json decode error", http.StatusInternalServerError)
+		return
+	}
+
+	user, success := Users.GetItemByID(userID)
+	if success {
+		message.UserName = user.Name
+	}
+
+	message.Created_at = time.Now()
+	message.UserID = userID
+
+	/*message.LocalFileName = fileName
+	message.SmallImageName = smallImageFileName
+	message.FileSize = fileSize*/
+
+	task, success := Tasks.GetItemByID(message.TaskID)
+	if success {
+		task.LastMessage = message.Text
+		task.LastMessageID = message.ID
+		task.LastMessageUserName = message.UserName
+		DB.Save(&task)
+	}
+	message.ProjectID = task.ProjectID
+	DB.Create(&message)
+	go WS.SendWSMessage(&message)
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(message)
+
+}
+
+func CreateMessageWithFile(w http.ResponseWriter, r *http.Request) {
+
+	userID := GetUserID(w, r)
+	if userID == 0 {
+		return
+	}
+
 	read_form, err := r.MultipartReader()
 
 	if err != nil {
