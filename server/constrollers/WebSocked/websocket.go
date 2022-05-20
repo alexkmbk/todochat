@@ -123,14 +123,12 @@ func (c *Client) readPump() {
 		}*/
 
 		if query["command"] == "init" {
-			/*sessionID, err = uuid.Parse(query["sessionID"])
+			sessionID, err = uuid.Parse(query["sessionID"])
 			if sessionID == uuid.Nil || !SessionIDExists(sessionID) {
-				println("CLOSE WS CONNECTION ON INIT!")
-				//conn.Close()
+				println("CLOSE WS CONNECTION ON init!")
 				break
 			}
-			//WSConnections[sessionID] = conn
-			//WSIDs[conn] = sessionID*/
+			c.sessionID = sessionID
 		} else if query["command"] == "getMessages" {
 			sessionID, err = uuid.Parse(query["sessionID"])
 			if sessionID == uuid.Nil || !SessionIDExists(sessionID) {

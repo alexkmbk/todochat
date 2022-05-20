@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -16,9 +19,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'MsgList.dart';
 
-var httpClient = HttpClient();
-WebSocketChannel? ws;
-
 Uri serverURI = Uri();
 String sessionID = "";
 int currentUserID = 0;
@@ -31,18 +31,30 @@ late SharedPreferences settings;
 void main() {
   runApp(
     RestartWidget(
-      child: const MyApp(),
+      builder: () {
+        return MyApp();
+      },
       beforeRestart: () {
         appInitialized = false;
         sessionID = "";
-        ws = null;
+        if (ws != null) {
+          ws!.sink.close(1001);
+          ws = null;
+          httpClient.close();
+          isWSConnected = false;
+
+          ///final context = getGlobalContext();
+          /*if (context != null) {
+            Provider.of<MsgListProvider>(context, listen: false).dispose();
+          }*/
+        }
       },
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override
@@ -50,15 +62,16 @@ class MyApp extends StatelessWidget {
     var instance = WidgetsBinding.instance;
     var mediaQueryData = MediaQueryData.fromWindow(instance!.window);
     var physicalPixelWidth = mediaQueryData.size.width;
-
+    final msgListProvider = MsgListProvider();
     if (physicalPixelWidth > 1000) {
       isDesktopMode = true;
     }
 
     return MultiProvider(
+      //key: UniqueKey(),
       providers: [
         ChangeNotifierProvider.value(
-          value: MsgListProvider(),
+          value: msgListProvider,
         ),
         ChangeNotifierProvider.value(
           value: TasksListProvider(),
@@ -71,27 +84,31 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.blue,
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
-          home: const MyHomePage(title: "ToDo Chat")),
+          home: MyHomePage(
+            title: "ToDo Chat",
+            msgListProvider: msgListProvider,
+          )),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+  MyHomePage({Key? key, required this.title, required this.msgListProvider})
+      : super(key: key);
   final String title;
+  MsgListProvider msgListProvider;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late MsgListProvider _msgListProvider;
   late TasksListProvider _tasksListProvider;
 
   @override
   void initState() {
     super.initState();
-    _msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
+    //msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
     _tasksListProvider = Provider.of<TasksListProvider>(context, listen: false);
 
     //Login(_tasksListProvider);
@@ -109,7 +126,10 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     if (appInitialized) {
-      return const Scaffold(body: TasksPage());
+      return Scaffold(
+          body: TasksPage(
+        msgListProvider: widget.msgListProvider,
+      ));
     } else {
       return Scaffold(
         //appBar: AppBar(title: Text(widget.title), leading: MainMenu()),
@@ -146,7 +166,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           child: const Text("Settings")),
                     ]);
               } else if (snapshot.data as bool) {
-                return const TasksPage();
+                return TasksPage(
+                  msgListProvider:
+                      Provider.of<MsgListProvider>(context, listen: false),
+                );
               } else {
                 return const Center(
                     child: Text('Надо вставить код',
@@ -188,26 +211,32 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
+  StreamSubscription? subscription;
+
   void listenWs() {
     if (sessionID.isNotEmpty && ws != null) {
       try {
-        ws!.stream.listen((messageJson) {
+        subscription = ws!.stream.listen((messageJson) {
           WSMessage wsMsg = WSMessage.fromJson(messageJson);
           if (wsMsg.command == "getMessages") {
-            _msgListProvider.addItems(wsMsg.data);
+            widget.msgListProvider.addItems(wsMsg.data);
           } else if (wsMsg.command == "createMessage") {
             var message = Message.fromJson(wsMsg.data);
-            _msgListProvider.addItem(message);
+            widget.msgListProvider.addItem(message);
             _tasksListProvider.updateLastMessage(message.taskID, message);
           }
         }, onDone: () {
-          checkLogin().then((value) async {
+          isWSConnected = false;
+          subscription!.cancel();
+          /*checkLogin().then((value) async {
             if (value) {
-              connectWebSocketChannel();
+//              subscription!.cancel();
+              //connectWebSocketChannel(serverURI);
             } else {
               login().then((isLogin) async {
                 if (isLogin) {
-                  connectWebSocketChannel();
+//                  subscription!.cancel();
+                  //connectWebSocketChannel(serverURI);
                 } else {
                   RestartWidget.restartApp();
                 }
@@ -215,43 +244,29 @@ class _MyHomePageState extends State<MyHomePage> {
             }
           }).onError((error, stackTrace) {
             RestartWidget.restartApp();
-          });
+          });*/
         }, onError: (error) {
           if (kDebugMode) {
             print(error.toString());
           }
-          connectWebSocketChannel();
-          //ws!.sink.add(jsonEncode({"command": "init", "sessionID": sessionID}));
+          RestartWidget.restartApp();
         });
       } catch (e) {
         if (kDebugMode) {
           print(e.toString());
         }
+        Future.delayed(const Duration(seconds: 2))
+            .then((value) => RestartWidget.restartApp());
       }
     }
-  }
-
-  void connectWebSocketChannel() {
-    if (ws != null) {
-      ws!.sink.close();
-      ws = null;
-    }
-    //Future.delayed(const Duration(seconds: 1)).then((value) {
-    var scheme = serverURI.scheme == "http" ? "ws" : "wss";
-    ws = WebSocketChannel.connect(
-        setUriProperty(serverURI, scheme: scheme, path: "initMessagesWS"));
-
-    listenWs();
-    //ws!.sink.add(jsonEncode({"command": "init", "sessionID": sessionID}));
-    //});
-
-    /*ws = WebSocketChannel.connect(
-          Uri.parse('ws://' + serverURI.authority + "/initMessagesWS"));*/
   }
 
   Future<bool> initApp(BuildContext context) async {
     if (appInitialized) return true;
     bool res;
+
+    widget.msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
 
     settings = await SharedPreferences.getInstance();
 
@@ -281,8 +296,40 @@ class _MyHomePageState extends State<MyHomePage> {
       await openLoginPage(context);
     }
     if (isServerURI && sessionID.isNotEmpty) {
-      connectWebSocketChannel();
+      connectWebSocketChannel(serverURI).then((value) {
+        listenWs();
+      });
     }
+
+    var connectWebSocketInProcess = false;
+    Timer.periodic(const Duration(seconds: 1), (Timer t) {
+      if (!connectWebSocketInProcess &&
+          !isWSConnected &&
+          isServerURI &&
+          sessionID.isNotEmpty) {
+        connectWebSocketInProcess = true;
+        checkLogin().then((value) {
+          if (value) {
+            connectWebSocketChannel(serverURI).then((value) {
+              connectWebSocketInProcess = false;
+              listenWs();
+            });
+          } else {
+            login().then((isLogin) async {
+              if (isLogin) {
+                connectWebSocketChannel(serverURI).then((value) {
+                  connectWebSocketInProcess = false;
+                  listenWs();
+                });
+              } else {
+                RestartWidget.restartApp();
+              }
+            });
+          }
+        });
+      }
+    });
+
     appInitialized = true;
     return true;
   }

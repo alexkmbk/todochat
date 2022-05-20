@@ -259,13 +259,18 @@ class NavigationService {
   static GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 }
 
+BuildContext? getGlobalContext() {
+  return NavigationService.navigatorKey.currentContext;
+}
+
 class RestartWidget extends StatefulWidget {
-  RestartWidget({Key? key, required this.child, this.beforeRestart})
+  RestartWidget({Key? key, required this.builder, this.beforeRestart})
       : super(key: key);
 
   Function? beforeRestart;
 
-  final Widget child;
+  //final Widget child;
+  final Function builder;
 
   static void restartApp([BuildContext? context]) {
     context ??= NavigationService.navigatorKey.currentContext;
@@ -289,11 +294,21 @@ class _RestartWidgetState extends State<RestartWidget> {
     });
   }
 
+  void rebuildAllChildren(BuildContext context) {
+    void rebuild(Element el) {
+      el.markNeedsBuild();
+      el.visitChildren(rebuild);
+    }
+
+    (context as Element).visitChildren(rebuild);
+  }
+
   @override
   Widget build(BuildContext context) {
+    //rebuildAllChildren(context);
     return KeyedSubtree(
       key: key,
-      child: widget.child,
+      child: widget.builder(),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'HttpClient.dart' as HTTPClient;
 import 'MainMenu.dart';
 import 'utils.dart';
 import 'package:provider/provider.dart';
@@ -16,8 +17,11 @@ import 'inifiniteTaskList.dart';
 
 class TaskMessagesPage extends StatefulWidget {
   final Task task;
+  final MsgListProvider msgListProvider;
 
-  const TaskMessagesPage({Key? key, required this.task}) : super(key: key);
+  const TaskMessagesPage(
+      {Key? key, required this.task, required this.msgListProvider})
+      : super(key: key);
 
   @override
   State<TaskMessagesPage> createState() {
@@ -30,8 +34,6 @@ class TaskMessagesPage extends StatefulWidget {
 }*/
 
 class _TaskMessagesPageState extends State<TaskMessagesPage> {
-  late MsgListProvider _msgListProvider;
-
   final _messageInputController = TextEditingController();
 
   final ScrollController scrollController = ScrollController();
@@ -56,11 +58,11 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
   @override
   void initState() {
     super.initState();
-    _msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
-    _msgListProvider.taskID = widget.task.ID;
-    _msgListProvider.task = widget.task;
-    _msgListProvider.foundMessageID = widget.task.lastMessageID;
-    _msgListProvider.scrollController = itemsScrollController;
+
+    widget.msgListProvider.taskID = widget.task.ID;
+    widget.msgListProvider.task = widget.task;
+    widget.msgListProvider.foundMessageID = widget.task.lastMessageID;
+    widget.msgListProvider.scrollController = itemsScrollController;
     /*_msgListProvider.addListener(() {
       _jumpTo(widget.task.lastMessageID);
     });*/
@@ -101,7 +103,8 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
   @override
   void dispose() {
     super.dispose();
-    _msgListProvider.clear();
+    widget.msgListProvider.clear();
+
     //ws.sink.close();
     //_scrollController.dispose();
   }
@@ -153,14 +156,14 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                   itemPositionsListener: itemPositionsListener,
                   onDelete: deleteMesage,
                   getFile: getFile,
-                  msgListProvider: _msgListProvider,
+                  msgListProvider: widget.msgListProvider,
                 ),
                 onNotification: (notification) {
-                  if (!_msgListProvider.loading &&
+                  if (!widget.msgListProvider.loading &&
                       (itemPositionsListener.itemPositions.value.isEmpty ||
                           (itemPositionsListener
                                   .itemPositions.value.last.index >=
-                              _msgListProvider.items.length - 10))) {
+                              widget.msgListProvider.items.length - 10))) {
                     requestMessages();
                   }
                   return true;
@@ -192,8 +195,8 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       return;
     }
 
-    _msgListProvider.loading = true;
-    _msgListProvider.requestMessages();
+    widget.msgListProvider.loading = true;
+    widget.msgListProvider.requestMessages();
     /*ws!.sink.add(jsonEncode({
       "sessionID": sessionID,
       "command": "getMessages",
@@ -212,7 +215,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
 
     MultipartRequest request = MultipartRequest(
         'GET',
-        setUriProperty(serverURI,
+        HTTPClient.setUriProperty(serverURI,
             path: 'getFile',
             queryParameters: {"localFileName": localFileName}));
 
@@ -242,9 +245,8 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     Response response;
 
     try {
-      response = await httpClient.delete(
-          setUriProperty(serverURI,
-              path: 'deleteMessage/$messageID')
+      response = await HTTPClient.httpClient.delete(
+          HTTPClient.setUriProperty(serverURI, path: 'deleteMessage/$messageID')
           /*  Uri.http(
               serverURI.authority, '/deleteMessage/' + messageID.toString())*/
           ,

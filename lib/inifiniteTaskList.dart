@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'HttpClient.dart';
 import 'MsgList.dart';
 import 'TaskMessagesPage.dart';
 import 'customWidgets.dart';
@@ -180,13 +181,15 @@ class InifiniteTaskList extends StatefulWidget {
   final ItemScrollController scrollController;
   final OnAddFn onAddFn;
   final OnDeleteFn onDeleteFn;
+  final MsgListProvider msgListProvider;
 
   const InifiniteTaskList(
       {Key? key,
       required this.scrollController,
       required this.itemPositionsListener,
       required this.onAddFn,
-      required this.onDeleteFn})
+      required this.onDeleteFn,
+      required this.msgListProvider})
       : super(key: key);
 
   @override
@@ -197,14 +200,13 @@ class InifiniteTaskList extends StatefulWidget {
 
 class InifiniteTaskListState extends State<InifiniteTaskList> {
   late TasksListProvider _taskListProvider;
-  late MsgListProvider _msgListProvider;
   bool loading = false;
 
   @override
   void initState() {
     super.initState();
     _taskListProvider = Provider.of<TasksListProvider>(context, listen: false);
-    _msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
+    //_msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
   }
 
 // This is what you're looking for!
@@ -224,7 +226,7 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
               task: _taskListProvider.items[index],
               tasksListProvider: _taskListProvider,
               inifiniteTaskList: widget,
-              msgListProvider: _msgListProvider);
+              msgListProvider: widget.msgListProvider);
           /*if (index < _taskListProvider.items.length) {
             return buildListRow(context, index, _taskListProvider.items[index],
                 _taskListProvider, widget);
@@ -570,7 +572,7 @@ class _TaskListTileState extends State<TaskListTile> {
         tasksListProvider.currentTask = task;
       });*/
     } else {
-      openTask(context, task);
+      openTask(context, task, widget.msgListProvider);
       setState(() {
         task.read = true;
         task.unreadMessages = 0;
@@ -629,9 +631,14 @@ Future<bool> updateTask(Task task) async {
   return false;
 }
 
-void openTask(BuildContext context, Task task) {
+void openTask(
+    BuildContext context, Task task, MsgListProvider msgListProvider) {
   Navigator.push(
     context,
-    MaterialPageRoute(builder: (context) => TaskMessagesPage(task: task)),
+    MaterialPageRoute(
+        builder: (context) => TaskMessagesPage(
+              task: task,
+              msgListProvider: msgListProvider,
+            )),
   );
 }

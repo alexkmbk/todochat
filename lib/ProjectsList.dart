@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/src/response.dart';
+import 'HttpClient.dart';
 import 'utils.dart';
 import 'MainMenu.dart';
 import 'LoginPage.dart';
@@ -289,8 +290,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
     try {
       response = await httpClient.delete(
-          setUriProperty(serverURI,
-              path: 'deleteProject/$projectID'),
+          setUriProperty(serverURI, path: 'deleteProject/$projectID'),
           headers: headers);
     } catch (e) {
       return false;
@@ -391,8 +391,8 @@ Future<Project?> getProject(int? projectID) async {
 
   Response response;
   try {
-    response = await httpClient.get(
-        setUriProperty(serverURI, path: 'project/$projectID'));
+    response = await httpClient
+        .get(setUriProperty(serverURI, path: 'project/$projectID'));
   } catch (e) {
     return null;
   }

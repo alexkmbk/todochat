@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import 'HttpClient.dart';
 import 'SettingsPage.dart';
 import 'customWidgets.dart';
 import 'main.dart';
@@ -316,7 +317,7 @@ Future<bool> checkLogin() async {
     response =
         await httpClient.get(setUriProperty(serverURI, path: "checkLogin"));
   } catch (e) {
-    return Future.error(e.toString());
+    return false;
   }
 
   if (response.statusCode == 200) {

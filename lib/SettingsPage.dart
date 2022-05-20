@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'HttpClient.dart';
 import 'customWidgets.dart';
 import 'main.dart';
 import 'utils.dart';
