@@ -48,6 +48,12 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 		}
 
 		DB.Create(&task)
+
+		seenTask := SeenTask{UserID: userID, TaskID: task.ID}
+		if DB.First(&seenTask).Error != nil {
+			DB.Create(&seenTask)
+		}
+
 		//DB.Last(&todo)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		//io.WriteString(w, `{result: true}`)
