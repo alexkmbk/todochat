@@ -404,7 +404,9 @@ class _TasksPageState extends State<TasksPage> {
           res[0].unreadMessages = 0;
           widget.msgListProvider.task = tasksListProvider.currentTask;
           widget.msgListProvider.taskID = widget.msgListProvider.task?.ID ?? 0;
-          widget.msgListProvider.requestMessages();
+          if (isDesktopMode) {
+            widget.msgListProvider.requestMessages();
+          }
         }
       }
     } else if (response.statusCode == 401) {
