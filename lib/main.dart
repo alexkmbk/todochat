@@ -64,7 +64,7 @@ class MyApp extends StatelessWidget {
     var physicalPixelWidth = mediaQueryData.size.width;
     final msgListProvider = MsgListProvider();
     if (physicalPixelWidth > 1000) {
-      isDesktopMode = true;
+      //isDesktopMode = true;
     }
 
     return MultiProvider(
@@ -326,6 +326,8 @@ class _MyHomePageState extends State<MyHomePage> {
               }
             });
           }
+        }).onError((error, stackTrace) {
+          RestartWidget.restartApp();
         });
       }
     });

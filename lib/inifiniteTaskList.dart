@@ -260,6 +260,7 @@ class TaskListTile extends StatefulWidget {
 }
 
 class _TaskListTileState extends State<TaskListTile> {
+  var textEditingController = TextEditingController(text: "");
   @override
   Widget build(BuildContext context) {
     return buildListRow(context);
@@ -299,7 +300,7 @@ class _TaskListTileState extends State<TaskListTile> {
 
   Widget buildListRow(BuildContext context) {
     if (widget.task.editMode) {
-      var textEditingController =
+      textEditingController =
           TextEditingController(text: widget.task.Description);
       return Card(
           shape: const RoundedRectangleBorder(

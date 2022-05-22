@@ -62,6 +62,7 @@ class MsgListProvider extends ChangeNotifier {
   }
 
   void addItems(dynamic data) {
+    bool notify = false;
     for (var item in data) {
       var message = Message.fromJson(item);
       if (message.taskID == taskID) {
@@ -71,14 +72,20 @@ class MsgListProvider extends ChangeNotifier {
             message.loadingFileData = res.loadingFileData;
           }
         }*/
-        items.add(message);
+        if (items.firstWhereOrNull((element) => element.ID == message.ID) ==
+            null) {
+          items.add(message);
+          notify = true;
+        }
       }
     }
     loading = false;
     if (data.length > 0) {
       lastID = data[data.length - 1]["ID"];
     }
-    notifyListeners();
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   void addUploadingItem(Message message, Uint8List loadingFileData) {

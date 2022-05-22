@@ -244,11 +244,13 @@ class _TasksPageState extends State<TasksPage> {
 
     tasksListProvider.currentTask = task;
     tasksListProvider.addItem(task);
+    widget.msgListProvider.taskID = task.ID;
+    widget.msgListProvider.task = task;
+
     if (isDesktopMode) {
-      widget.msgListProvider.taskID = task.ID;
-      widget.msgListProvider.task = task;
       widget.msgListProvider.clear(true);
     } else {
+      widget.msgListProvider.clear(false);
       openTask(context, task, widget.msgListProvider);
     }
 
