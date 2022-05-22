@@ -20,6 +20,14 @@ import 'package:path/path.dart' as path;
 import 'main.dart';
 import 'package:collection/collection.dart';
 
+class UploadingFilesStruct {
+  late HTTPClient.MultipartRequest? multipartRequest;
+  late Uint8List loadingFileData;
+  UploadingFilesStruct({this.multipartRequest, required this.loadingFileData});
+}
+
+Map<String, UploadingFilesStruct> uploadingFiles = {};
+
 class MsgListProvider extends ChangeNotifier {
   List<Message> items = [];
   num offset = 0;
@@ -57,6 +65,12 @@ class MsgListProvider extends ChangeNotifier {
     for (var item in data) {
       var message = Message.fromJson(item);
       if (message.taskID == taskID) {
+        /*if (message.tempID.isNotEmpty) {
+          final res = uploadingFiles[message.tempID];
+          if (res != null && res.loadingFileData.isNotEmpty) {
+            message.loadingFileData = res.loadingFileData;
+          }
+        }*/
         items.add(message);
       }
     }
@@ -64,6 +78,18 @@ class MsgListProvider extends ChangeNotifier {
     if (data.length > 0) {
       lastID = data[data.length - 1]["ID"];
     }
+    notifyListeners();
+  }
+
+  void addUploadingItem(Message message, Uint8List loadingFileData) {
+    if (message.taskID != taskID) {
+      return;
+    }
+    message.tempID = UniqueKey().toString();
+    message.loadinInProcess = true;
+    items.insert(0, message);
+    uploadingFiles[message.tempID] =
+        UploadingFilesStruct(loadingFileData: loadingFileData);
     notifyListeners();
   }
 
@@ -75,12 +101,12 @@ class MsgListProvider extends ChangeNotifier {
       int foundIndex =
           items.indexWhere((element) => element.tempID == message.tempID);
       if (foundIndex >= 0) {
+        /*final request = uploadingFiles[message.tempID];
+        if (request != null && request.loadingFileData.isNotEmpty) {
+          message.loadingFileData = request.loadingFileData;
+        }*/
         items[foundIndex] = message;
       }
-    } else if (message.loadingFile) {
-      message.tempID = UniqueKey().toString();
-      items.insert(0, message);
-      notifyListeners();
     } else if (items.firstWhereOrNull((element) => element.ID == message.ID) ==
         null) {
       items.insert(0, message);
@@ -130,7 +156,7 @@ class Message {
   int smallImageHeight = 0;
   bool isTaskDescriptionItem = false;
   bool loadingFile = false;
-  Uint8List? loadingFileData;
+  //Uint8List? loadingFileData;
   bool loadinInProcess = false;
   String tempID = "";
 
@@ -146,8 +172,9 @@ class Message {
       this.isImage = false,
       this.isTaskDescriptionItem = false,
       this.loadingFile = false,
-      this.loadingFileData,
-      this.tempID = ""});
+      //this.loadingFileData,
+      this.tempID = "",
+      this.loadinInProcess = false});
 
   Map<String, dynamic> toJson() {
     return {
@@ -168,6 +195,7 @@ class Message {
       'smallImageHeight': smallImageHeight,
       'isTaskDescriptionItem': isTaskDescriptionItem,
       'TempID': tempID,
+      'LoadinInProcess': loadinInProcess,
     };
   }
 
@@ -193,6 +221,7 @@ class Message {
     var value = json['IsTaskDescriptionItem'];
     isTaskDescriptionItem = value ?? false;
     tempID = json["TempID"];
+    loadinInProcess = json["LoadinInProcess"];
   }
 }
 
@@ -285,7 +314,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
           itemCount: widget.msgListProvider.items.length,
           itemBuilder: (context, index) {
             var item = widget.msgListProvider.items[index];
-            if (item.loadingFile) {
+            if (item.tempID.isNotEmpty && item.loadinInProcess) {
               return LoadingFileBubble(
                 index: index,
                 isCurrentUser: item.userID == currentUserID,
@@ -351,26 +380,28 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                           control: true): () async {
                         final bytes = await Pasteboard.image;
                         if (bytes != null) {
-                          widget.msgListProvider.addItem(Message(
-                              taskID: widget.msgListProvider.taskID,
-                              userID: currentUserID,
-                              fileName: "clipboard_image.png",
-                              loadingFile: true,
-                              loadingFileData: bytes,
-                              isImage: true));
+                          widget.msgListProvider.addUploadingItem(
+                              Message(
+                                  taskID: widget.msgListProvider.taskID,
+                                  userID: currentUserID,
+                                  fileName: "clipboard_image.png",
+                                  loadingFile: true,
+                                  isImage: true),
+                              bytes);
                         } else {
                           final files = await Pasteboard.files();
                           if (files.isNotEmpty) {
                             for (final file in files) {
                               var fileData = await readFile(file);
                               if (fileData.isNotEmpty) {
-                                widget.msgListProvider.addItem(Message(
-                                    taskID: widget.msgListProvider.taskID,
-                                    userID: currentUserID,
-                                    fileName: file,
-                                    loadingFile: true,
-                                    loadingFileData: bytes,
-                                    isImage: isImageFile(file)));
+                                widget.msgListProvider.addUploadingItem(
+                                    Message(
+                                        taskID: widget.msgListProvider.taskID,
+                                        userID: currentUserID,
+                                        fileName: path.basename(file),
+                                        loadingFile: true,
+                                        isImage: isImageFile(file)),
+                                    fileData);
                               }
                             }
                           } else {
@@ -393,13 +424,15 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                                 if (imageURL.isNotEmpty) {
                                   var response = await get(Uri.parse(imageURL));
                                   if (response.statusCode == 200) {
-                                    widget.msgListProvider.addItem(Message(
-                                        taskID: widget.msgListProvider.taskID,
-                                        userID: currentUserID,
-                                        fileName: "clipboard_image.png",
-                                        loadingFile: true,
-                                        loadingFileData: response.bodyBytes,
-                                        isImage: true));
+                                    widget.msgListProvider.addUploadingItem(
+                                        Message(
+                                            taskID:
+                                                widget.msgListProvider.taskID,
+                                            userID: currentUserID,
+                                            fileName: "clipboard_image.png",
+                                            loadingFile: true,
+                                            isImage: true),
+                                        response.bodyBytes);
                                   }
                                 } else {
                                   _messageInputController.text = html.trim();
@@ -452,13 +485,14 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
 
                       if (fileName.isNotEmpty) {
                         var res = await readFile(fileName);
-                        widget.msgListProvider.addItem(Message(
-                            taskID: widget.msgListProvider.taskID,
-                            userID: currentUserID,
-                            fileName: fileName,
-                            loadingFile: true,
-                            loadingFileData: res,
-                            isImage: isImageFile(fileName)));
+                        widget.msgListProvider.addUploadingItem(
+                            Message(
+                                taskID: widget.msgListProvider.taskID,
+                                userID: currentUserID,
+                                fileName: path.basename(fileName),
+                                loadingFile: true,
+                                isImage: isImageFile(fileName)),
+                            res);
                         _messageInputController.text = "";
                       }
                     },
@@ -667,30 +701,32 @@ class ChatBubble extends StatelessWidget {
             ),
             child: GestureDetector(
               onTap: () => onTapOnFileMessage(message, context),
-              child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Icon(Icons.file_present_rounded,
-                            color: Colors.white),
-                        const SizedBox(width: 10),
-                        FittedBox(
-                            fit: BoxFit.fill,
-                            alignment: Alignment.center,
-                            child: SelectableText(
-                              message.fileName,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyText1!
-                                  .copyWith(
-                                      color: isCurrentUser
-                                          ? Colors.white
-                                          : Colors.black87),
-                            )),
-                      ])),
+              child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Icon(Icons.file_present_rounded,
+                                color: Colors.white),
+                            const SizedBox(width: 10),
+                            FittedBox(
+                                fit: BoxFit.fill,
+                                alignment: Alignment.center,
+                                child: SelectableText(
+                                  message.fileName,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText1!
+                                      .copyWith(
+                                          color: isCurrentUser
+                                              ? Colors.white
+                                              : Colors.black87),
+                                )),
+                          ]))),
             ));
       }
     }
@@ -749,22 +785,24 @@ class _LoadingFileBubbleState extends State<LoadingFileBubble> {
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.message.loadinInProcess) {
-      widget.message.loadinInProcess = true;
+    final foundStruct = uploadingFiles[widget.message.tempID];
+    if (foundStruct != null && foundStruct.multipartRequest == null) {
       createMessageWithFile(
           text: widget.message.text,
-          fileData: widget.message.loadingFileData,
+          fileData: foundStruct.loadingFileData,
           fileName: widget.message.fileName,
           msgListProvider: widget.msgListProvider,
           tempID: widget.message.tempID,
           onProgress: (int bytes, int totalBytes) {
-            setState(() {
+            if (mounted) {
+              //setState(() {
               if (totalBytes == 0) {
                 progress = 0.0;
               } else {
                 progress = bytes / totalBytes;
               }
-            });
+              //});
+            }
           });
     }
 
@@ -784,16 +822,18 @@ class _LoadingFileBubbleState extends State<LoadingFileBubble> {
                 : widget.isCurrentUser
                     ? Alignment.centerRight
                     : Alignment.centerLeft,
-            child: drawBubble(context, constraints)),
+            child:
+                drawBubble(context, constraints, foundStruct!.loadingFileData)),
       );
     });
   }
 
-  Widget drawBubble(BuildContext context, BoxConstraints constraints) {
-    if (widget.message.isImage && widget.message.loadingFileData != null) {
+  Widget drawBubble(BuildContext context, BoxConstraints constraints,
+      Uint8List? loadingFileData) {
+    if (widget.message.isImage && loadingFileData != null) {
       return Stack(children: [
         memoryImage(
-          widget.message.loadingFileData as Uint8List,
+          loadingFileData,
           height: 200,
         ),
         if (progress < 1)
@@ -809,8 +849,7 @@ class _LoadingFileBubbleState extends State<LoadingFileBubble> {
               ))
       ]);
     } else {
-      return Column(children: [
-        DecoratedBox(
+      return DecoratedBox(
           // chat bubble decoration
           decoration: BoxDecoration(
             color: widget.isCurrentUser
@@ -840,13 +879,17 @@ class _LoadingFileBubbleState extends State<LoadingFileBubble> {
                                       ? Colors.white
                                       : Colors.black87),
                         )),
-                  ])),
-        ),
-        if (progress < 1)
-          LinearProgressIndicator(
-            value: progress,
-          )
-      ]);
+                    const Padding(
+                        padding: EdgeInsets.only(left: 5),
+                        child: SizedBox(
+                            width: 15,
+                            height: 15,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                              //value: progress,
+                            )))
+                  ])));
     }
   }
 }
@@ -854,7 +897,11 @@ class _LoadingFileBubbleState extends State<LoadingFileBubble> {
 Future<bool> createMessage(
     {required String text,
     required MsgListProvider msgListProvider,
-    bool isTaskDescriptionItem = false}) async {
+    bool isTaskDescriptionItem = false,
+    bool isImage = false,
+    String fileName = "",
+    String tempID = "",
+    bool loadinInProcess = false}) async {
   if (sessionID == "") {
     return false;
   }
@@ -862,10 +909,11 @@ Future<bool> createMessage(
   Message message = Message(
       taskID: msgListProvider.taskID,
       text: text,
-      fileName: "",
-      isImage: false,
+      fileName: path.basename(fileName),
+      isImage: isImage,
       isTaskDescriptionItem: isTaskDescriptionItem,
-      tempID: "");
+      tempID: tempID,
+      loadinInProcess: loadinInProcess);
 
   Response response;
   try {
@@ -893,11 +941,32 @@ Future<bool> createMessageWithFile(
     required MsgListProvider msgListProvider,
     Uint8List? fileData,
     String fileName = "",
-    bool isPicture = false,
     bool isTaskDescriptionItem = false,
     Function(int bytes, int totalBytes)? onProgress,
-    String tempID = ""}) async {
-  if (sessionID == "") {
+    required String tempID}) async {
+  if (sessionID == "" || fileData == null) {
+    return false;
+  }
+
+  final foundUploadingFile = uploadingFiles[tempID];
+  if (foundUploadingFile == null) {
+    return false;
+  }
+
+  if (onProgress != null && fileData != null) {
+    onProgress(1, fileData.length);
+  }
+
+  bool isImage = isImageFile(fileName);
+
+  final res = await createMessage(
+      text: text,
+      msgListProvider: msgListProvider,
+      tempID: tempID,
+      fileName: fileName,
+      isImage: isImage,
+      loadinInProcess: true);
+  if (!res) {
     return false;
   }
 
@@ -907,6 +976,8 @@ Future<bool> createMessageWithFile(
     onProgress: onProgress,
   );
 
+  foundUploadingFile.multipartRequest = request;
+
   request.headers["sessionID"] = sessionID;
   request.headers["content-type"] = "application/json; charset=utf-8";
 
@@ -914,25 +985,28 @@ Future<bool> createMessageWithFile(
       taskID: msgListProvider.taskID,
       text: text,
       fileName: path.basename(fileName),
-      isImage: isImageFile(fileName),
+      isImage: isImage,
       isTaskDescriptionItem: isTaskDescriptionItem,
       tempID: tempID);
 
   request.fields["Message"] = jsonEncode(message);
-  if (fileData != null) {
-    request.files.add(
-        http.MultipartFile.fromBytes("File", fileData, filename: fileName));
-  }
+  request.files
+      .add(http.MultipartFile.fromBytes("File", fileData, filename: fileName));
 
   StreamedResponse streamedResponse;
   try {
     streamedResponse = await request.send();
   } catch (e) {
+    uploadingFiles.remove(tempID);
+    msgListProvider.refresh();
     return false;
   }
 
+  uploadingFiles.remove(tempID);
   if (streamedResponse.statusCode == 200) {
+    msgListProvider.refresh();
     return true;
   }
+  msgListProvider.refresh();
   return false;
 }

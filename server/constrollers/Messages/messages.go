@@ -374,6 +374,13 @@ func CreateMessageWithFile(w http.ResponseWriter, r *http.Request) {
 		message.UserName = user.Name
 	}
 
+	foundMessage := &Message{}
+	result := DB.Where("Temp_ID = ?", message.TempID).First(&foundMessage)
+	if result.Error != nil {
+		return
+	}
+	message.ID = foundMessage.ID
+
 	message.LocalFileName = fileName
 	message.SmallImageName = smallImageFileName
 	message.Created_at = time.Now()
@@ -388,7 +395,8 @@ func CreateMessageWithFile(w http.ResponseWriter, r *http.Request) {
 		DB.Save(&task)
 	}
 	message.ProjectID = task.ProjectID
-	DB.Create(&message)
+	message.LoadinInProcess = false
+	DB.Save(&message)
 	WS.SendWSMessage(&message)
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -396,7 +404,7 @@ func CreateMessageWithFile(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func getItemByID(ID int) (*Message, bool) {
+func getItemByID(ID int64) (*Message, bool) {
 	message := &Message{}
 	result := DB.First(&message, ID)
 	if result.Error != nil {
@@ -410,7 +418,7 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 
 	// Get URL parameter from mux
 	vars := mux.Vars(r)
-	id, _ := strconv.Atoi(vars["id"])
+	id := ToInt64(vars["id"])
 
 	message, err := getItemByID(id)
 

@@ -272,6 +272,31 @@ class _TaskListTileState extends State<TaskListTile> {
     return null;
   }
 
+  void onSave(String text) async {
+    if (text.isNotEmpty) {
+      if (widget.task.isNewItem) {
+        await widget.inifiniteTaskList.onAddFn(text);
+        widget.tasksListProvider.deleteEditorItem();
+        widget.tasksListProvider.taskEditMode = false;
+      } else {
+        var tempTask = Task.from(widget.task);
+        tempTask.Description = text;
+        if (tempTask.Description.endsWith('\n')) {
+          tempTask.Description = tempTask.Description.substring(
+              0, tempTask.Description.length - 1);
+        }
+        var res = await updateTask(tempTask);
+        if (res) {
+          setState(() {
+            widget.task.Description = tempTask.Description;
+            widget.task.editMode = false;
+            widget.tasksListProvider.taskEditMode = false;
+          });
+        }
+      }
+    }
+  }
+
   Widget buildListRow(BuildContext context) {
     if (widget.task.editMode) {
       var textEditingController =
@@ -302,6 +327,10 @@ class _TaskListTileState extends State<TaskListTile> {
                               textEditingController.text =
                                   '${textEditingController.text}\n';
                               textEditingController.setCursorOnEnd();
+                            },
+                            const SingleActivator(LogicalKeyboardKey.enter,
+                                control: false): () {
+                              onSave(textEditingController.text.trim());
                             },
                           },
                           child: Focus(
@@ -399,31 +428,22 @@ class _TaskListTileState extends State<TaskListTile> {
                     shape: const StadiumBorder(),
                   ),
                   onPressed: () async {
-                    if (textEditingController.text.isNotEmpty) {
-                      if (widget.task.isNewItem) {
-                        await widget.inifiniteTaskList
-                            .onAddFn(textEditingController.text.trim());
-                        widget.tasksListProvider.deleteEditorItem();
-                        widget.tasksListProvider.taskEditMode = false;
-                      } else {
-                        var tempTask = Task.from(widget.task);
-                        tempTask.Description = textEditingController.text;
-                        if (tempTask.Description.endsWith('\n')) {
-                          tempTask.Description = tempTask.Description.substring(
-                              0, tempTask.Description.length - 1);
-                        }
-                        var res = await updateTask(tempTask);
-                        if (res) {
-                          setState(() {
-                            widget.task.Description = tempTask.Description;
-                            widget.task.editMode = false;
-                            widget.tasksListProvider.taskEditMode = false;
-                          });
-                        }
-                      }
-                    }
+                    onSave(textEditingController.text.trim());
                   },
-                  child: const Text("Save")),
+                  child: isDesktopMode
+                      ? RichText(
+                          text: const TextSpan(
+                              text: "Save ",
+                              style: TextStyle(color: Colors.blue),
+                              children: [
+                              TextSpan(
+                                  text: "(Enter)",
+                                  style: TextStyle(
+                                      color: Colors.green,
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.bold))
+                            ]))
+                      : const Text("Save")),
               const SizedBox(width: 10),
               OutlinedButton(
                   style: OutlinedButton.styleFrom(

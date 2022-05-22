@@ -224,8 +224,13 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
 
     var streamedResponse = await request.send();
     if (streamedResponse.statusCode == 200) {
-      Response response = await Response.fromStream(streamedResponse);
-      res = response.bodyBytes;
+      try {
+        Response response = await Response.fromStream(streamedResponse);
+        res = response.bodyBytes;
+      } catch (e) {
+        toast(e.toString(), context);
+        return res;
+      }
       /*var data = jsonDecode(response.body) as Map<String, dynamic>;
       message.ID = data["ID"];
       message.userID = data["UserID"];*/
