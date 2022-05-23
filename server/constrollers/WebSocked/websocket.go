@@ -68,6 +68,11 @@ func SendWSMessage(message *Message) {
 	WSHub.broadcast <- &WSMessage{"createMessage", message}
 }
 
+func SendTask(task *Task) {
+
+	WSHub.broadcast <- &WSMessage{"createTask", task}
+}
+
 // readPump pumps messages from the websocket connection to the hub.
 //
 // The application runs readPump in a per-connection goroutine. The application

@@ -224,6 +224,9 @@ class _MyHomePageState extends State<MyHomePage> {
             var message = Message.fromJson(wsMsg.data);
             widget.msgListProvider.addItem(message);
             _tasksListProvider.updateLastMessage(message.taskID, message);
+          } else if (wsMsg.command == "createTask") {
+            var task = Task.fromJson(wsMsg.data);
+            _tasksListProvider.addItem(task);
           }
         }, onDone: () {
           isWSConnected = false;

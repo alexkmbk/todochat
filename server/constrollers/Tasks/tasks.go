@@ -14,6 +14,7 @@ import (
 	. "todochat_server/App"
 	. "todochat_server/DB"
 	"todochat_server/constrollers/Users"
+	WS "todochat_server/constrollers/WebSocked"
 )
 
 func CreateItem(w http.ResponseWriter, r *http.Request) {
@@ -58,6 +59,9 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		//io.WriteString(w, `{result: true}`)
 		json.NewEncoder(w).Encode(task)
+
+		go WS.SendTask(task)
+
 	}
 }
 

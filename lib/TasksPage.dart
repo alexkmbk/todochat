@@ -347,7 +347,8 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Future<void> requestTasks(
-      TasksListProvider tasksListProvider, BuildContext context) async {
+      TasksListProvider tasksListProvider, BuildContext context,
+      [bool forceRefresh = false]) async {
     List<Task> res = [];
 
     if (sessionID == "") {
@@ -398,16 +399,22 @@ class _TasksPageState extends State<TasksPage> {
           res.add(Task.fromJson(item));
         }
 
-        if (tasksListProvider.currentTask == null) {
+        if (tasksListProvider.currentTask == null ||
+            tasksListProvider.currentTask!.projectID !=
+                tasksListProvider.projectID) {
           tasksListProvider.currentTask = Task.fromJson(tasks[0]);
           res[0].read = true;
           res[0].unreadMessages = 0;
           widget.msgListProvider.task = tasksListProvider.currentTask;
           widget.msgListProvider.taskID = widget.msgListProvider.task?.ID ?? 0;
+          widget.msgListProvider.clear();
           if (isDesktopMode) {
             widget.msgListProvider.requestMessages();
           }
         }
+      } else if (tasksListProvider.items.isEmpty) {
+        tasksListProvider.currentTask == null;
+        widget.msgListProvider.clear(true);
       }
     } else if (response.statusCode == 401) {
       bool result = await Navigator.push(
@@ -418,7 +425,7 @@ class _TasksPageState extends State<TasksPage> {
 
     tasksListProvider.loading = false;
 
-    if (res.isNotEmpty) {
+    if (res.isNotEmpty || forceRefresh) {
       tasksListProvider.items = [...tasksListProvider.items, ...res];
       tasksListProvider.refresh();
     }
@@ -470,8 +477,8 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
               widget.tasksPageState.tasksListProvider.project = res;
               widget.tasksPageState.tasksListProvider.projectID = res.ID;
               widget.tasksPageState.tasksListProvider.clear();
-              widget.tasksPageState.requestTasks(
-                  widget.tasksPageState.tasksListProvider, context);
+              await widget.tasksPageState.requestTasks(
+                  widget.tasksPageState.tasksListProvider, context, true);
               //widget.tasksPageState.tasksListProvider.setProjectID(res.ID);
               await settings.setInt("projectID", res.ID);
             }

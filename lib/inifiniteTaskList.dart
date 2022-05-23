@@ -56,8 +56,37 @@ class TasksListProvider extends ChangeNotifier {
   }
 
   void addItem(Task task) {
-    items.insert(0, task);
-    notifyListeners();
+    if (task.projectID == projectID) {
+      items.insert(0, task);
+      notifyListeners();
+    }
+  }
+
+  void addItems(dynamic data) {
+    bool notify = false;
+    for (var item in data) {
+      var task = Task.fromJson(item);
+      if (task.projectID == projectID) {
+        /*if (message.tempID.isNotEmpty) {
+          final res = uploadingFiles[message.tempID];
+          if (res != null && res.loadingFileData.isNotEmpty) {
+            message.loadingFileData = res.loadingFileData;
+          }
+        }*/
+        if (items.firstWhereOrNull((element) => element.ID == task.ID) ==
+            null) {
+          items.add(task);
+          notify = true;
+        }
+      }
+    }
+    loading = false;
+    if (data.length > 0) {
+      lastID = data[data.length - 1]["ID"];
+    }
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   void updateLastMessage(int taskID, Message message) {
