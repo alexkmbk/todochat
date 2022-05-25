@@ -100,11 +100,12 @@ class MsgListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addItem(Message message) {
+  bool addItem(Message message) {
     if (message.taskID != taskID) {
-      return;
+      return false;
     }
-    if (message.tempID.isNotEmpty) {
+    bool created = false;
+    if (message.tempID.isNotEmpty && message.userID == currentUserID) {
       int foundIndex =
           items.indexWhere((element) => element.tempID == message.tempID);
       if (foundIndex >= 0) {
@@ -113,12 +114,27 @@ class MsgListProvider extends ChangeNotifier {
           message.loadingFileData = request.loadingFileData;
         }*/
         items[foundIndex] = message;
+      } else if (!message.loadinInProcess) {
+        items.insert(0, message);
+        created = true;
+        notifyListeners();
       }
-    } else if (items.firstWhereOrNull((element) => element.ID == message.ID) ==
-        null) {
-      items.insert(0, message);
-      notifyListeners();
+    } else {
+      final foundItem =
+          items.firstWhereOrNull((element) => element.ID == message.ID);
+      if (foundItem == null && !message.loadinInProcess) {
+        items.insert(0, message);
+        created = true;
+        notifyListeners();
+      } else if (message.tempID.isNotEmpty &&
+          message.userID != currentUserID &&
+          !message.loadinInProcess &&
+          foundItem != null) {
+        items[items.indexOf(foundItem)] = message;
+        notifyListeners();
+      }
     }
+    return created;
   }
 
   void deleteItem(int messageID) async {
@@ -830,7 +846,7 @@ class _LoadingFileBubbleState extends State<LoadingFileBubble> {
                     ? Alignment.centerRight
                     : Alignment.centerLeft,
             child:
-                drawBubble(context, constraints, foundStruct!.loadingFileData)),
+                drawBubble(context, constraints, foundStruct?.loadingFileData)),
       );
     });
   }

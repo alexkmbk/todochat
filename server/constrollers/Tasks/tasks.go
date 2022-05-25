@@ -201,6 +201,8 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 
 	projectID := ToInt64(query.Get("ProjectID"))
 
+	UserID := GetUserID(w, r)
+
 	//filter := query.Get("filter")
 
 	var tasks []*Task
@@ -248,6 +250,14 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 		var task Task
 		rows.Scan(&message_id, &text, &created_at, &task_id, &description, &task_creation_date, &author_id)
 		task = Task{ID: task_id, Description: description, LastMessage: text, LastMessageID: message_id, ProjectID: projectID, Creation_date: task_creation_date, AuthorID: author_id}
+
+		if UserID != 0 {
+			seenTask := SeenTask{UserID: UserID, TaskID: task.ID}
+			if DB.Find(&seenTask).RowsAffected > 0 {
+				task.Read = true
+			}
+		}
+
 		tasks = append(tasks, &task)
 	}
 

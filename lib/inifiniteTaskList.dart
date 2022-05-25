@@ -57,8 +57,10 @@ class TasksListProvider extends ChangeNotifier {
 
   void addItem(Task task) {
     if (task.projectID == projectID) {
-      items.insert(0, task);
-      notifyListeners();
+      if (items.firstWhereOrNull((element) => element.ID == task.ID) == null) {
+        items.insert(0, task);
+        notifyListeners();
+      }
     }
   }
 
@@ -89,15 +91,20 @@ class TasksListProvider extends ChangeNotifier {
     }
   }
 
-  void updateLastMessage(int taskID, Message message) {
+  void updateLastMessage(int taskID, Message message, [bool created = true]) {
+    if (message.loadinInProcess) {
+      return;
+    }
     var item = items.firstWhereOrNull((element) => element.ID == taskID);
     if (item != null) {
+      if (item.lastMessageID != message.ID &&
+          message.userID != currentUserID &&
+          !created) {
+        items[items.indexOf(item)].unreadMessages++;
+      }
       item.lastMessage = message.text;
       item.lastMessageID = message.ID;
       item.lastMessageUserName = message.userName;
-      if (message.userID != currentUserID) {
-        item.unreadMessages++;
-      }
       notifyListeners();
     }
   }
@@ -538,7 +545,8 @@ class _TaskListTileState extends State<TaskListTile> {
                       overflow: TextOverflow.ellipsis,
                       maxLines: 5,
                     ),
-              subtitle: widget.task.lastMessage.isEmpty
+              subtitle: widget.task.lastMessage.isEmpty &&
+                      widget.task.unreadMessages == 0
                   ? null
                   : widget.tasksListProvider.searchMode
                       ? HighlightText(

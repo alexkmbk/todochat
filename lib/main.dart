@@ -222,8 +222,9 @@ class _MyHomePageState extends State<MyHomePage> {
             widget.msgListProvider.addItems(wsMsg.data);
           } else if (wsMsg.command == "createMessage") {
             var message = Message.fromJson(wsMsg.data);
-            widget.msgListProvider.addItem(message);
-            _tasksListProvider.updateLastMessage(message.taskID, message);
+            final created = widget.msgListProvider.addItem(message);
+            _tasksListProvider.updateLastMessage(
+                message.taskID, message, created);
           } else if (wsMsg.command == "createTask") {
             var task = Task.fromJson(wsMsg.data);
             _tasksListProvider.addItem(task);

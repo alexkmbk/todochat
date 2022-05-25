@@ -339,14 +339,17 @@ func CreateMessageWithFile(w http.ResponseWriter, r *http.Request) {
 
 				smallImageData, err, message.SmallImageHeight, message.SmallImageWidth = ResizeImageByHeight(fileData, 200)
 
-				if err == nil {
-					smallImageFileName = uuid.New().String() + ext
-					err = os.WriteFile(filepath.Join(FileStoragePath, smallImageFileName), smallImageData, 0644)
+				if err != nil {
+					message.SmallImageHeight = 200
+					message.SmallImageWidth = 0
+					smallImageData = fileData
+				}
+				smallImageFileName = uuid.New().String() + ext
+				err = os.WriteFile(filepath.Join(FileStoragePath, smallImageFileName), smallImageData, 0644)
 
-					if err != nil {
-						smallImageFileName = ""
-						log.Info("Resize image error: " + err.Error())
-					}
+				if err != nil {
+					smallImageFileName = ""
+					log.Info("Resize image error: " + err.Error())
 				}
 
 				previewSmallImageData, err, _, _ := ResizeImageByHeight(smallImageData, 30)

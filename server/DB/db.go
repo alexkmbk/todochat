@@ -288,16 +288,16 @@ func GetMessagesDB(SessionID uuid.UUID, lastID int64, limit int64, taskID int64,
 	if UserID != 0 {
 		for i := range messages {
 			seenMessage := SeenMessage{UserID: UserID, TaskID: taskID, MessageID: messages[i].ID}
-			if DB.First(&seenMessage).Error != nil {
+			if DB.Find(&seenMessage).RowsAffected == 0 {
 				DB.Create(&seenMessage)
 			}
 		}
 
 		seenTask := SeenTask{UserID: UserID, TaskID: taskID}
-		if DB.First(&seenTask).Error != nil {
+
+		if DB.Find(&seenTask).RowsAffected == 0 { // not found
 			DB.Create(&seenTask)
 		}
-
 	}
 
 	/*res, err := json.Marshal(messages)
