@@ -331,13 +331,13 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
           child: Column(children: <Widget>[
         Expanded(
             child: ScrollablePositionedList.builder(
-          reverse: true,
-          itemScrollController: widget.scrollController,
-          itemPositionsListener: widget.itemPositionsListener,
-          itemCount: widget.msgListProvider.items.length,
-          itemBuilder: (context, index) {
-            var item = widget.msgListProvider.items[index];
-            if (item.tempID.isNotEmpty && item.loadinInProcess) {
+                reverse: true,
+                itemScrollController: widget.scrollController,
+                itemPositionsListener: widget.itemPositionsListener,
+                itemCount: widget.msgListProvider.items.length,
+                itemBuilder: (context, index) {
+                  var item = widget.msgListProvider.items[index];
+                  /*if (item.tempID.isNotEmpty && item.loadinInProcess) {
               return LoadingFileBubble(
                 index: index,
                 isCurrentUser: item.userID == currentUserID,
@@ -345,33 +345,33 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                 msgListProvider: widget.msgListProvider,
                 getFile: widget.getFile,
               );
-            } else {
-              return ChatBubble(
-                index: index,
-                isCurrentUser: item.userID == currentUserID,
-                message: item,
-                msgListProvider: widget.msgListProvider,
-                getFile: widget.getFile,
-                onDismissed: (direction) async {
-                  if (await widget.onDelete(item.ID)) {
-                    widget.msgListProvider.deleteItem(item.ID);
-                  }
-                },
-              );
-            }
-            /*} else if (index == items.length && end) {
+            } else {*/
+                  return ChatBubble(
+                    index: index,
+                    isCurrentUser: item.userID == currentUserID,
+                    message: item,
+                    msgListProvider: widget.msgListProvider,
+                    getFile: widget.getFile,
+                    onDismissed: (direction) async {
+                      if (await widget.onDelete(item.ID)) {
+                        widget.msgListProvider.deleteItem(item.ID);
+                      }
+                    },
+                  );
+                }
+                /*} else if (index == items.length && end) {
             return const Center(child: Text('End of list'));*/
-            //}
-            /*else {
+                //}
+                /*else {
             _getMoreItems();
             return const SizedBox(
               height: 80,
               child: Center(child: CircularProgressIndicator()),
             );
           }*/
-            //return const Center(child: Text('End of list'));
-          },
-        )),
+                //return const Center(child: Text('End of list'));
+                // },
+                )),
         Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Container(
@@ -529,7 +529,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
 }
 
 class ChatBubble extends StatelessWidget {
-  const ChatBubble(
+  ChatBubble(
       {Key? key,
       required this.message,
       required this.onDismissed,
@@ -542,6 +542,7 @@ class ChatBubble extends StatelessWidget {
   final bool isCurrentUser;
   final MsgListProvider msgListProvider;
   final int index;
+  double progress = 0.0;
   /*final String text;
   final String isImage = false;
   final Uint8List? smallImageData;
@@ -573,6 +574,24 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final foundStruct = uploadingFiles[message.tempID];
+    if (foundStruct != null && foundStruct.multipartRequest == null) {
+      createMessageWithFile(
+          text: message.text,
+          fileData: foundStruct.loadingFileData,
+          fileName: message.fileName,
+          msgListProvider: msgListProvider,
+          tempID: message.tempID,
+          onProgress: (int bytes, int totalBytes) {
+            //setState(() {
+            if (totalBytes == 0) {
+              progress = 0.0;
+            } else {
+              progress = bytes / totalBytes;
+            }
+            //});
+          });
+    }
     return LayoutBuilder(builder: (context, constraints) {
       if (message.isTaskDescriptionItem && msgListProvider.task != null) {
         return Column(children: [
@@ -633,13 +652,15 @@ class ChatBubble extends StatelessWidget {
                       : isCurrentUser
                           ? Alignment.centerRight
                           : Alignment.centerLeft,
-                  child: drawBubble(context, constraints)),
+                  child: drawBubble(
+                      context, constraints, foundStruct?.loadingFileData)),
             ));
       }
     });
   }
 
-  Widget drawBubble(BuildContext context, BoxConstraints constraints) {
+  Widget drawBubble(BuildContext context, BoxConstraints constraints,
+      Uint8List? loadingFileData) {
     if (message.fileName.isEmpty) {
       final textSpan = TextSpan(text: message.text);
       final textWidget = SelectableText.rich(textSpan);
@@ -700,19 +721,38 @@ class ChatBubble extends StatelessWidget {
                 ]))),
       );
     } else {
-      if (message.isImage && message.smallImageName.isNotEmpty) {
-        return networkImage(
-            serverURI.scheme +
-                '://' +
-                serverURI.authority +
-                "/FileStorage/" +
-                message.smallImageName,
-            headers: {"sessionID": sessionID}, onTap: () {
-          onTapOnFileMessage(message, context);
-        },
-            width: message.smallImageWidth.toDouble(),
-            height: message.smallImageHeight.toDouble(),
-            previewImageData: message.previewSmallImageData);
+      if (message.isImage &&
+          (message.smallImageName.isNotEmpty || loadingFileData != null)) {
+        return loadingFileData != null
+            ? Stack(children: [
+                memoryImage(
+                  loadingFileData,
+                  height: 200,
+                ),
+                if (progress < 1)
+                  const Positioned(
+                      width: 15,
+                      height: 15,
+                      right: 10,
+                      bottom: 10,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                        //value: progress,
+                      ))
+              ])
+            : networkImage(
+                serverURI.scheme +
+                    '://' +
+                    serverURI.authority +
+                    "/FileStorage/" +
+                    message.smallImageName,
+                headers: {"sessionID": sessionID}, onTap: () {
+                onTapOnFileMessage(message, context);
+              },
+                width: message.smallImageWidth.toDouble(),
+                height: message.smallImageHeight.toDouble(),
+                previewImageData: message.previewSmallImageData);
       } else {
         return DecoratedBox(
             // chat bubble decoration
@@ -749,6 +789,16 @@ class ChatBubble extends StatelessWidget {
                                               ? Colors.white
                                               : Colors.black87),
                                 )),
+                            const Padding(
+                                padding: EdgeInsets.only(left: 5),
+                                child: SizedBox(
+                                    width: 15,
+                                    height: 15,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                      //value: progress,
+                                    )))
                           ]))),
             ));
       }
@@ -776,143 +826,6 @@ class ChatBubble extends StatelessWidget {
           OpenFileInApp(localFullName);
         }
       }
-    }
-  }
-}
-
-class LoadingFileBubble extends StatefulWidget {
-  const LoadingFileBubble(
-      {Key? key,
-      required this.message,
-      required this.getFile,
-      required this.isCurrentUser,
-      required this.msgListProvider,
-      required this.index})
-      : super(key: key);
-  final Message message;
-  final bool isCurrentUser;
-  final MsgListProvider msgListProvider;
-  final int index;
-  /*final String text;
-  final String isImage = false;
-  final Uint8List? smallImageData;
-  final bool isCurrentUser;*/
-  final Future<Uint8List> Function(String localFileName) getFile;
-
-  @override
-  State<LoadingFileBubble> createState() => _LoadingFileBubbleState();
-}
-
-class _LoadingFileBubbleState extends State<LoadingFileBubble> {
-  double progress = 0.0;
-
-  @override
-  Widget build(BuildContext context) {
-    final foundStruct = uploadingFiles[widget.message.tempID];
-    if (foundStruct != null && foundStruct.multipartRequest == null) {
-      createMessageWithFile(
-          text: widget.message.text,
-          fileData: foundStruct.loadingFileData,
-          fileName: widget.message.fileName,
-          msgListProvider: widget.msgListProvider,
-          tempID: widget.message.tempID,
-          onProgress: (int bytes, int totalBytes) {
-            if (mounted) {
-              //setState(() {
-              if (totalBytes == 0) {
-                progress = 0.0;
-              } else {
-                progress = bytes / totalBytes;
-              }
-              //});
-            }
-          });
-    }
-
-    return LayoutBuilder(builder: (context, constraints) {
-      return Padding(
-        // asymmetric padding
-        padding: EdgeInsets.fromLTRB(
-          widget.isCurrentUser ? 64.0 : 16.0,
-          4,
-          widget.isCurrentUser ? 16.0 : 64.0,
-          4,
-        ),
-        child: Align(
-            // align the child within the container
-            alignment: widget.message.isTaskDescriptionItem
-                ? Alignment.center
-                : widget.isCurrentUser
-                    ? Alignment.centerRight
-                    : Alignment.centerLeft,
-            child:
-                drawBubble(context, constraints, foundStruct?.loadingFileData)),
-      );
-    });
-  }
-
-  Widget drawBubble(BuildContext context, BoxConstraints constraints,
-      Uint8List? loadingFileData) {
-    if (widget.message.isImage && loadingFileData != null) {
-      return Stack(children: [
-        memoryImage(
-          loadingFileData,
-          height: 200,
-        ),
-        if (progress < 1)
-          const Positioned(
-              width: 15,
-              height: 15,
-              right: 10,
-              bottom: 10,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-                //value: progress,
-              ))
-      ]);
-    } else {
-      return DecoratedBox(
-          // chat bubble decoration
-          decoration: BoxDecoration(
-            color: widget.isCurrentUser
-                ? Colors.blue
-                : const Color.fromARGB(255, 224, 224, 224),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Icon(Icons.file_present_rounded, color: Colors.white),
-                    const SizedBox(width: 10),
-                    FittedBox(
-                        fit: BoxFit.fill,
-                        alignment: Alignment.center,
-                        child: SelectableText(
-                          widget.message.fileName,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyText1!
-                              .copyWith(
-                                  color: widget.isCurrentUser
-                                      ? Colors.white
-                                      : Colors.black87),
-                        )),
-                    const Padding(
-                        padding: EdgeInsets.only(left: 5),
-                        child: SizedBox(
-                            width: 15,
-                            height: 15,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                              //value: progress,
-                            )))
-                  ])));
     }
   }
 }

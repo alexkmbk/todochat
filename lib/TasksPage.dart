@@ -99,13 +99,14 @@ class _TasksPageState extends State<TasksPage> {
     return FutureBuilder<bool>(
         future: initBeforeBuild(context),
         builder: (context, snapshot) {
-          return GestureDetector(
+          return /*GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
-              child: Scaffold(
+              child: */
+              Scaffold(
                   appBar: TasksPageAppBar(tasksPageState: this),
                   body: renderBody(),
                   floatingActionButton:
-                      !isDesktopMode ? floatingActionButton : null));
+                      !isDesktopMode ? floatingActionButton : null);
         });
   }
 
