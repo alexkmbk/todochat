@@ -503,7 +503,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
   }
 
   Widget getSearchField() {
-    return GetTextField(
+    return getTextField(
         controller: searchController,
         hintText: "Search",
         fillColor: Colors.white,

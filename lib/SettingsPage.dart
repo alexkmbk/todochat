@@ -36,35 +36,68 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Scaffold(
-            body: Form(
+        backgroundColor: completedTaskColor,
+        body: Center(
+            child: Form(
                 onWillPop: () async => false,
                 key: _formKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const ElevatedButton(
-                        onPressed: ExitApp, child: Text("Exit")),
-                    Row(children: [
-                      Expanded(
-                          child: GetTextField(
-                        onFieldSubmitted: (value) {
-                          checkingConnection = true;
-                          setState(() {});
-                          checkConnectionAndUpdateState();
-                        },
-                        controller: serverAddressController,
-                        hintText: 'Server address',
-                        validator: (value) =>
-                            validateEmpty(value, 'Server address'),
-                      )),
-                      getConnectionIcon()
-                    ]),
-                    ElevatedButton(
-                        child: const Text('Save and close'),
-                        onPressed: () {
-                          saveAndClose();
-                        }),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    const Align(
+                        alignment: Alignment.topRight,
+                        child: TextButton(
+                            onPressed: ExitApp, child: Text("Exit"))),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    const Text("Settings",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 36,
+                        )),
+                    const Spacer(),
+                    Expanded(
+                        child: Row(children: [
+                      const Spacer(),
+                      SizedBox(
+                          width: 300,
+                          child: getTextField(
+                            onFieldSubmitted: (value) {
+                              checkingConnection = true;
+                              setState(() {});
+                              checkConnectionAndUpdateState();
+                            },
+                            controller: serverAddressController,
+                            border: const UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.black)),
+                            textAlign: TextAlign.center,
+                            hintText: 'Server address',
+                            validator: (value) =>
+                                validateEmpty(value, 'Server address'),
+                          )),
+                      getConnectionIcon(),
+                      const Spacer(),
+                    ])),
+                    const Spacer(),
+                    SizedBox(
+                        width: 200,
+                        height: 50,
+                        child: ElevatedButton(
+                            child: const Text(
+                              'Save and close',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            onPressed: () {
+                              saveAndClose();
+                            })),
+                    const SizedBox(
+                      height: 50,
+                    )
                   ],
                 ))));
   }
@@ -152,7 +185,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget getConnectionIcon() {
     if (checkingConnection) {
-      return const CircularProgressIndicator();
+      return const SizedBox(
+          width: 15,
+          height: 15,
+          child: CircularProgressIndicator(strokeWidth: 2));
     } else if (connected) {
       return const Icon(
         Icons.check,

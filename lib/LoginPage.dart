@@ -108,7 +108,7 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const ElevatedButton(onPressed: ExitApp, child: Text("Exit")),
-                GetTextField(
+                getTextField(
                   autofillHints: [AutofillHints.username],
                   controller: userNameController,
                   hintText: 'User name',
@@ -117,7 +117,7 @@ class _LoginPageState extends State<LoginPage> {
                     FocusScope.of(context).nextFocus();
                   },
                 ),
-                GetTextField(
+                getTextField(
                     autofillHints: [AutofillHints.password],
                     controller: passwordController,
                     hintText: 'Password',
@@ -175,7 +175,7 @@ class _LoginPageState extends State<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const ElevatedButton(onPressed: ExitApp, child: Text("Exit")),
-            GetTextField(
+            getTextField(
               controller: userNameController,
               hintText: 'User name',
               validator: (value) => validateEmpty(value, 'User name'),
@@ -183,7 +183,7 @@ class _LoginPageState extends State<LoginPage> {
                 FocusScope.of(context).nextFocus();
               },
             ),
-            GetTextField(
+            getTextField(
               controller: emailController,
               hintText: 'Email',
               keyboardType: TextInputType.emailAddress,
@@ -192,7 +192,7 @@ class _LoginPageState extends State<LoginPage> {
                 FocusScope.of(context).nextFocus();
               },
             ),
-            GetTextField(
+            getTextField(
               controller: passwordController,
               hintText: 'Password',
               obscureText: true,

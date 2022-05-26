@@ -139,7 +139,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ));
     } else {
       return Scaffold(
-        backgroundColor: Colors.orange[600],
+        backgroundColor: completedTaskColor, //Colors.orange[600],
         //appBar: AppBar(title: Text(widget.title), leading: MainMenu()),
         body: FutureBuilder<bool>(
           future: initApp(context), // function where you call your api

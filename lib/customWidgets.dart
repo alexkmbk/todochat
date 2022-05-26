@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
-Widget GetTextField({
+Widget getTextField({
   TextEditingController? controller,
   String? hintText,
   String? labelText,
@@ -19,19 +19,23 @@ Widget GetTextField({
   Iterable<String>? autofillHints,
   FocusNode? focusNode,
   TextInputAction? textInputAction,
+  InputBorder? border,
+  TextAlign textAlign = TextAlign.left,
 }) {
   return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextFormField(
         focusNode: focusNode,
         autofillHints: autofillHints,
+        textAlign: textAlign,
         decoration: InputDecoration(
           isDense: true,
           filled: fillColor == null ? false : true,
           fillColor: fillColor,
           labelText: labelText,
           hintText: hintText,
-          border: const OutlineInputBorder(),
+          hintStyle: const TextStyle(color: Colors.grey),
+          border: border ?? const OutlineInputBorder(),
           prefixIcon: prefixIcon,
           suffixIcon: IconButton(
             onPressed: () {
