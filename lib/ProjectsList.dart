@@ -347,7 +347,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
     widget.loading = false;
 
-    setState(() => widget.items = [...widget.items, ...res]);
+    widget.items = [...widget.items, ...res];
+    if (mounted) {
+      setState(() => {});
+    }
   }
 
   /*void _scrollDown() {

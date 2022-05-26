@@ -77,6 +77,7 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 		DB.Save(&task)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		io.WriteString(w, `{"updated": true}`)
+		go WS.SendUpdateTask(&task, 0)
 	}
 }
 
@@ -100,7 +101,9 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 		tx.Commit()
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		io.WriteString(w, `{"deleted": true}`)
+		go WS.SendDeleteTask(item)
 	}
+
 }
 
 func GetItemByID(ID int64) (*Task, bool) {

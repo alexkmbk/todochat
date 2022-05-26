@@ -17,6 +17,7 @@ import (
 type WSMessage struct {
 	Command string
 	Data    interface{}
+	UserID  int64
 }
 
 // Client is a middleman between the websocket connection and the hub.
@@ -65,12 +66,32 @@ func SendWSMessage(message *Message) {
 		}
 	}*/
 
-	WSHub.broadcast <- &WSMessage{"createMessage", message}
+	WSHub.broadcast <- &WSMessage{"createMessage", message, 0}
+}
+
+func SendDeleteMessage(message *Message) {
+
+	WSHub.broadcast <- &WSMessage{"deleteMessage", message, 0}
+}
+
+func SendDeleteTask(task *Task) {
+	/*for key, conn := range WSConnections {
+		if SessionIDExists(key) {
+			conn.WriteJSON(WSMessage{"createMessage", message})
+		}
+	}*/
+
+	WSHub.broadcast <- &WSMessage{"deleteTask", task.ID, 0}
+}
+
+func SendUpdateTask(task *Task, userID int64) {
+
+	WSHub.broadcast <- &WSMessage{"updateTask", task, userID}
 }
 
 func SendTask(task *Task) {
 
-	WSHub.broadcast <- &WSMessage{"createTask", task}
+	WSHub.broadcast <- &WSMessage{"createTask", task, 0}
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -150,7 +171,7 @@ func (c *Client) readPump() {
 			//if len(res) > 0 {
 			//c.conn.WriteJSON(WSMessage{"getMessages", res})
 			//}
-			c.hub.broadcast <- &WSMessage{"getMessages", res}
+			c.hub.broadcast <- &WSMessage{"getMessages", res, 0}
 		}
 		//c.hub.broadcast <- message
 	}

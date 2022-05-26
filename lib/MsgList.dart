@@ -542,7 +542,7 @@ class ChatBubble extends StatelessWidget {
   final bool isCurrentUser;
   final MsgListProvider msgListProvider;
   final int index;
-  double progress = 0.0;
+  double progress = 1.0;
   /*final String text;
   final String isImage = false;
   final Uint8List? smallImageData;
@@ -606,8 +606,7 @@ class ChatBubble extends StatelessWidget {
               color: msgListProvider.task!.Completed
                   ? completedTaskColor
                   : uncompletedTaskColor,
-              /*shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(8.0))),*/
+              shape: const BeveledRectangleBorder(),
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(children: [
@@ -621,12 +620,13 @@ class ChatBubble extends StatelessWidget {
                   Align(
                       alignment: Alignment.centerLeft,
                       child: SelectableText(
-                        msgListProvider.task!.Description,
+                        msgListProvider.task?.Description ?? "",
+                        style: const TextStyle(fontSize: 14),
                       )),
                 ]),
               )),
-          const SizedBox(height: 5),
-          const Text("***", style: TextStyle(color: Colors.grey)),
+          const SizedBox(height: 10),
+          //const Text("***", style: TextStyle(color: Colors.grey)),
         ]);
       } else {
         return Dismissible(
@@ -755,7 +755,7 @@ class ChatBubble extends StatelessWidget {
                 previewImageData: message.previewSmallImageData);
       } else {
         return DecoratedBox(
-            // chat bubble decoration
+            // attached file
             decoration: BoxDecoration(
               color: isCurrentUser
                   ? Colors.blue
@@ -789,16 +789,17 @@ class ChatBubble extends StatelessWidget {
                                               ? Colors.white
                                               : Colors.black87),
                                 )),
-                            const Padding(
-                                padding: EdgeInsets.only(left: 5),
-                                child: SizedBox(
-                                    width: 15,
-                                    height: 15,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                      //value: progress,
-                                    )))
+                            if (progress < 1)
+                              const Padding(
+                                  padding: EdgeInsets.only(left: 5),
+                                  child: SizedBox(
+                                      width: 15,
+                                      height: 15,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                        //value: progress,
+                                      )))
                           ]))),
             ));
       }

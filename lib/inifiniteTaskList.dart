@@ -113,6 +113,14 @@ class TasksListProvider extends ChangeNotifier {
     items.removeWhere((item) => item.ID == taskID);
     notifyListeners();
   }
+
+  void updateItem(Task task) async {
+    var item = items.firstWhereOrNull((element) => element.ID == task.ID);
+    if (item != null) {
+      items[items.indexOf(item)] = task;
+      notifyListeners();
+    }
+  }
 }
 
 class Task {
@@ -518,8 +526,9 @@ class _TaskListTileState extends State<TaskListTile> {
               : widget.task.read
                   ? uncompletedTaskColor
                   : const Color.fromARGB(255, 250, 161, 27),
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(8.0))),
+          shape: const BeveledRectangleBorder(),
+          /* shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8.0))),*/
           child: ListTile(
               tileColor: widget.tasksListProvider.currentTask == null
                   ? null
@@ -582,19 +591,27 @@ class _TaskListTileState extends State<TaskListTile> {
                                 Container(
                                     padding: const EdgeInsets.only(
                                         left: 5, right: 5),
-                                    decoration: const BoxDecoration(
+                                    decoration: BoxDecoration(
                                         color: Colors.blue,
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(12),
-                                          bottomLeft: Radius.circular(12),
-                                          topRight: Radius.circular(12),
-                                          bottomRight: Radius.circular(12),
-                                        )),
+                                        shape: widget.task.unreadMessages < 10
+                                            ? BoxShape.circle
+                                            : BoxShape.rectangle,
+                                        borderRadius: widget
+                                                    .task.unreadMessages <
+                                                10
+                                            ? null
+                                            : const BorderRadius.only(
+                                                topLeft: Radius.circular(10),
+                                                bottomLeft: Radius.circular(10),
+                                                topRight: Radius.circular(10),
+                                                bottomRight:
+                                                    Radius.circular(10),
+                                              )),
                                     child: Center(
                                         child: Text(
                                       widget.task.unreadMessages.toString(),
                                       style: const TextStyle(
-                                          color: Colors.white, fontSize: 12),
+                                          color: Colors.white, fontSize: 14),
                                     ))),
                             ])),
         ),

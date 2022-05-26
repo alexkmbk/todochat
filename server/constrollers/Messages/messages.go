@@ -442,5 +442,6 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 		DB.Delete(&message)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		io.WriteString(w, `{"deleted": true}`)
+		go WS.SendDeleteMessage(message)
 	}
 }

@@ -25,7 +25,7 @@ int currentUserID = 0;
 bool isDesktopMode = false;
 bool appInitialized = false;
 const Color completedTaskColor = Color.fromARGB(255, 183, 242, 176);
-const Color uncompletedTaskColor = Color.fromARGB(255, 253, 253, 242);
+const Color uncompletedTaskColor = Color.fromARGB(255, 248, 248, 147);
 late SharedPreferences settings;
 
 void main() {
@@ -63,6 +63,7 @@ class MyApp extends StatelessWidget {
     var mediaQueryData = MediaQueryData.fromWindow(instance!.window);
     var physicalPixelWidth = mediaQueryData.size.width;
     final msgListProvider = MsgListProvider();
+    final tasksListProvider = TasksListProvider();
     if (physicalPixelWidth > 1000) {
       isDesktopMode = true;
     }
@@ -87,29 +88,35 @@ class MyApp extends StatelessWidget {
           home: MyHomePage(
             title: "ToDo Chat",
             msgListProvider: msgListProvider,
+            tasksListProvider: tasksListProvider,
           )),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title, required this.msgListProvider})
+  MyHomePage(
+      {Key? key,
+      required this.title,
+      required this.msgListProvider,
+      required this.tasksListProvider})
       : super(key: key);
   final String title;
   MsgListProvider msgListProvider;
+  TasksListProvider tasksListProvider;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late TasksListProvider _tasksListProvider;
+  //late TasksListProvider _tasksListProvider;
 
   @override
   void initState() {
     super.initState();
     //msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
-    _tasksListProvider = Provider.of<TasksListProvider>(context, listen: false);
+    //_tasksListProvider = Provider.of<TasksListProvider>(context, listen: false);
 
     //Login(_tasksListProvider);
   }
@@ -132,49 +139,76 @@ class _MyHomePageState extends State<MyHomePage> {
       ));
     } else {
       return Scaffold(
+        backgroundColor: Colors.orange[600],
         //appBar: AppBar(title: Text(widget.title), leading: MainMenu()),
         body: FutureBuilder<bool>(
           future: initApp(context), // function where you call your api
           builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
             // AsyncSnapshot<Your object type>
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                  child: Text('Connecting to the server...',
-                      textDirection: TextDirection.ltr));
+            if (snapshot.data != null && snapshot.data as bool) {
+              return TasksPage(
+                msgListProvider:
+                    Provider.of<MsgListProvider>(context, listen: false),
+              );
             } else {
-              if (snapshot.hasError) {
-                //toast(snapshot.error.toString(), context);
-                return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Spacer(),
-                      Center(
-                          child: IconButton(
-                              onPressed: () => setState(() {}),
-                              icon: const Icon(Icons.refresh))),
-                      const Spacer(),
-                      ElevatedButton(
-                          onPressed: () async {
-                            bool res = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const SettingsPage()),
-                            );
-                            setState(() {});
-                          },
-                          child: const Text("Settings")),
-                    ]);
-              } else if (snapshot.data as bool) {
-                return TasksPage(
-                  msgListProvider:
-                      Provider.of<MsgListProvider>(context, listen: false),
-                );
-              } else {
-                return const Center(
-                    child: Text('Надо вставить код',
-                        textDirection: TextDirection.ltr));
-              }
+              return Center(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                    const SizedBox(
+                      height: 50,
+                    ),
+                    const Text.rich(TextSpan(children: [
+                      TextSpan(
+                          text: "ToDo ",
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 50,
+                              fontWeight: FontWeight.bold)),
+                      TextSpan(
+                        text: "Chat",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 50,
+                            fontWeight: FontWeight.bold),
+                      )
+                    ])),
+                    const Spacer(),
+                    if (snapshot.hasError)
+                      IconButton(
+                          iconSize: 40,
+                          padding: const EdgeInsets.all(0.0),
+                          onPressed: () => setState(() {}),
+                          icon: const Icon(
+                            Icons.refresh,
+                            color: Colors.white,
+                          )),
+                    if (snapshot.connectionState == ConnectionState.waiting)
+                      const Text('Connecting to the server...',
+                          style: TextStyle(color: Colors.white),
+                          textDirection: TextDirection.ltr),
+                    const Spacer(),
+                    SizedBox(
+                        width: 200,
+                        height: 50,
+                        child: ElevatedButton(
+                            onPressed: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const SettingsPage()),
+                              );
+                              setState(() {});
+                            },
+                            child: const Text(
+                              "Settings",
+                              style: TextStyle(fontSize: 16),
+                            ))),
+                    const SizedBox(
+                      height: 30,
+                    )
+                  ]));
             }
           },
         ),
@@ -223,11 +257,20 @@ class _MyHomePageState extends State<MyHomePage> {
           } else if (wsMsg.command == "createMessage") {
             var message = Message.fromJson(wsMsg.data);
             final created = widget.msgListProvider.addItem(message);
-            _tasksListProvider.updateLastMessage(
-                message.taskID, message, created);
+            widget.tasksListProvider
+                .updateLastMessage(message.taskID, message, created);
+          } else if (wsMsg.command == "deleteMessage") {
+            var message = Message.fromJson(wsMsg.data);
+            widget.msgListProvider.deleteItem(message.ID);
           } else if (wsMsg.command == "createTask") {
             var task = Task.fromJson(wsMsg.data);
-            _tasksListProvider.addItem(task);
+            widget.tasksListProvider.addItem(task);
+          } else if (wsMsg.command == "deleteTask") {
+            var taskID = wsMsg.data;
+            widget.tasksListProvider.deleteItem(taskID);
+          } else if (wsMsg.command == "updateTask") {
+            var task = Task.fromJson(wsMsg.data);
+            widget.tasksListProvider.updateItem(task);
           }
         }, onDone: () {
           isWSConnected = false;
@@ -271,6 +314,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     widget.msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);
+    widget.tasksListProvider =
+        Provider.of<TasksListProvider>(context, listen: false);
 
     settings = await SharedPreferences.getInstance();
 

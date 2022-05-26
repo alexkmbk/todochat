@@ -489,10 +489,10 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
           label: widget.tasksPageState.tasksListProvider.project == null
               ? const Text("")
               : Text(
-                  widget.tasksPageState.tasksListProvider.project!.Description,
-                  style: const TextStyle(
-                    color: Colors.black,
-                  ),
+                  widget.tasksPageState.tasksListProvider.project
+                          ?.Description ??
+                      "",
+                  style: const TextStyle(color: Colors.black, fontSize: 15),
                 ),
           icon: const Icon(
             Icons.keyboard_arrow_down,
@@ -529,7 +529,12 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
             widget.tasksPageState.tasksListProvider.clear();
             widget.tasksPageState.tasksListProvider.refresh();
 
-            widget.tasksPageState.searchTasks(value, context);
+            await widget.tasksPageState.searchTasks(value, context);
+            widget.tasksPageState.widget.msgListProvider.taskID =
+                widget.tasksPageState.tasksListProvider.currentTask?.ID ?? 0;
+            widget.tasksPageState.widget.msgListProvider.task =
+                widget.tasksPageState.tasksListProvider.currentTask;
+            widget.tasksPageState.widget.msgListProvider.requestMessages();
           } else {
             widget.tasksPageState.tasksListProvider.searchMode = false;
           }
