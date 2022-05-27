@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:todochat/MainMenu.dart';
 import 'HttpClient.dart';
 import 'customWidgets.dart';
 import 'main.dart';
@@ -36,70 +37,75 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: completedTaskColor,
-        body: Center(
-            child: Form(
-                onWillPop: () async => false,
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    const Align(
-                        alignment: Alignment.topRight,
-                        child: TextButton(
-                            onPressed: ExitApp, child: Text("Exit"))),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                    const Text("Settings",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 36,
-                        )),
-                    const Spacer(),
-                    Expanded(
-                        child: Row(children: [
-                      const Spacer(),
-                      SizedBox(
-                          width: 300,
-                          child: getTextField(
-                            onFieldSubmitted: (value) {
-                              checkingConnection = true;
-                              setState(() {});
-                              checkConnectionAndUpdateState();
-                            },
-                            controller: serverAddressController,
-                            border: const UnderlineInputBorder(
-                                borderSide: BorderSide(color: Colors.black)),
-                            textAlign: TextAlign.center,
-                            hintText: 'Server address',
-                            validator: (value) =>
-                                validateEmpty(value, 'Server address'),
-                          )),
-                      getConnectionIcon(),
-                      const Spacer(),
-                    ])),
-                    const Spacer(),
-                    SizedBox(
-                        width: 200,
-                        height: 50,
-                        child: ElevatedButton(
-                            child: const Text(
-                              'Save and close',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            onPressed: () {
-                              saveAndClose();
-                            })),
-                    const SizedBox(
-                      height: 50,
-                    )
-                  ],
-                ))));
+      appBar: AppBar(
+        shape: const Border(bottom: BorderSide(color: Colors.grey, width: 3)),
+        automaticallyImplyLeading: false,
+        elevation: 0,
+        backgroundColor: appBarColor,
+        actions: const [TextButton(onPressed: ExitApp, child: Text("Exit"))],
+        title: const Text("SETTINGS",
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 24,
+            )),
+      ),
+      backgroundColor: Colors.white,
+      body: Form(
+          onWillPop: () async => false,
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Spacer(),
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                SizedBox(
+                    width: isDesktopMode ? 300 : null,
+                    child: getTextField(
+                      fillColor: Colors.white,
+                      border: const UnderlineInputBorder(),
+                      onFieldSubmitted: (value) {
+                        checkingConnection = true;
+                        setState(() {});
+                        checkConnectionAndUpdateState();
+                      },
+                      controller: serverAddressController,
+                      textAlign: TextAlign.center,
+                      hintText: 'Server address',
+                      validator: (value) =>
+                          validateEmpty(value, 'Server address'),
+                    )),
+                getConnectionIcon(),
+              ]),
+              const Spacer(),
+              Column(children: [
+                SizedBox(
+                    height: 80,
+                    child: Container(
+                      color: completedTaskColor,
+                      child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: SizedBox(
+                              width: 200,
+                              height: 50,
+                              child: ElevatedButton(
+                                  child: const Text(
+                                    'Save and close',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                  onPressed: () {
+                                    saveAndClose();
+                                  }))),
+                    )),
+                Container(
+                  height: 20,
+                  color: completedTaskColor,
+                )
+              ])
+            ],
+          )),
+    );
   }
 
   Future<void> openLoginPage(BuildContext context) async {
@@ -195,6 +201,9 @@ class _SettingsPageState extends State<SettingsPage> {
         color: Colors.green,
       );
     }
-    return const Icon(Icons.error);
+    return const Icon(
+      Icons.error,
+      color: Colors.red,
+    );
   }
 }

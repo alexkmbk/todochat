@@ -21,8 +21,9 @@ Widget getTextField({
   TextInputAction? textInputAction,
   InputBorder? border,
   TextAlign textAlign = TextAlign.left,
+  double? width,
 }) {
-  return Padding(
+  final padding = Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextFormField(
         focusNode: focusNode,
@@ -54,6 +55,14 @@ Widget getTextField({
         autofocus: true,
         textInputAction: textInputAction ?? TextInputAction.next,
       ));
+
+  if (width == null) {
+    return padding;
+  }
+  return SizedBox(
+    width: width,
+    child: padding,
+  );
 }
 
 /*class CustomAppBar extends PreferredSizeWidget{

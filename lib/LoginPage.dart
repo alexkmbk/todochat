@@ -53,6 +53,19 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: AppBar(
+          shape: const Border(bottom: BorderSide(color: Colors.grey, width: 3)),
+          automaticallyImplyLeading: false,
+          elevation: 0,
+          backgroundColor: appBarColor,
+          actions: const [TextButton(onPressed: ExitApp, child: Text("Exit"))],
+          title: const Text("LOGIN",
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 24,
+              )),
+        ),
+        backgroundColor: Colors.white,
         body: registrationMode
             ? showRegistrationPage()
             : showLoginPage(
@@ -107,62 +120,97 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const ElevatedButton(onPressed: ExitApp, child: Text("Exit")),
-                getTextField(
-                  autofillHints: [AutofillHints.username],
-                  controller: userNameController,
-                  hintText: 'User name',
-                  validator: (value) => validateEmpty(value, 'User name'),
-                  onFieldSubmitted: (value) {
-                    FocusScope.of(context).nextFocus();
-                  },
+                const Spacer(),
+                SizedBox(
+                    width: isDesktopMode ? 300 : null,
+                    child: getTextField(
+                      autofillHints: [AutofillHints.username],
+                      controller: userNameController,
+                      border: const UnderlineInputBorder(),
+                      hintText: 'User name',
+                      validator: (value) => validateEmpty(value, 'User name'),
+                      onFieldSubmitted: (value) {
+                        FocusScope.of(context).nextFocus();
+                      },
+                    )),
+                const SizedBox(
+                  height: 20,
                 ),
-                getTextField(
-                    autofillHints: [AutofillHints.password],
-                    controller: passwordController,
-                    hintText: 'Password',
-                    obscureText: true,
-                    textInputAction: TextInputAction.send,
-                    onFieldSubmitted: (value) async {
-                      if (_formKey.currentState!.validate() &&
-                          await login(
-                              userName: userNameController.text,
-                              password: value,
-                              context: context)) {
-                        Navigator.pop(context, true);
-                      }
-                    }),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton(
-                          child: const Text("Settings"),
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) => const SettingsPage());
-                            /*MaterialPageRoute(
+                SizedBox(
+                    width: isDesktopMode ? 300 : null,
+                    child: getTextField(
+                        autofillHints: [AutofillHints.password],
+                        controller: passwordController,
+                        border: const UnderlineInputBorder(),
+                        hintText: 'Password',
+                        obscureText: true,
+                        textInputAction: TextInputAction.send,
+                        onFieldSubmitted: (value) async {
+                          if (_formKey.currentState!.validate() &&
+                              await login(
+                                  userName: userNameController.text,
+                                  password: value,
+                                  context: context)) {
+                            Navigator.pop(context, true);
+                          }
+                        })),
+                SizedBox(
+                    width: isDesktopMode ? 300 : null,
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextButton(
+                              child: const Text("Settings"),
+                              onPressed: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) => const SettingsPage());
+                                /*MaterialPageRoute(
                               builder: (context) => const SettingsPage());*/
-                          }),
-                      TextButton(
-                          child: const Text("Registration"),
-                          onPressed: () {
-                            setState(() {
-                              registrationMode = true;
-                            });
-                          })
-                    ]),
-                ElevatedButton(
-                    child: const Text('Login'),
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate() &&
-                          await login(
-                              userName: userNameController.text,
-                              password: passwordController.text,
-                              context: context)) {
-                        Navigator.pop(context, true);
-                      }
-                    }),
+                              }),
+                          TextButton(
+                              child: const Text("Registration"),
+                              onPressed: () {
+                                setState(() {
+                                  registrationMode = true;
+                                });
+                              })
+                        ])),
+                const Spacer(),
+                Column(children: [
+                  SizedBox(
+                      height: 80,
+                      child: Container(
+                        color: completedTaskColor,
+                        child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: SizedBox(
+                                width: 200,
+                                height: 50,
+                                child: ElevatedButton(
+                                    child: const Text(
+                                      'Login',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                    onPressed: () {
+                                      () async {
+                                        if (_formKey.currentState!.validate() &&
+                                            await login(
+                                                userName:
+                                                    userNameController.text,
+                                                password:
+                                                    passwordController.text,
+                                                context: context)) {
+                                          Navigator.pop(context, true);
+                                        }
+                                      };
+                                    }))),
+                      )),
+                  Container(
+                    height: 20,
+                    color: completedTaskColor,
+                  )
+                ]),
               ],
             )));
   }
@@ -174,46 +222,81 @@ class _LoginPageState extends State<LoginPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const ElevatedButton(onPressed: ExitApp, child: Text("Exit")),
+            const Spacer(),
             getTextField(
               controller: userNameController,
               hintText: 'User name',
+              border: const UnderlineInputBorder(),
+              width: isDesktopMode ? 300 : null,
               validator: (value) => validateEmpty(value, 'User name'),
               onFieldSubmitted: (value) {
                 FocusScope.of(context).nextFocus();
               },
             ),
+            const SizedBox(
+              height: 20,
+            ),
             getTextField(
               controller: emailController,
               hintText: 'Email',
+              border: const UnderlineInputBorder(),
+              width: isDesktopMode ? 300 : null,
               keyboardType: TextInputType.emailAddress,
               showClearButton: true,
               onFieldSubmitted: (value) {
                 FocusScope.of(context).nextFocus();
               },
             ),
+            const SizedBox(
+              height: 20,
+            ),
             getTextField(
               controller: passwordController,
               hintText: 'Password',
+              border: const UnderlineInputBorder(),
+              width: isDesktopMode ? 300 : null,
               obscureText: true,
             ),
-            Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                    child: const Text("login"),
-                    onPressed: () {
-                      setState(() {
-                        registrationMode = false;
-                      });
-                    })),
-            ElevatedButton(
-              child: const Text('Registration'),
-              onPressed: () async {
-                if (_formKey.currentState!.validate() && await registration()) {
-                  Navigator.pop(context, true);
-                }
-              },
-            )
+            SizedBox(
+                width: isDesktopMode ? 300 : null,
+                child: Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                        child: const Text("login"),
+                        onPressed: () {
+                          setState(() {
+                            registrationMode = false;
+                          });
+                        }))),
+            const Spacer(),
+            Column(children: [
+              SizedBox(
+                  height: 80,
+                  child: Container(
+                    color: completedTaskColor,
+                    child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: SizedBox(
+                            width: 200,
+                            height: 50,
+                            child: ElevatedButton(
+                              child: const Text(
+                                'Registration',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              onPressed: () async {
+                                if (_formKey.currentState!.validate() &&
+                                    await registration()) {
+                                  Navigator.pop(context, true);
+                                }
+                              },
+                            ))),
+                  )),
+              Container(
+                height: 20,
+                color: completedTaskColor,
+              )
+            ]),
           ],
         ));
   }

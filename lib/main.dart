@@ -26,6 +26,8 @@ bool isDesktopMode = false;
 bool appInitialized = false;
 const Color completedTaskColor = Color.fromARGB(255, 183, 242, 176);
 const Color uncompletedTaskColor = Color.fromARGB(255, 248, 248, 147);
+const Color appBarColor = Color.fromARGB(240, 255, 255, 255);
+const Color unreadTaskColor = Color.fromARGB(255, 250, 161, 27);
 late SharedPreferences settings;
 
 void main() {
@@ -161,9 +163,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     const Text.rich(TextSpan(children: [
                       TextSpan(
-                          text: "ToDo ",
+                          text: "ToDo",
                           style: TextStyle(
-                              color: Colors.black,
+                              color: unreadTaskColor,
                               fontSize: 50,
                               fontWeight: FontWeight.bold)),
                       TextSpan(
@@ -185,7 +187,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             color: Colors.white,
                           )),
                     if (snapshot.connectionState == ConnectionState.waiting)
-                      const Text('Connecting to the server...',
+                      const Text('Connecting...',
                           style: TextStyle(color: Colors.white),
                           textDirection: TextDirection.ltr),
                     const Spacer(),
