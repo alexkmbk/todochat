@@ -13,7 +13,23 @@ class MainMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<PopupMenuItem> mainMenuCommonItems = [
+    List<PopupMenuEntry> mainMenuCommonItems = [
+      if (currentUserName.isNotEmpty)
+        PopupMenuItem(
+          child: Text(
+            currentUserName,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      const PopupMenuDivider(),
+      PopupMenuItem(
+        child: const Text("Logout"),
+        onTap: () async {
+          await Future.delayed(Duration.zero);
+          sessionID = "";
+          openLoginPage(context);
+        },
+      ),
       PopupMenuItem(
         child: const Text("Settings"),
         onTap: () async {
@@ -24,14 +40,6 @@ class MainMenu extends StatelessWidget {
           );
         },
       ),
-      PopupMenuItem(
-        child: const Text("Logout"),
-        onTap: () async {
-          await Future.delayed(Duration.zero);
-          sessionID = "";
-          openLoginPage(context);
-        },
-      ),
       const PopupMenuItem(
         onTap: ExitApp,
         child: Text("Exit"),
@@ -39,6 +47,10 @@ class MainMenu extends StatelessWidget {
     ];
 
     return PopupMenuButton(
+        shape: ContinuousRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
+
         // add icon, by default "3 dot" icon
         icon: Icon(
           Icons.more_vert,

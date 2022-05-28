@@ -454,7 +454,14 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                               if (html != null && html.isNotEmpty) {
                                 String imageURL = getImageURLFromHTML(html);
                                 if (imageURL.isNotEmpty) {
-                                  var response = await get(Uri.parse(imageURL));
+                                  var response;
+                                  try {
+                                    response = await get(Uri.parse(imageURL));
+                                  } catch (e) {
+                                    toast(e.toString(), context);
+                                    return;
+                                  }
+
                                   if (response.statusCode == 200) {
                                     widget.msgListProvider.addUploadingItem(
                                         Message(

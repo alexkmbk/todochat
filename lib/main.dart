@@ -22,6 +22,7 @@ import 'MsgList.dart';
 Uri serverURI = Uri();
 String sessionID = "";
 int currentUserID = 0;
+String currentUserName = "";
 bool isDesktopMode = false;
 bool appInitialized = false;
 const Color completedTaskColor = Color.fromARGB(255, 183, 242, 176);
@@ -161,21 +162,24 @@ class _MyHomePageState extends State<MyHomePage> {
                     const SizedBox(
                       height: 50,
                     ),
-                    const Text.rich(TextSpan(children: [
-                      TextSpan(
-                          text: "ToDo",
-                          style: TextStyle(
-                              color: unreadTaskColor,
-                              fontSize: 50,
-                              fontWeight: FontWeight.bold)),
-                      TextSpan(
-                        text: "Chat",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 50,
-                            fontWeight: FontWeight.bold),
-                      )
-                    ])),
+                    const TextInCircle(
+                        width: 200,
+                        color: Colors.white,
+                        textWidget: Text.rich(TextSpan(children: [
+                          TextSpan(
+                              text: "ToDo",
+                              style: TextStyle(
+                                  color: completedTaskColor,
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.bold)),
+                          TextSpan(
+                            text: "Chat",
+                            style: TextStyle(
+                                color: Colors.orangeAccent,
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold),
+                          )
+                        ]))),
                     const Spacer(),
                     if (snapshot.hasError)
                       IconButton(

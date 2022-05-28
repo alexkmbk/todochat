@@ -325,3 +325,24 @@ class _RestartWidgetState extends State<RestartWidget> {
     );
   }
 }
+
+class TextInCircle extends StatelessWidget {
+  final Widget textWidget;
+  final double? width;
+  final Color? color;
+  const TextInCircle(
+      {Key? key, required this.textWidget, this.width, this.color})
+      : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        width: width,
+        height: width,
+        decoration: BoxDecoration(
+          //border: Border.all(width: 2),
+          shape: BoxShape.circle,
+          color: color,
+        ),
+        child: Center(child: textWidget));
+  }
+}

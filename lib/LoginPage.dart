@@ -25,7 +25,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool registrationMode = false;
-  final userNameController = TextEditingController(text: '');
+  final userNameController = TextEditingController(text: currentUserName);
   final emailController = TextEditingController(text: '');
   final passwordController = TextEditingController(text: '');
 
@@ -192,18 +192,14 @@ class _LoginPageState extends State<LoginPage> {
                                       'Login',
                                       style: TextStyle(fontSize: 16),
                                     ),
-                                    onPressed: () {
-                                      () async {
-                                        if (_formKey.currentState!.validate() &&
-                                            await login(
-                                                userName:
-                                                    userNameController.text,
-                                                password:
-                                                    passwordController.text,
-                                                context: context)) {
-                                          Navigator.pop(context, true);
-                                        }
-                                      };
+                                    onPressed: () async {
+                                      if (_formKey.currentState!.validate() &&
+                                          await login(
+                                              userName: userNameController.text,
+                                              password: passwordController.text,
+                                              context: context)) {
+                                        Navigator.pop(context, true);
+                                      }
                                     }))),
                       )),
                   Container(
@@ -346,10 +342,11 @@ Future<bool> login(
   }
 
   if (response.statusCode == 200) {
-    var data = jsonDecode(response.body) as Map<String, dynamic>;
+    var data = jsonDecode(response.body);
 
     sessionID = data["SessionID"];
     currentUserID = data["UserID"];
+    currentUserName = userName;
     httpClient.defaultHeaders = {"sessionID": sessionID};
 
     if (serverURI.scheme != "http" || !isWeb()) {
