@@ -51,6 +51,12 @@ class MsgListProvider extends ChangeNotifier {
   }
 
   void clear([bool refresh = false]) {
+    for (var item in items) {
+      if (!item.loadinInProcess) {
+        uploadingFiles.removeWhere((key, value) => key == item.tempID);
+      }
+    }
+
     items.clear();
     offset = 0;
     lastID = 0;
@@ -336,6 +342,9 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                 itemPositionsListener: widget.itemPositionsListener,
                 itemCount: widget.msgListProvider.items.length,
                 itemBuilder: (context, index) {
+                  if (widget.msgListProvider.items.isEmpty) {
+                    return const Text("");
+                  }
                   var item = widget.msgListProvider.items[index];
                   /*if (item.tempID.isNotEmpty && item.loadinInProcess) {
               return LoadingFileBubble(
@@ -728,6 +737,7 @@ class ChatBubble extends StatelessWidget {
                 memoryImage(
                   loadingFileData,
                   height: 200,
+                  onTap: () => onTapOnFileMessage(message, context),
                 ),
                 if (progress < 1)
                   const Positioned(
@@ -818,6 +828,16 @@ class ChatBubble extends StatelessWidget {
           MaterialPageRoute(
               builder: (context) =>
                   ImageDialog(imageProvider: res, fileSize: message.fileSize)));
+      //}
+    } else if (message.isImage && uploadingFiles.containsKey(message.tempID)) {
+      // var res = await getFile(message.localFileName);
+      var res = Image.memory(uploadingFiles[message.tempID]!.loadingFileData);
+      //if (res.isNotEmpty) {
+      await Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => ImageDialog(
+                  imageProvider: res.image, fileSize: message.fileSize)));
       //}
     } else if (message.localFileName.isNotEmpty) {
       var res = await getFile(message.localFileName);
@@ -939,11 +959,12 @@ Future<bool> createMessageWithFile(
     return false;
   }
 
-  uploadingFiles.remove(tempID);
+  //uploadingFiles.remove(tempID);
   if (streamedResponse.statusCode == 200) {
     msgListProvider.refresh();
     return true;
   }
+  uploadingFiles.remove(tempID);
   msgListProvider.refresh();
   return false;
 }

@@ -60,22 +60,19 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               const Spacer(),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                SizedBox(
-                    width: isDesktopMode ? 300 : null,
-                    child: getTextField(
-                      fillColor: Colors.white,
-                      border: const UnderlineInputBorder(),
-                      onFieldSubmitted: (value) {
-                        checkingConnection = true;
-                        setState(() {});
-                        checkConnectionAndUpdateState();
-                      },
-                      controller: serverAddressController,
-                      textAlign: TextAlign.center,
-                      hintText: 'Server address',
-                      validator: (value) =>
-                          validateEmpty(value, 'Server address'),
-                    )),
+                getTextField(
+                  border: const UnderlineInputBorder(),
+                  width: isDesktopMode ? 300 : null,
+                  onFieldSubmitted: (value) {
+                    checkingConnection = true;
+                    setState(() {});
+                    checkConnectionAndUpdateState();
+                  },
+                  controller: serverAddressController,
+                  textAlign: TextAlign.center,
+                  hintText: 'Server address',
+                  validator: (value) => validateEmpty(value, 'Server address'),
+                ),
                 getConnectionIcon(),
               ]),
               const Spacer(),
