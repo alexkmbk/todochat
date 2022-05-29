@@ -96,8 +96,8 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     /*document.onPaste.listen((ClipboardEvent e) {
       var blob = e.clipboardData?.items?[0].getAsFile();
     });*/
-
-    requestMessages(msgListProvider, widget.task.lastMessageID);
+    msgListProvider.requestMessages();
+    //requestMessages(msgListProvider, widget.task.lastMessageID);
   }
 
   @override
@@ -167,7 +167,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                           (itemPositionsListener
                                   .itemPositions.value.last.index >=
                               provider.items.length - 10))) {
-                    requestMessages(msgListProvider);
+                    msgListProvider.requestMessages();
                   }
                   return true;
                 },
@@ -184,30 +184,6 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
         ),
       ),*/
     );
-  }
-
-  void fileUploadProgress(int bytes, int total) {
-    final progress = bytes / total;
-    print('progress: $progress ($bytes/$total)');
-  }
-
-  Future<void> requestMessages(MsgListProvider msgListProvider,
-      [int messageIDPosition = 0]) async {
-    //List<Message> res = [];
-
-    if (sessionID == "" || !mounted) {
-      return;
-    }
-
-    msgListProvider.requestMessages();
-    /*ws!.sink.add(jsonEncode({
-      "sessionID": sessionID,
-      "command": "getMessages",
-      "lastID": _msgListProvider.lastID.toString(),
-      "messageIDPosition": messageIDPosition.toString(),
-      "limit": "30",
-      "taskID": _msgListProvider.taskID.toString(),
-    }));*/
   }
 
   Future<Uint8List> getFile(String localFileName) async {

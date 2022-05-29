@@ -150,6 +150,10 @@ class MsgListProvider extends ChangeNotifier {
   }
 
   void requestMessages() async {
+    if (sessionID == "") {
+      return;
+    }
+
     loading = true;
     if (ws == null) {
       await Future.delayed(const Duration(seconds: 2));
