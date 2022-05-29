@@ -30,12 +30,13 @@ const Color uncompletedTaskColor = Color.fromARGB(255, 248, 248, 147);
 const Color appBarColor = Color.fromARGB(240, 255, 255, 255);
 const Color unreadTaskColor = Color.fromARGB(255, 250, 161, 27);
 late SharedPreferences settings;
+late MsgListProvider msgListProviderGl;
 
 void main() {
   runApp(
     RestartWidget(
       builder: () {
-        return MyApp();
+        return const MyApp();
       },
       beforeRestart: () {
         appInitialized = false;
@@ -57,7 +58,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({Key? key}) : super(key: key);
+  const MyApp({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override
@@ -65,8 +66,7 @@ class MyApp extends StatelessWidget {
     var instance = WidgetsBinding.instance;
     var mediaQueryData = MediaQueryData.fromWindow(instance!.window);
     var physicalPixelWidth = mediaQueryData.size.width;
-    final msgListProvider = MsgListProvider();
-    final tasksListProvider = TasksListProvider();
+    msgListProviderGl = MsgListProvider();
     if (physicalPixelWidth > 1000) {
       isDesktopMode = true;
     }
@@ -75,7 +75,7 @@ class MyApp extends StatelessWidget {
       //key: UniqueKey(),
       providers: [
         ChangeNotifierProvider.value(
-          value: msgListProvider,
+          value: msgListProviderGl,
         ),
         ChangeNotifierProvider.value(
           value: TasksListProvider(),
@@ -90,23 +90,18 @@ class MyApp extends StatelessWidget {
           ),
           home: MyHomePage(
             title: "ToDo Chat",
-            msgListProvider: msgListProvider,
-            tasksListProvider: tasksListProvider,
+            msgListProvider: msgListProviderGl,
           )),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage(
-      {Key? key,
-      required this.title,
-      required this.msgListProvider,
-      required this.tasksListProvider})
+  MyHomePage({Key? key, required this.title, required this.msgListProvider})
       : super(key: key);
   final String title;
   MsgListProvider msgListProvider;
-  TasksListProvider tasksListProvider;
+  //TasksListProvider tasksListProvider;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -163,11 +158,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       height: 50,
                     ),
                     const TextInCircle(
-                        width: 200,
+                        width: 150,
                         color: Colors.white,
                         textWidget: Text.rich(TextSpan(children: [
                           TextSpan(
-                              text: "ToDo",
+                              text: "ToDo\n",
                               style: TextStyle(
                                   color: completedTaskColor,
                                   fontSize: 36,
@@ -254,6 +249,9 @@ class _MyHomePageState extends State<MyHomePage> {
   StreamSubscription? subscription;
 
   void listenWs() {
+    final taskListProvider =
+        Provider.of<TasksListProvider>(context, listen: false);
+
     if (sessionID.isNotEmpty && ws != null) {
       try {
         subscription = ws!.stream.listen((messageJson) {
@@ -263,20 +261,20 @@ class _MyHomePageState extends State<MyHomePage> {
           } else if (wsMsg.command == "createMessage") {
             var message = Message.fromJson(wsMsg.data);
             final created = widget.msgListProvider.addItem(message);
-            widget.tasksListProvider
-                .updateLastMessage(message.taskID, message, created);
+            taskListProvider.updateLastMessage(
+                message.taskID, message, created);
           } else if (wsMsg.command == "deleteMessage") {
             var message = Message.fromJson(wsMsg.data);
             widget.msgListProvider.deleteItem(message.ID);
           } else if (wsMsg.command == "createTask") {
             var task = Task.fromJson(wsMsg.data);
-            widget.tasksListProvider.addItem(task);
+            taskListProvider.addItem(task);
           } else if (wsMsg.command == "deleteTask") {
             var taskID = wsMsg.data;
-            widget.tasksListProvider.deleteItem(taskID);
+            taskListProvider.deleteItem(taskID);
           } else if (wsMsg.command == "updateTask") {
             var task = Task.fromJson(wsMsg.data);
-            widget.tasksListProvider.updateItem(task);
+            taskListProvider.updateItem(task);
           }
         }, onDone: () {
           isWSConnected = false;
@@ -320,8 +318,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     widget.msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);
-    widget.tasksListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);
+    /*widget.tasksListProvider =
+        Provider.of<TasksListProvider>(context, listen: false);*/
 
     settings = await SharedPreferences.getInstance();
 

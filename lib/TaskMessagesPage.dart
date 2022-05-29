@@ -17,11 +17,9 @@ import 'inifiniteTaskList.dart';
 
 class TaskMessagesPage extends StatefulWidget {
   final Task task;
-  final MsgListProvider msgListProvider;
+  //final MsgListProvider msgListProvider;
 
-  const TaskMessagesPage(
-      {Key? key, required this.task, required this.msgListProvider})
-      : super(key: key);
+  const TaskMessagesPage({Key? key, required this.task}) : super(key: key);
 
   @override
   State<TaskMessagesPage> createState() {
@@ -59,10 +57,12 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
   void initState() {
     super.initState();
 
-    widget.msgListProvider.taskID = widget.task.ID;
-    widget.msgListProvider.task = widget.task;
-    widget.msgListProvider.foundMessageID = widget.task.lastMessageID;
-    widget.msgListProvider.scrollController = itemsScrollController;
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
+    msgListProvider.taskID = widget.task.ID;
+    msgListProvider.task = widget.task;
+    msgListProvider.foundMessageID = widget.task.lastMessageID;
+    msgListProvider.scrollController = itemsScrollController;
     /*_msgListProvider.addListener(() {
       _jumpTo(widget.task.lastMessageID);
     });*/
@@ -97,13 +97,15 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       var blob = e.clipboardData?.items?[0].getAsFile();
     });*/
 
-    requestMessages(widget.task.lastMessageID);
+    requestMessages(msgListProvider, widget.task.lastMessageID);
   }
 
   @override
   void dispose() {
     super.dispose();
-    widget.msgListProvider.clear();
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
+    msgListProvider.clear();
 
     //ws.sink.close();
     //_scrollController.dispose();
@@ -111,6 +113,8 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
     return Scaffold(
       appBar: isDesktopMode
           ? null
@@ -156,15 +160,14 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                   itemPositionsListener: itemPositionsListener,
                   onDelete: deleteMesage,
                   getFile: getFile,
-                  msgListProvider: widget.msgListProvider,
                 ),
                 onNotification: (notification) {
-                  if (!widget.msgListProvider.loading &&
+                  if (!provider.loading &&
                       (itemPositionsListener.itemPositions.value.isEmpty ||
                           (itemPositionsListener
                                   .itemPositions.value.last.index >=
-                              widget.msgListProvider.items.length - 10))) {
-                    requestMessages();
+                              provider.items.length - 10))) {
+                    requestMessages(msgListProvider);
                   }
                   return true;
                 },
@@ -188,15 +191,15 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     print('progress: $progress ($bytes/$total)');
   }
 
-  Future<void> requestMessages([int messageIDPosition = 0]) async {
+  Future<void> requestMessages(MsgListProvider msgListProvider,
+      [int messageIDPosition = 0]) async {
     //List<Message> res = [];
 
     if (sessionID == "" || !mounted) {
       return;
     }
 
-    widget.msgListProvider.loading = true;
-    widget.msgListProvider.requestMessages();
+    msgListProvider.requestMessages();
     /*ws!.sink.add(jsonEncode({
       "sessionID": sessionID,
       "command": "getMessages",

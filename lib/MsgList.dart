@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:pasteboard/pasteboard.dart';
+import 'package:provider/provider.dart';
 //import 'package:http/http.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'HttpClient.dart' as HTTPClient;
@@ -149,6 +150,7 @@ class MsgListProvider extends ChangeNotifier {
   }
 
   void requestMessages() async {
+    loading = true;
     if (ws == null) {
       await Future.delayed(const Duration(seconds: 2));
     }
@@ -262,7 +264,6 @@ class InifiniteMsgList extends StatefulWidget {
 
   final Future<bool> Function(int messageID) onDelete;
   final Future<Uint8List> Function(String localFileName) getFile;
-  final MsgListProvider msgListProvider;
 
   //final ItemBuilder itemBuilder;
   //final Task task;
@@ -271,8 +272,7 @@ class InifiniteMsgList extends StatefulWidget {
       required this.scrollController,
       required this.itemPositionsListener,
       required this.onDelete,
-      required this.getFile,
-      required this.msgListProvider})
+      required this.getFile})
       : super(key: key);
 
   @override
@@ -321,15 +321,17 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.msgListProvider.task == null ||
-        widget.msgListProvider.task?.ID == 0) {
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
+
+    if (msgListProvider.task == null || msgListProvider.task?.ID == 0) {
       return const Center(child: Text("No any task was selected"));
     } else {
       WidgetsBinding.instance!.addPostFrameCallback((_) {
-        if (widget.msgListProvider.foundMessageID > 0 &&
-            widget.msgListProvider.items.length > 1) {
-          widget.msgListProvider.jumpTo(widget.msgListProvider.foundMessageID);
-          widget.msgListProvider.foundMessageID = 0;
+        if (msgListProvider.foundMessageID > 0 &&
+            msgListProvider.items.length > 1) {
+          msgListProvider.jumpTo(msgListProvider.foundMessageID);
+          msgListProvider.foundMessageID = 0;
         }
       });
 
@@ -340,18 +342,18 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                 reverse: true,
                 itemScrollController: widget.scrollController,
                 itemPositionsListener: widget.itemPositionsListener,
-                itemCount: widget.msgListProvider.items.length,
+                itemCount: msgListProvider.items.length,
                 itemBuilder: (context, index) {
-                  if (widget.msgListProvider.items.isEmpty) {
+                  if (msgListProvider.items.isEmpty) {
                     return const Text("");
                   }
-                  var item = widget.msgListProvider.items[index];
+                  var item = msgListProvider.items[index];
                   /*if (item.tempID.isNotEmpty && item.loadinInProcess) {
               return LoadingFileBubble(
                 index: index,
                 isCurrentUser: item.userID == currentUserID,
                 message: item,
-                msgListProvider: widget.msgListProvider,
+                msgListProvider: msgListProvider,
                 getFile: widget.getFile,
               );
             } else {*/
@@ -359,11 +361,11 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                     index: index,
                     isCurrentUser: item.userID == currentUserID,
                     message: item,
-                    msgListProvider: widget.msgListProvider,
+                    msgListProvider: msgListProvider,
                     getFile: widget.getFile,
                     onDismissed: (direction) async {
                       if (await widget.onDelete(item.ID)) {
-                        widget.msgListProvider.deleteItem(item.ID);
+                        msgListProvider.deleteItem(item.ID);
                       }
                     },
                   );
@@ -403,7 +405,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                         if (_messageInputController.text.isNotEmpty) {
                           createMessage(
                             text: _messageInputController.text,
-                            msgListProvider: widget.msgListProvider,
+                            msgListProvider: msgListProvider,
                           );
                           _messageInputController.text = "";
                         }
@@ -412,9 +414,9 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                           control: true): () async {
                         final bytes = await Pasteboard.image;
                         if (bytes != null) {
-                          widget.msgListProvider.addUploadingItem(
+                          msgListProvider.addUploadingItem(
                               Message(
-                                  taskID: widget.msgListProvider.taskID,
+                                  taskID: msgListProvider.taskID,
                                   userID: currentUserID,
                                   fileName: "clipboard_image.png",
                                   loadingFile: true,
@@ -426,9 +428,9 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                             for (final file in files) {
                               var fileData = await readFile(file);
                               if (fileData.isNotEmpty) {
-                                widget.msgListProvider.addUploadingItem(
+                                msgListProvider.addUploadingItem(
                                     Message(
-                                        taskID: widget.msgListProvider.taskID,
+                                        taskID: msgListProvider.taskID,
                                         userID: currentUserID,
                                         fileName: path.basename(file),
                                         loadingFile: true,
@@ -454,7 +456,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                               if (html != null && html.isNotEmpty) {
                                 String imageURL = getImageURLFromHTML(html);
                                 if (imageURL.isNotEmpty) {
-                                  var response;
+                                  Response response;
                                   try {
                                     response = await get(Uri.parse(imageURL));
                                   } catch (e) {
@@ -463,10 +465,9 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                                   }
 
                                   if (response.statusCode == 200) {
-                                    widget.msgListProvider.addUploadingItem(
+                                    msgListProvider.addUploadingItem(
                                         Message(
-                                            taskID:
-                                                widget.msgListProvider.taskID,
+                                            taskID: msgListProvider.taskID,
                                             userID: currentUserID,
                                             fileName: "clipboard_image.png",
                                             loadingFile: true,
@@ -505,7 +506,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                       if (_messageInputController.text.isNotEmpty) {
                         createMessage(
                             text: _messageInputController.text,
-                            msgListProvider: widget.msgListProvider);
+                            msgListProvider: msgListProvider);
                         _messageInputController.text = "";
                       }
                     },
@@ -524,9 +525,9 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
 
                       if (fileName.isNotEmpty) {
                         var res = await readFile(fileName);
-                        widget.msgListProvider.addUploadingItem(
+                        msgListProvider.addUploadingItem(
                             Message(
-                                taskID: widget.msgListProvider.taskID,
+                                taskID: msgListProvider.taskID,
                                 userID: currentUserID,
                                 fileName: path.basename(fileName),
                                 loadingFile: true,

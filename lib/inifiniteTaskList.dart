@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:todochat/TasksPage.dart';
 import 'HttpClient.dart';
 import 'MsgList.dart';
 import 'TaskMessagesPage.dart';
@@ -58,6 +59,9 @@ class TasksListProvider extends ChangeNotifier {
   void addItem(Task task) {
     if (task.projectID == projectID) {
       if (items.firstWhereOrNull((element) => element.ID == task.ID) == null) {
+        if (task.authorID == currentUserID) {
+          task.read = true;
+        }
         items.insert(0, task);
         notifyListeners();
       }
@@ -243,13 +247,13 @@ class InifiniteTaskList extends StatefulWidget {
 }
 
 class InifiniteTaskListState extends State<InifiniteTaskList> {
-  late TasksListProvider _taskListProvider;
+  //late TasksListProvider _taskListProvider;
   bool loading = false;
 
   @override
   void initState() {
     super.initState();
-    _taskListProvider = Provider.of<TasksListProvider>(context, listen: false);
+    //_taskListProvider = Provider.of<TasksListProvider>(context, listen: false);
     //_msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
   }
 
@@ -257,6 +261,8 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
 
   @override
   Widget build(BuildContext context) {
+    final taskListProvider =
+        Provider.of<TasksListProvider>(context, listen: false);
     return Column(children: <Widget>[
       Expanded(
           child: ScrollablePositionedList.builder(
@@ -267,8 +273,8 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
         itemBuilder: (context, index) {
           return TaskListTile(
               index: index,
-              task: _taskListProvider.items[index],
-              tasksListProvider: _taskListProvider,
+              task: taskListProvider.items[index],
+              //tasksListProvider: taskListProvider,
               inifiniteTaskList: widget,
               msgListProvider: widget.msgListProvider);
           /*if (index < _taskListProvider.items.length) {
@@ -277,7 +283,7 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
           }
           return const Center(child: Text('End of list'));*/
         },
-        itemCount: _taskListProvider.items.length,
+        itemCount: taskListProvider.items.length,
       )),
     ]);
   }
@@ -286,7 +292,7 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
 class TaskListTile extends StatefulWidget {
   final int index;
   final Task task;
-  final TasksListProvider tasksListProvider;
+  //final TasksListProvider tasksListProvider;
   final InifiniteTaskList inifiniteTaskList;
   final MsgListProvider msgListProvider;
 
@@ -294,7 +300,7 @@ class TaskListTile extends StatefulWidget {
       {Key? key,
       required this.index,
       required this.task,
-      required this.tasksListProvider,
+      //required this.tasksListProvider,
       required this.inifiniteTaskList,
       required this.msgListProvider})
       : super(key: key);
@@ -318,11 +324,13 @@ class _TaskListTileState extends State<TaskListTile> {
   }
 
   void onSave(String text) async {
+    final taskListProvider =
+        Provider.of<TasksListProvider>(context, listen: false);
     if (text.isNotEmpty) {
       if (widget.task.isNewItem) {
         await widget.inifiniteTaskList.onAddFn(text);
-        widget.tasksListProvider.deleteEditorItem();
-        widget.tasksListProvider.taskEditMode = false;
+        taskListProvider.deleteEditorItem();
+        taskListProvider.taskEditMode = false;
       } else {
         var tempTask = Task.from(widget.task);
         tempTask.Description = text;
@@ -335,7 +343,7 @@ class _TaskListTileState extends State<TaskListTile> {
           setState(() {
             widget.task.Description = tempTask.Description;
             widget.task.editMode = false;
-            widget.tasksListProvider.taskEditMode = false;
+            taskListProvider.taskEditMode = false;
           });
         }
       }
@@ -343,6 +351,9 @@ class _TaskListTileState extends State<TaskListTile> {
   }
 
   Widget buildListRow(BuildContext context) {
+    final taskListProvider =
+        Provider.of<TasksListProvider>(context, listen: false);
+
     if (widget.task.editMode) {
       textEditingController =
           TextEditingController(text: widget.task.Description);
@@ -359,7 +370,7 @@ class _TaskListTileState extends State<TaskListTile> {
                             const SingleActivator(LogicalKeyboardKey.escape,
                                 control: false): () {
                               if (widget.task.isNewItem) {
-                                widget.tasksListProvider.deleteEditorItem();
+                                taskListProvider.deleteEditorItem();
                               } else {
                                 setState(() {
                                   widget.task.editMode = false;
@@ -382,7 +393,7 @@ class _TaskListTileState extends State<TaskListTile> {
                             onFocusChange: (hasFocus) {
                               /*  if (!hasFocus) {
                               if (widget.task.isNewItem) {
-                                widget.tasksListProvider.deleteEditorItem();
+                                taskListProvider.deleteEditorItem();
                               } else {
                                 setState(() {
                                   widget.task.editMode = false;
@@ -406,8 +417,7 @@ class _TaskListTileState extends State<TaskListTile> {
                                     if (widget.task.isNewItem) {
                                       await widget.inifiniteTaskList
                                           .onAddFn(value);
-                                      widget.tasksListProvider
-                                          .deleteEditorItem();
+                                      taskListProvider.deleteEditorItem();
                                     } else {
                                       var tempTask = Task.from(widget.task);
                                       tempTask.Description = value;
@@ -495,9 +505,9 @@ class _TaskListTileState extends State<TaskListTile> {
                     shape: const StadiumBorder(),
                   ),
                   onPressed: () {
-                    widget.tasksListProvider.taskEditMode = false;
+                    taskListProvider.taskEditMode = false;
                     if (widget.task.isNewItem) {
-                      widget.tasksListProvider.deleteEditorItem();
+                      taskListProvider.deleteEditorItem();
                     } else {
                       setState(() {
                         widget.task.editMode = false;
@@ -517,7 +527,7 @@ class _TaskListTileState extends State<TaskListTile> {
         },
         onDismissed: (direction) async {
           if (await widget.inifiniteTaskList.onDeleteFn(widget.task.ID)) {
-            widget.tasksListProvider.deleteItem(widget.task.ID);
+            taskListProvider.deleteItem(widget.task.ID);
           }
         },
         child: Card(
@@ -530,10 +540,10 @@ class _TaskListTileState extends State<TaskListTile> {
           /* shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8.0))),*/
           child: ListTile(
-              tileColor: widget.tasksListProvider.currentTask == null
+              tileColor: taskListProvider.currentTask == null
                   ? null
-                  : getTileColor(widget.tasksListProvider.currentTask!.ID ==
-                      widget.task.ID),
+                  : getTileColor(
+                      taskListProvider.currentTask!.ID == widget.task.ID),
               onTap: () => onTap(widget.task),
               onLongPress: () => onLongPress(widget.task),
               leading: Checkbox(
@@ -542,11 +552,11 @@ class _TaskListTileState extends State<TaskListTile> {
                   value: widget.task.Completed,
                   onChanged: (value) =>
                       taskCompletedOnChanged(value, widget.task)),
-              title: widget.tasksListProvider.searchMode
+              title: taskListProvider.searchMode
                   ? HighlightText(
                       highlightColor: Colors.red,
                       text: widget.task.Description,
-                      words: widget.tasksListProvider.searchHighlightedWords,
+                      words: taskListProvider.searchHighlightedWords,
                       maxLines: 5,
                     )
                   : Text(
@@ -557,7 +567,7 @@ class _TaskListTileState extends State<TaskListTile> {
               subtitle: widget.task.lastMessage.isEmpty &&
                       widget.task.unreadMessages == 0
                   ? null
-                  : widget.tasksListProvider.searchMode
+                  : taskListProvider.searchMode
                       ? HighlightText(
                           leading: widget.task.lastMessageUserName.isNotEmpty
                               ? TextSpan(
@@ -566,8 +576,7 @@ class _TaskListTileState extends State<TaskListTile> {
                               : null,
                           highlightColor: Colors.red,
                           text: widget.task.lastMessage,
-                          words:
-                              widget.tasksListProvider.searchHighlightedWords,
+                          words: taskListProvider.searchHighlightedWords,
                         )
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -624,15 +633,20 @@ class _TaskListTileState extends State<TaskListTile> {
       if (sessionID == "" || !mounted) {
         return;
       }
+
+      final taskListProvider =
+          Provider.of<TasksListProvider>(context, listen: false);
+
       widget.msgListProvider.clear(true);
       task.read = true;
       task.unreadMessages = 0;
-      widget.tasksListProvider.currentTask = task;
-      widget.tasksListProvider.refresh();
+      taskListProvider.currentTask = task;
       widget.msgListProvider.taskID = task.ID;
       widget.msgListProvider.task = task;
       widget.msgListProvider.loading = true;
       widget.msgListProvider.requestMessages();
+      taskListProvider.refresh();
+
       /*ws!.sink.add(jsonEncode({
         "sessionID": sessionID,
         "command": "getMessages",
@@ -656,8 +670,11 @@ class _TaskListTileState extends State<TaskListTile> {
   }
 
   void onLongPress(Task task) {
+    final taskListProvider =
+        Provider.of<TasksListProvider>(context, listen: false);
+
     setState(() {
-      var foundTask = widget.tasksListProvider.items
+      var foundTask = taskListProvider.items
           .firstWhereOrNull((element) => element.ID == task.ID);
       if (foundTask != null) {
         foundTask.editMode = true;
@@ -710,10 +727,6 @@ void openTask(
     BuildContext context, Task task, MsgListProvider msgListProvider) {
   Navigator.push(
     context,
-    MaterialPageRoute(
-        builder: (context) => TaskMessagesPage(
-              task: task,
-              msgListProvider: msgListProvider,
-            )),
+    MaterialPageRoute(builder: (context) => TaskMessagesPage(task: task)),
   );
 }

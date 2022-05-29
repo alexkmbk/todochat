@@ -148,6 +148,17 @@ class _SettingsPageState extends State<SettingsPage> {
     if (uri.port != 0 && uri.port != 80) {
       uriHealthz = Uri(
           scheme: uri.scheme, host: uri.host, port: uri.port, path: "healthz");
+    } else if (uri.port == 0) {
+      if (uri.scheme.isEmpty || uri.scheme == "http") {
+        uriHealthz = Uri(
+            scheme: uri.scheme.isEmpty ? "http" : uri.scheme,
+            host: uri.host,
+            port: 80,
+            path: "healthz");
+      } else {
+        uriHealthz =
+            Uri(scheme: uri.scheme, host: uri.host, port: 443, path: "healthz");
+      }
     } else {
       uriHealthz = Uri(scheme: uri.scheme, host: uri.host, path: "healthz");
     }
