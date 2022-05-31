@@ -16,6 +16,7 @@ import 'utils.dart';
 import 'package:collection/collection.dart';
 import 'ProjectsList.dart';
 import 'main.dart';
+import 'package:badges/badges.dart';
 
 class TasksListProvider extends ChangeNotifier {
   Project? project;
@@ -109,6 +110,27 @@ class TasksListProvider extends ChangeNotifier {
       item.lastMessage = message.text;
       item.lastMessageID = message.ID;
       item.lastMessageUserName = message.userName;
+
+      switch (message.messageAction) {
+        case MessageAction.ReopenTaskAction:
+          item.cancelled = false;
+          item.closed = false;
+          break;
+        case MessageAction.CancelTaskAction:
+          item.cancelled = true;
+          break;
+        case MessageAction.CompleteTaskAction:
+          item.completed = true;
+          break;
+        case MessageAction.CloseTaskAction:
+          item.closed = true;
+          break;
+        case MessageAction.RemoveCompletedLabelAction:
+          item.completed = false;
+          break;
+
+        default:
+      }
       notifyListeners();
     }
   }
@@ -132,12 +154,15 @@ class Task {
   int projectID = 0;
   int authorID = 0;
   String authorName = "";
-  bool Completed = false;
-  String Description = "";
+  bool completed = false;
+  bool cancelled = false;
+  bool closed = false;
+
+  String description = "";
   String lastMessage = "";
   int lastMessageID = 0;
   bool editMode = false;
-  DateTime Creation_date = DateTime.utc(0);
+  DateTime creation_date = DateTime.utc(0);
   bool isNewItem = false;
   bool read = false;
   int unreadMessages = 0;
@@ -149,21 +174,23 @@ class Task {
 
   Task(
       {this.ID = 0,
-      this.Description = "",
-      this.Completed = false,
+      this.description = "",
+      this.completed = false,
       this.editMode = false,
       this.isNewItem = false});
 
   Map<String, dynamic> toJson() {
     return {
       'ID': ID,
-      'Completed': Completed,
-      'Description': Description,
+      'Completed': completed,
+      'Cancelled': cancelled,
+      'Closed': closed,
+      'Description': description,
       'LastMessage': lastMessage,
       'LastMessageID': lastMessageID,
       'ProjectID': projectID,
       'AuthorID': authorID,
-      'Creation_date': Creation_date.toIso8601String(),
+      'Creation_date': creation_date.toIso8601String(),
       'AuthorName': authorName,
       'Read': read,
       'UnreadMessages': unreadMessages,
@@ -177,9 +204,11 @@ class Task {
 
   Task.fromJson(Map<String, dynamic> json) {
     ID = json['ID'];
-    Creation_date = DateTime.tryParse(json['Creation_date']) ?? DateTime.utc(0);
-    Completed = json['Completed'];
-    Description = json['Description'];
+    creation_date = DateTime.tryParse(json['Creation_date']) ?? DateTime.utc(0);
+    completed = json['Completed'];
+    cancelled = json['Cancelled'];
+    closed = json['Closed'];
+    description = json['Description'];
     lastMessage = json['LastMessage'];
     lastMessageID = json['LastMessageID'];
     projectID = json['ProjectID'];
@@ -200,9 +229,11 @@ class Task {
 
   Task.from(Task task) {
     ID = task.ID;
-    Description = task.Description;
-    Creation_date = task.Creation_date;
-    Completed = task.Completed;
+    description = task.description;
+    creation_date = task.creation_date;
+    completed = task.completed;
+    cancelled = task.cancelled;
+    closed = task.closed;
     lastMessage = task.lastMessage;
     lastMessageID = task.lastMessageID;
     projectID = task.projectID;
@@ -229,15 +260,13 @@ class InifiniteTaskList extends StatefulWidget {
   final ItemScrollController scrollController;
   final OnAddFn onAddFn;
   final OnDeleteFn onDeleteFn;
-  final MsgListProvider msgListProvider;
 
   const InifiniteTaskList(
       {Key? key,
       required this.scrollController,
       required this.itemPositionsListener,
       required this.onAddFn,
-      required this.onDeleteFn,
-      required this.msgListProvider})
+      required this.onDeleteFn})
       : super(key: key);
 
   @override
@@ -275,8 +304,7 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
               index: index,
               task: taskListProvider.items[index],
               //tasksListProvider: taskListProvider,
-              inifiniteTaskList: widget,
-              msgListProvider: widget.msgListProvider);
+              inifiniteTaskList: widget);
           /*if (index < _taskListProvider.items.length) {
             return buildListRow(context, index, _taskListProvider.items[index],
                 _taskListProvider, widget);
@@ -294,15 +322,13 @@ class TaskListTile extends StatefulWidget {
   final Task task;
   //final TasksListProvider tasksListProvider;
   final InifiniteTaskList inifiniteTaskList;
-  final MsgListProvider msgListProvider;
 
   const TaskListTile(
       {Key? key,
       required this.index,
       required this.task,
       //required this.tasksListProvider,
-      required this.inifiniteTaskList,
-      required this.msgListProvider})
+      required this.inifiniteTaskList})
       : super(key: key);
 
   @override
@@ -319,8 +345,14 @@ class _TaskListTileState extends State<TaskListTile> {
   Color? getTileColor(bool selected) {
     if (isDesktopMode && selected) {
       return Colors.blue[50];
+    } else if (widget.task.cancelled) {
+      return const Color.fromARGB(255, 228, 232, 233);
     }
-    return null;
+    return widget.task.completed
+        ? completedTaskColor
+        : widget.task.read
+            ? uncompletedTaskColor
+            : const Color.fromARGB(255, 250, 161, 27);
   }
 
   void onSave(String text) async {
@@ -333,15 +365,15 @@ class _TaskListTileState extends State<TaskListTile> {
         taskListProvider.taskEditMode = false;
       } else {
         var tempTask = Task.from(widget.task);
-        tempTask.Description = text;
-        if (tempTask.Description.endsWith('\n')) {
-          tempTask.Description = tempTask.Description.substring(
-              0, tempTask.Description.length - 1);
+        tempTask.description = text;
+        if (tempTask.description.endsWith('\n')) {
+          tempTask.description = tempTask.description
+              .substring(0, tempTask.description.length - 1);
         }
         var res = await updateTask(tempTask);
         if (res) {
           setState(() {
-            widget.task.Description = tempTask.Description;
+            widget.task.description = tempTask.description;
             widget.task.editMode = false;
             taskListProvider.taskEditMode = false;
           });
@@ -356,7 +388,7 @@ class _TaskListTileState extends State<TaskListTile> {
 
     if (widget.task.editMode) {
       textEditingController =
-          TextEditingController(text: widget.task.Description);
+          TextEditingController(text: widget.task.description);
       return Card(
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8.0))),
@@ -420,19 +452,19 @@ class _TaskListTileState extends State<TaskListTile> {
                                       taskListProvider.deleteEditorItem();
                                     } else {
                                       var tempTask = Task.from(widget.task);
-                                      tempTask.Description = value;
-                                      if (tempTask.Description.endsWith('\n')) {
-                                        tempTask.Description =
-                                            tempTask.Description.substring(
+                                      tempTask.description = value;
+                                      if (tempTask.description.endsWith('\n')) {
+                                        tempTask.description =
+                                            tempTask.description.substring(
                                                 0,
-                                                tempTask.Description.length -
+                                                tempTask.description.length -
                                                     1);
                                       }
                                       var res = await updateTask(tempTask);
                                       if (res) {
                                         setState(() {
-                                          widget.task.Description =
-                                              tempTask.Description;
+                                          widget.task.description =
+                                              tempTask.description;
                                           widget.task.editMode = false;
                                         });
                                       }
@@ -531,43 +563,45 @@ class _TaskListTileState extends State<TaskListTile> {
           }
         },
         child: Card(
-          color: widget.task.Completed
-              ? completedTaskColor
-              : widget.task.read
-                  ? uncompletedTaskColor
-                  : const Color.fromARGB(255, 250, 161, 27),
-          shape: const BeveledRectangleBorder(),
-          /* shape: const RoundedRectangleBorder(
+            color: getTileColor(taskListProvider.currentTask != null &&
+                taskListProvider.currentTask!.ID == widget.task.ID),
+            shape: const BeveledRectangleBorder(),
+            /* shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8.0))),*/
-          child: ListTile(
-              tileColor: taskListProvider.currentTask == null
-                  ? null
-                  : getTileColor(
-                      taskListProvider.currentTask!.ID == widget.task.ID),
+            child: ListTile(
+              /*tileColor: taskListProvider.currentTask == null
+                      ? null
+                      : getTileColor(
+                          taskListProvider.currentTask!.ID == widget.task.ID),*/
               onTap: () => onTap(widget.task),
               onLongPress: () => onLongPress(widget.task),
               leading: Checkbox(
                   shape: const CircleBorder(),
                   fillColor: MaterialStateProperty.all(Colors.green),
-                  value: widget.task.Completed,
+                  value: widget.task.closed,
                   onChanged: (value) =>
                       taskCompletedOnChanged(value, widget.task)),
               title: taskListProvider.searchMode
                   ? HighlightText(
                       highlightColor: Colors.red,
-                      text: widget.task.Description,
+                      text: widget.task.description,
                       words: taskListProvider.searchHighlightedWords,
                       maxLines: 5,
                     )
                   : Text(
-                      widget.task.Description,
+                      widget.task.description,
                       overflow: TextOverflow.ellipsis,
                       maxLines: 5,
+                      style: widget.task.cancelled
+                          ? TextStyle(
+                              decoration: TextDecoration.lineThrough,
+                              fontStyle: FontStyle.italic)
+                          : null,
                     ),
-              subtitle: widget.task.lastMessage.isEmpty &&
-                      widget.task.unreadMessages == 0
-                  ? null
-                  : taskListProvider.searchMode
+              subtitle: Column(children: [
+                if (widget.task.lastMessage.isNotEmpty ||
+                    widget.task.unreadMessages > 0)
+                  taskListProvider.searchMode
                       ? HighlightText(
                           leading: widget.task.lastMessageUserName.isNotEmpty
                               ? TextSpan(
@@ -597,38 +631,42 @@ class _TaskListTileState extends State<TaskListTile> {
                                 maxLines: 1,
                               )),
                               if (widget.task.unreadMessages > 0)
-                                Container(
-                                    padding: const EdgeInsets.only(
-                                        left: 5, right: 5),
-                                    decoration: BoxDecoration(
-                                        color: Colors.blue,
-                                        shape: widget.task.unreadMessages < 10
-                                            ? BoxShape.circle
-                                            : BoxShape.rectangle,
-                                        borderRadius: widget
-                                                    .task.unreadMessages <
-                                                10
-                                            ? null
-                                            : const BorderRadius.only(
-                                                topLeft: Radius.circular(10),
-                                                bottomLeft: Radius.circular(10),
-                                                topRight: Radius.circular(10),
-                                                bottomRight:
-                                                    Radius.circular(10),
-                                              )),
-                                    child: Center(
-                                        child: Text(
-                                      widget.task.unreadMessages.toString(),
-                                      style: const TextStyle(
-                                          color: Colors.white, fontSize: 14),
-                                    ))),
-                            ])),
-        ),
+                                NumberInStadium(
+                                    number: widget.task.unreadMessages),
+                            ]),
+                Row(
+                  children: [
+                    const Spacer(),
+                    if (widget.task.completed)
+                      const Chip(
+                          shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5))),
+                          backgroundColor: Colors.green,
+                          label: Text("Done")),
+                    if (widget.task.cancelled)
+                      const Chip(
+                          shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5))),
+                          backgroundColor: Colors.grey,
+                          label: Text("Cancelled"))
+                  ],
+                )
+              ]),
+            )),
       );
     }
   }
 
   Future<void> onTap(Task task) async {
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
+
+    msgListProvider.clear(true);
+    msgListProvider.taskID = task.ID;
+    msgListProvider.task = task;
+
     if (isDesktopMode) {
       if (sessionID == "" || !mounted) {
         return;
@@ -637,14 +675,10 @@ class _TaskListTileState extends State<TaskListTile> {
       final taskListProvider =
           Provider.of<TasksListProvider>(context, listen: false);
 
-      widget.msgListProvider.clear(true);
       task.read = true;
       task.unreadMessages = 0;
       taskListProvider.currentTask = task;
-      widget.msgListProvider.taskID = task.ID;
-      widget.msgListProvider.task = task;
-      widget.msgListProvider.loading = true;
-      widget.msgListProvider.requestMessages();
+      msgListProvider.requestMessages();
       taskListProvider.refresh();
 
       /*ws!.sink.add(jsonEncode({
@@ -661,7 +695,7 @@ class _TaskListTileState extends State<TaskListTile> {
         tasksListProvider.currentTask = task;
       });*/
     } else {
-      openTask(context, task, widget.msgListProvider);
+      openTask(context, task, msgListProvider);
       setState(() {
         task.read = true;
         task.unreadMessages = 0;
@@ -687,16 +721,25 @@ class _TaskListTileState extends State<TaskListTile> {
     if (value == null) return;
 
     setState(() {
-      task.Completed = value;
+      task.closed = value;
     });
 
-    var res = await updateTask(Task.from(task)..Completed = value);
+    //var res = await updateTask(Task.from(task)..closed = value);
 
-    if (!res) {
-      setState(() {
-        task.Completed = !value;
-      });
-    }
+    //if (res) {
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
+    createMessage(
+        text: "",
+        msgListProvider: msgListProvider,
+        messageAction: value
+            ? MessageAction.CloseTaskAction
+            : MessageAction.ReopenTaskAction);
+    //} else {
+    /*setState(() {
+        task.closed = !value;
+      });*/
+    //}
   }
 }
 

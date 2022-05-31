@@ -23,7 +23,9 @@ type Task struct {
 	LastMessage         string
 	LastMessageID       int64
 	LastMessageUserName string
-	Completed           bool
+	Completed           bool `gorm:"default:false"`
+	Cancelled           bool `gorm:"default:false"`
+	Closed              bool `gorm:"default:false"`
 	AuthorID            int64
 	AuthorName          string
 	//Author        *User `gorm:"foreignKey:ID"`
@@ -31,6 +33,17 @@ type Task struct {
 	Read           bool      `gorm:"-"`
 	UnreadMessages int       `gorm:"-"`
 }
+
+type MessageAction int
+
+const (
+	CreateUpdateMessageAction  MessageAction = 0
+	CompleteTaskAction                       = 1
+	ReopenTaskAction                         = 2
+	CloseTaskAction                          = 3
+	CancelTaskAction                         = 4
+	RemoveCompletedLabelAction               = 5
+)
 
 type Message struct {
 	ID                      int64 `gorm:"primary_key"`
@@ -52,6 +65,8 @@ type Message struct {
 	IsTaskDescriptionItem   bool `gorm:"default:false"`
 	TempID                  string
 	LoadinInProcess         bool
+
+	MessageAction MessageAction `gorm:"default:0"`
 }
 
 type SeenTask struct {

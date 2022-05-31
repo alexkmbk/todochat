@@ -122,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 const Spacer(),
                 SizedBox(
-                    width: isDesktopMode ? 300 : null,
+                    width: 300,
                     child: getTextField(
                       autofillHints: [AutofillHints.username],
                       controller: userNameController,
@@ -137,7 +137,7 @@ class _LoginPageState extends State<LoginPage> {
                   height: 20,
                 ),
                 SizedBox(
-                    width: isDesktopMode ? 300 : null,
+                    width: 300,
                     child: getTextField(
                         autofillHints: [AutofillHints.password],
                         controller: passwordController,
@@ -155,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
                           }
                         })),
                 SizedBox(
-                    width: isDesktopMode ? 300 : null,
+                    width: 300,
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

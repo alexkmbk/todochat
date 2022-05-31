@@ -29,6 +29,15 @@ class UploadingFilesStruct {
 
 Map<String, UploadingFilesStruct> uploadingFiles = {};
 
+enum MessageAction {
+  CreateUpdateMessageAction,
+  CompleteTaskAction,
+  ReopenTaskAction,
+  CloseTaskAction,
+  CancelTaskAction,
+  RemoveCompletedLabelAction,
+}
+
 class MsgListProvider extends ChangeNotifier {
   List<Message> items = [];
   num offset = 0;
@@ -194,7 +203,7 @@ class Message {
   //Uint8List? loadingFileData;
   bool loadinInProcess = false;
   String tempID = "";
-
+  MessageAction messageAction = MessageAction.CreateUpdateMessageAction;
   Message(
       {required this.taskID,
       this.text = "",
@@ -209,9 +218,37 @@ class Message {
       this.loadingFile = false,
       //this.loadingFileData,
       this.tempID = "",
-      this.loadinInProcess = false});
+      this.loadinInProcess = false,
+      this.messageAction = MessageAction.CreateUpdateMessageAction});
 
   Map<String, dynamic> toJson() {
+    int messageActionInt = 0;
+    switch (messageAction) {
+      case MessageAction.CreateUpdateMessageAction:
+        messageActionInt = 0;
+        break;
+
+      case MessageAction.CompleteTaskAction:
+        messageActionInt = 1;
+        break;
+
+      case MessageAction.ReopenTaskAction:
+        messageActionInt = 2;
+        break;
+
+      case MessageAction.CloseTaskAction:
+        messageActionInt = 3;
+        break;
+
+      case MessageAction.CancelTaskAction:
+        messageActionInt = 4;
+        break;
+      case MessageAction.RemoveCompletedLabelAction:
+        messageActionInt = 5;
+        break;
+
+      default:
+    }
     return {
       'ID': ID,
       'taskID': taskID == 0 ? task?.ID : taskID,
@@ -231,6 +268,7 @@ class Message {
       'isTaskDescriptionItem': isTaskDescriptionItem,
       'TempID': tempID,
       'LoadinInProcess': loadinInProcess,
+      'MessageAction': messageActionInt,
     };
   }
 
@@ -257,6 +295,32 @@ class Message {
     isTaskDescriptionItem = value ?? false;
     tempID = json["TempID"];
     loadinInProcess = json["LoadinInProcess"];
+    int? messageActionIntValue = json["MessageAction"];
+
+    switch (messageActionIntValue) {
+      case 0:
+        messageAction = MessageAction.CreateUpdateMessageAction;
+        break;
+      case 1:
+        messageAction = MessageAction.CompleteTaskAction;
+        break;
+      case 2:
+        messageAction = MessageAction.ReopenTaskAction;
+        break;
+      case 3:
+        messageAction = MessageAction.CloseTaskAction;
+        break;
+      case 4:
+        messageAction = MessageAction.CancelTaskAction;
+        break;
+
+      case 5:
+        messageAction = MessageAction.RemoveCompletedLabelAction;
+        break;
+
+      default:
+        messageAction = MessageAction.CreateUpdateMessageAction;
+    }
   }
 }
 
@@ -401,6 +465,10 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
               ),*/
                 ),
                 child: Row(children: [
+                  if (msgListProvider.task != null)
+                    NewMessageActionsMenu(
+                      msgListProvider: msgListProvider,
+                    ),
                   Expanded(
                       child: CallbackShortcuts(
                     bindings: {
@@ -624,7 +692,7 @@ class ChatBubble extends StatelessWidget {
               )),*/
           //const SizedBox(height: 5),
           Card(
-              color: msgListProvider.task!.Completed
+              color: msgListProvider.task!.completed
                   ? completedTaskColor
                   : uncompletedTaskColor,
               shape: const BeveledRectangleBorder(),
@@ -634,14 +702,14 @@ class ChatBubble extends StatelessWidget {
                   Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        "Created by ${msgListProvider.task!.authorName} at ${dateFormat(msgListProvider.task!.Creation_date)}",
+                        "Created by ${msgListProvider.task!.authorName} at ${dateFormat(msgListProvider.task!.creation_date)}",
                         style: const TextStyle(color: Colors.grey),
                       )),
                   const SizedBox(height: 5),
                   Align(
                       alignment: Alignment.centerLeft,
                       child: SelectableText(
-                        msgListProvider.task?.Description ?? "",
+                        msgListProvider.task?.description ?? "",
                         style: const TextStyle(fontSize: 14),
                       )),
                 ]),
@@ -652,7 +720,10 @@ class ChatBubble extends StatelessWidget {
       } else {
         return Dismissible(
             key: UniqueKey(),
-            direction: DismissDirection.startToEnd,
+            direction:
+                message.messageAction == MessageAction.CreateUpdateMessageAction
+                    ? DismissDirection.startToEnd
+                    : DismissDirection.none,
             confirmDismiss: (direction) {
               return confirmDimissDlg(
                   "Are you sure you wish to delete this item?", context);
@@ -668,7 +739,9 @@ class ChatBubble extends StatelessWidget {
               ),
               child: Align(
                   // align the child within the container
-                  alignment: message.isTaskDescriptionItem
+                  alignment: message.isTaskDescriptionItem ||
+                          message.messageAction !=
+                              MessageAction.CreateUpdateMessageAction
                       ? Alignment.center
                       : isCurrentUser
                           ? Alignment.centerRight
@@ -680,9 +753,116 @@ class ChatBubble extends StatelessWidget {
     });
   }
 
+  Widget getMessageActionDescription(Message message) {
+    switch (message.messageAction) {
+      case MessageAction.ReopenTaskAction:
+        return Text.rich(TextSpan(text: "The task was ", children: <InlineSpan>[
+          const WidgetSpan(
+              //baseline: TextBaseline.ideographic,
+              alignment: PlaceholderAlignment.middle,
+              child: Chip(
+                  backgroundColor: Colors.orange,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5))),
+                  //padding: EdgeInsets.all(),
+                  label: Text(
+                    "Reopen",
+                  ))),
+          const WidgetSpan(child: Text(" by ")),
+          WidgetSpan(
+              child: Text(message.userName,
+                  style: const TextStyle(color: Colors.blue))),
+        ]));
+
+      //'The task was reopen by ${message.userName}';
+      case MessageAction.CancelTaskAction:
+        return Text.rich(
+            TextSpan(text: "The task was marked as ", children: <InlineSpan>[
+          const WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Chip(
+                  backgroundColor: Colors.grey,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5))),
+                  label: Text(
+                    "Cancelled",
+                  ))),
+          const WidgetSpan(child: Text(" by ")),
+          WidgetSpan(
+              child: Text(message.userName,
+                  style: const TextStyle(color: Colors.blue))),
+        ]));
+      case MessageAction.CompleteTaskAction:
+        return Text.rich(
+            TextSpan(text: "The task was marked as ", children: <InlineSpan>[
+          const WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Chip(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5))),
+                  backgroundColor: Colors.green,
+                  label: Text(
+                    "Done",
+                  ))),
+          const WidgetSpan(child: Text(" by ")),
+          WidgetSpan(
+              child: Text(message.userName,
+                  style: const TextStyle(color: Colors.blue))),
+        ]));
+      case MessageAction.CloseTaskAction:
+        return Text.rich(TextSpan(text: "The task was ", children: <InlineSpan>[
+          const WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Chip(
+                  backgroundColor: Colors.green,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5))),
+                  label: Text(
+                    "Closed",
+                  ))),
+          const WidgetSpan(child: Text(" by ")),
+          WidgetSpan(
+              child: Text(message.userName,
+                  style: const TextStyle(color: Colors.blue))),
+        ]));
+
+      case MessageAction.RemoveCompletedLabelAction:
+        return Text.rich(TextSpan(text: "The lable ", children: <InlineSpan>[
+          const WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Chip(
+                  backgroundColor: Colors.green,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5))),
+                  label: Text(
+                    "Done",
+                  ))),
+          const WidgetSpan(child: Text(" was removed by ")),
+          WidgetSpan(
+              child: Text(
+            message.userName,
+            style: const TextStyle(color: Colors.blue),
+          )),
+        ]));
+      default:
+        return const Text("");
+    }
+  }
+
   Widget drawBubble(BuildContext context, BoxConstraints constraints,
       Uint8List? loadingFileData) {
-    if (message.fileName.isEmpty) {
+    if (message.messageAction != MessageAction.CreateUpdateMessageAction) {
+      return DecoratedBox(
+        // chat bubble decoration
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 228, 232, 233),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: getMessageActionDescription(message)),
+      );
+    } else if (message.fileName.isEmpty) {
       final textSpan = TextSpan(text: message.text);
       final textWidget = SelectableText.rich(textSpan);
       /*final TextBox? lastBox =
@@ -870,7 +1050,9 @@ Future<bool> createMessage(
     bool isImage = false,
     String fileName = "",
     String tempID = "",
-    bool loadinInProcess = false}) async {
+    bool loadinInProcess = false,
+    MessageAction messageAction =
+        MessageAction.CreateUpdateMessageAction}) async {
   if (sessionID == "") {
     return false;
   }
@@ -882,7 +1064,8 @@ Future<bool> createMessage(
       isImage: isImage,
       isTaskDescriptionItem: isTaskDescriptionItem,
       tempID: tempID,
-      loadinInProcess: loadinInProcess);
+      loadinInProcess: loadinInProcess,
+      messageAction: messageAction);
 
   Response response;
   try {
@@ -979,4 +1162,110 @@ Future<bool> createMessageWithFile(
   uploadingFiles.remove(tempID);
   msgListProvider.refresh();
   return false;
+}
+
+class NewMessageActionsMenu extends StatelessWidget {
+  final MsgListProvider msgListProvider;
+
+  const NewMessageActionsMenu({Key? key, required this.msgListProvider})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final task = msgListProvider.task as Task;
+
+    List<PopupMenuItem> items = [
+      /*CheckedPopupMenuItem<String>(
+          value: "Done", checked: task.closed, child: const Text('Done')),
+      CheckedPopupMenuItem<String>(
+          value: "Closed", checked: task.closed, child: const Text('Closed')),*/
+      if (!task.completed)
+        PopupMenuItem(
+            child: const Text(
+              'Done',
+            ),
+            onTap: () {
+              createMessage(
+                  text: "",
+                  msgListProvider: msgListProvider,
+                  messageAction: MessageAction.CompleteTaskAction);
+              msgListProvider.task!.completed = true;
+            }),
+      if (task.completed)
+        PopupMenuItem(
+            child: const Text(
+              'Remove the "Done" label',
+            ),
+            onTap: () {
+              createMessage(
+                  text: "",
+                  msgListProvider: msgListProvider,
+                  messageAction: MessageAction.RemoveCompletedLabelAction);
+              msgListProvider.task!.completed = false;
+            }),
+      if (!task.cancelled)
+        PopupMenuItem(
+            child: const Text(
+              'Cancel task',
+            ),
+            onTap: () {
+              createMessage(
+                  text: "",
+                  msgListProvider: msgListProvider,
+                  messageAction: MessageAction.CancelTaskAction);
+              msgListProvider.task!.cancelled = true;
+            }),
+      if (task.cancelled || task.closed)
+        PopupMenuItem(
+            child: const Text(
+              'Reopen task',
+            ),
+            onTap: () {
+              createMessage(
+                  text: "",
+                  msgListProvider: msgListProvider,
+                  messageAction: MessageAction.ReopenTaskAction);
+              msgListProvider.task!.cancelled = false;
+              msgListProvider.task!.completed = false;
+              msgListProvider.task!.closed = false;
+            }),
+    ];
+
+    return PopupMenuButton(
+      shape: ContinuousRectangleBorder(
+        borderRadius: BorderRadius.circular(30),
+      ),
+
+      // add icon, by default "3 dot" icon
+      icon: Icon(
+        Icons.more_vert,
+        color: Colors.grey[800],
+      ),
+      itemBuilder: (context) {
+        return items;
+      },
+      /*onSelected: (String result) {
+        switch (result) {
+          case "Closed":
+            createMessage(
+                text: "",
+                msgListProvider: msgListProvider,
+                messageAction: task.closed
+                    ? MessageAction.ReopenTaskAction
+                    : MessageAction.CloseTaskAction);
+            task.closed = !task.closed;
+            break;
+          case "Done":
+            createMessage(
+                text: "",
+                msgListProvider: msgListProvider,
+                messageAction: task.completed
+                    ? MessageAction.ReopenTaskAction
+                    : MessageAction.CompleteTaskAction);
+            task.completed = !task.completed;
+            break;
+        }
+      },*/
+    );
+  }
 }

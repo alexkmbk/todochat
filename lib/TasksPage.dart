@@ -21,8 +21,7 @@ import 'highlight_text.dart';
 //late TasksListProvider taskListProvider;
 
 class TasksPage extends StatefulWidget {
-  final MsgListProvider msgListProvider;
-  const TasksPage({Key? key, required this.msgListProvider}) : super(key: key);
+  const TasksPage({Key? key}) : super(key: key);
 
   @override
   State<TasksPage> createState() => _TasksPageState();
@@ -126,7 +125,6 @@ class _TasksPageState extends State<TasksPage> {
               itemPositionsListener: itemPositionsListener,
               onDeleteFn: deleteTask,
               onAddFn: onAddTask,
-              msgListProvider: widget.msgListProvider,
             ),
             onNotification: (notification) {
               if (!provider.loading &&
@@ -145,14 +143,17 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Widget renderMessages(TasksListProvider taskListProvider) {
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
+
     if (taskListProvider.currentTask != null) {
-      widget.msgListProvider.taskID = taskListProvider.currentTask!.ID;
-      widget.msgListProvider.task = taskListProvider.currentTask;
+      msgListProvider.taskID = taskListProvider.currentTask!.ID;
+      msgListProvider.task = taskListProvider.currentTask;
       if (taskListProvider.searchMode) {
-        widget.msgListProvider.foundMessageID =
+        msgListProvider.foundMessageID =
             taskListProvider.currentTask!.lastMessageID;
       } else {
-        widget.msgListProvider.foundMessageID = 0;
+        msgListProvider.foundMessageID = 0;
       }
     }
 
@@ -208,7 +209,10 @@ class _TasksPageState extends State<TasksPage> {
     final taskListProvider =
         Provider.of<TasksListProvider>(context, listen: false);
 
-    Task task = Task(Description: description);
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
+
+    Task task = Task(description: description);
     Response response;
     try {
       response = await httpClient.post(setUriProperty(serverURI, path: 'todo'),
@@ -223,16 +227,16 @@ class _TasksPageState extends State<TasksPage> {
       var data = jsonDecode(response.body) as Map<String, dynamic>;
       task.projectID = data["ProjectID"];
       task.ID = data["ID"];
-      task.Creation_date =
+      task.creation_date =
           DateTime.tryParse(data["Creation_date"]) ?? DateTime.utc(0);
       task.authorID = data["AuthorID"];
       task.authorName = data["AuthorName"];
       task.read = true;
-      widget.msgListProvider.task = task;
-      widget.msgListProvider.taskID = task.ID;
+      msgListProvider.task = task;
+      msgListProvider.taskID = task.ID;
       createMessage(
           text: "",
-          msgListProvider: widget.msgListProvider,
+          msgListProvider: msgListProvider,
           isTaskDescriptionItem: true);
       return task;
     }
@@ -247,20 +251,24 @@ class _TasksPageState extends State<TasksPage> {
 
     final taskListProvider =
         Provider.of<TasksListProvider>(context, listen: false);
+
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
+
     Task? task = await createTask(description);
 
     if (task == null) return false;
 
     taskListProvider.currentTask = task;
     taskListProvider.addItem(task);
-    widget.msgListProvider.taskID = task.ID;
-    widget.msgListProvider.task = task;
+    msgListProvider.taskID = task.ID;
+    msgListProvider.task = task;
 
     if (isDesktopMode) {
-      widget.msgListProvider.clear(true);
+      msgListProvider.clear(true);
     } else {
-      widget.msgListProvider.clear(false);
-      openTask(context, task, widget.msgListProvider);
+      msgListProvider.clear(false);
+      openTask(context, task, msgListProvider);
     }
 
     return true;
@@ -367,6 +375,8 @@ class _TasksPageState extends State<TasksPage> {
       return;
     }
 
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
     taskListProvider.loading = true;
 
     /*var url = Uri.parse("http://" +
@@ -417,16 +427,16 @@ class _TasksPageState extends State<TasksPage> {
           taskListProvider.currentTask = Task.fromJson(tasks[0]);
           res[0].read = true;
           res[0].unreadMessages = 0;
-          widget.msgListProvider.task = taskListProvider.currentTask;
-          widget.msgListProvider.taskID = widget.msgListProvider.task?.ID ?? 0;
-          widget.msgListProvider.clear();
+          msgListProvider.task = taskListProvider.currentTask;
+          msgListProvider.taskID = msgListProvider.task?.ID ?? 0;
+          msgListProvider.clear();
           if (isDesktopMode) {
-            widget.msgListProvider.requestMessages();
+            msgListProvider.requestMessages();
           }
         }
       } else if (taskListProvider.items.isEmpty) {
         taskListProvider.currentTask == null;
-        widget.msgListProvider.clear(true);
+        msgListProvider.clear(true);
       }
     } else if (response.statusCode == 401) {
       bool result = await Navigator.push(
@@ -515,7 +525,8 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
   Widget getSearchField() {
     final taskListProvider =
         Provider.of<TasksListProvider>(context, listen: false);
-
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
     return getTextField(
         controller: searchController,
         hintText: "Search",
@@ -523,7 +534,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
         prefixIcon: const Icon(Icons.search),
         onCleared: () {
           taskListProvider.currentTask = null;
-          widget.tasksPageState.widget.msgListProvider.clear();
+          msgListProvider.clear();
           taskListProvider.clear();
           setState(() {
             taskListProvider.searchMode = false;
@@ -534,7 +545,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
         },
         onFieldSubmitted: (value) async {
           if (value.isNotEmpty) {
-            widget.tasksPageState.widget.msgListProvider.clear();
+            msgListProvider.clear();
             taskListProvider.searchMode = true;
             taskListProvider.searchHighlightedWords =
                 getHighlightedWords(value);
@@ -542,11 +553,9 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
             taskListProvider.refresh();
 
             await widget.tasksPageState.searchTasks(value, context);
-            widget.tasksPageState.widget.msgListProvider.taskID =
-                taskListProvider.currentTask?.ID ?? 0;
-            widget.tasksPageState.widget.msgListProvider.task =
-                taskListProvider.currentTask;
-            widget.tasksPageState.widget.msgListProvider.requestMessages();
+            msgListProvider.taskID = taskListProvider.currentTask?.ID ?? 0;
+            msgListProvider.task = taskListProvider.currentTask;
+            msgListProvider.requestMessages();
           } else {
             taskListProvider.searchMode = false;
           }

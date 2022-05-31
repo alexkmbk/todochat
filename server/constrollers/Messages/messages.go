@@ -210,48 +210,6 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 
 }
 
-/*func CreateMessage(w http.ResponseWriter, r *http.Request) {
-	userID := GetUserID(w, r)
-	if userID == 0 {
-		return
-	}
-	decoder := json.NewDecoder(r.Body)
-	var message Message
-
-	err := decoder.Decode(&message)
-	if err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		io.WriteString(w, `{"error": "Record Not Found"}`)
-	} else {
-		text := message.Text
-		log.WithFields(log.Fields{"text": text}).Info("Add new Message. Saving to database.")
-		//message := &Message{Description: description, Completed: false, Creation_date: time.Now()}
-		message.Created_at = time.Now()
-		message.UserID = userID
-		if message.Image != "" {
-			fileData, err := FromBase64(message.Image)
-			if err != nil {
-				w.Header().Set("Content-Type", "application/json; charset=utf-8")
-				io.WriteString(w, `{"error": "Image parse error"}`)
-				return
-			}
-			imageFileName := uuid.New().String() + ".jpg"
-
-			err = os.WriteFile(imageFileName, fileData, 0644)
-			if err != nil {
-				// handle error
-			}
-		}
-		message.PictureLocalPath = ""
-		DB.Create(&message)
-		//DB.Last(&todo)
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		//io.WriteString(w, `{result: true}`)
-		json.NewEncoder(w).Encode(message)
-		WS.SendWSMessage(message)
-	}
-}*/
-
 func CreateMessage(w http.ResponseWriter, r *http.Request) {
 
 	userID := GetUserID(w, r)
@@ -285,6 +243,30 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 		task.LastMessage = message.Text
 		task.LastMessageID = message.ID
 		task.LastMessageUserName = message.UserName
+
+		switch message.MessageAction {
+		case CompleteTaskAction:
+			task.Completed = true
+			break
+		case ReopenTaskAction:
+			task.Completed = false
+			task.Cancelled = false
+			task.Closed = false
+			break
+
+		case CloseTaskAction:
+			task.Closed = true
+			task.Completed = true
+			task.Cancelled = false
+			break
+		case CancelTaskAction:
+			task.Completed = false
+			task.Cancelled = true
+			break
+		case RemoveCompletedLabelAction:
+			task.Completed = false
+		}
+
 		DB.Save(&task)
 	}
 	message.ProjectID = task.ProjectID

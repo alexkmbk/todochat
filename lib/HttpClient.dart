@@ -111,7 +111,7 @@ String toUrlParams(Map<String, String> params) {
   }
 }
 
-String getUriFullPath(Uri? uri) {
+/*String getUriFullPath(Uri? uri) {
   if (uri == null) return "";
 
   String res = uri.scheme.isNotEmpty ? "${uri.scheme}://" : "";
@@ -120,7 +120,7 @@ String getUriFullPath(Uri? uri) {
   res += res.isNotEmpty && uri.path.isNotEmpty ? "/${uri.path}" : "";
   res += toUrlParams(uri.queryParameters);
   return res;
-}
+}*/
 
 Uri setUriProperty(Uri uri,
     {String? scheme,
@@ -155,4 +155,15 @@ Uri? parseURL(String URL,
   }
 
   return null;
+}
+
+extension GetFullPath on Uri {
+  String getFullPath() {
+    String res = scheme.isNotEmpty ? "$scheme://" : "";
+    res += host;
+    res += port == 0 ? "" : ":$port";
+    res += res.isNotEmpty && path.isNotEmpty ? "/$path" : "";
+    res += toUrlParams(queryParameters);
+    return res;
+  }
 }

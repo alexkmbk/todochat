@@ -24,7 +24,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    serverAddressController.text = getUriFullPath(serverURI);
+    serverAddressController.text = serverURI.getFullPath();
     checkConnectionAndUpdateState();
   }
 
@@ -62,7 +62,7 @@ class _SettingsPageState extends State<SettingsPage> {
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 getTextField(
                   border: const UnderlineInputBorder(),
-                  width: isDesktopMode ? 300 : null,
+                  width: 300,
                   onFieldSubmitted: (value) {
                     checkingConnection = true;
                     setState(() {});
@@ -132,11 +132,13 @@ class _SettingsPageState extends State<SettingsPage> {
       toast("Couldn't connect to the server", context);
       return;
     }
-    serverURI = serverURItemp;
-    settings.setString("httpScheme", serverURI.scheme);
-    settings.setString("host", serverURI.host);
-    settings.setInt("port", serverURI.port);
-    RestartWidget.restartApp(context);
+    if (serverURI.getFullPath() != serverURItemp.getFullPath()) {
+      serverURI = serverURItemp;
+      settings.setString("httpScheme", serverURI.scheme);
+      settings.setString("host", serverURI.host);
+      settings.setInt("port", serverURI.port);
+      RestartWidget.restartApp(context);
+    }
     Navigator.pop(context, true);
   }
 

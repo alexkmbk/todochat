@@ -30,7 +30,6 @@ const Color uncompletedTaskColor = Color.fromARGB(255, 248, 248, 147);
 const Color appBarColor = Color.fromARGB(240, 255, 255, 255);
 const Color unreadTaskColor = Color.fromARGB(255, 250, 161, 27);
 late SharedPreferences settings;
-late MsgListProvider msgListProviderGl;
 
 void main() {
   runApp(
@@ -66,7 +65,6 @@ class MyApp extends StatelessWidget {
     var instance = WidgetsBinding.instance;
     var mediaQueryData = MediaQueryData.fromWindow(instance!.window);
     var physicalPixelWidth = mediaQueryData.size.width;
-    msgListProviderGl = MsgListProvider();
     if (physicalPixelWidth > 1000) {
       isDesktopMode = true;
     }
@@ -75,7 +73,7 @@ class MyApp extends StatelessWidget {
       //key: UniqueKey(),
       providers: [
         ChangeNotifierProvider.value(
-          value: msgListProviderGl,
+          value: MsgListProvider(),
         ),
         ChangeNotifierProvider.value(
           value: TasksListProvider(),
@@ -90,17 +88,15 @@ class MyApp extends StatelessWidget {
           ),
           home: MyHomePage(
             title: "ToDo Chat",
-            msgListProvider: msgListProviderGl,
           )),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title, required this.msgListProvider})
-      : super(key: key);
+  MyHomePage({Key? key, required this.title}) : super(key: key);
   final String title;
-  MsgListProvider msgListProvider;
+  //MsgListProvider msgListProvider;
   //TasksListProvider tasksListProvider;
 
   @override
@@ -131,10 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     if (appInitialized) {
-      return Scaffold(
-          body: TasksPage(
-        msgListProvider: widget.msgListProvider,
-      ));
+      return const Scaffold(body: TasksPage());
     } else {
       return Scaffold(
         backgroundColor: completedTaskColor, //Colors.orange[600],
@@ -144,10 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
           builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
             // AsyncSnapshot<Your object type>
             if (snapshot.data != null && snapshot.data as bool) {
-              return TasksPage(
-                msgListProvider:
-                    Provider.of<MsgListProvider>(context, listen: false),
-              );
+              return const TasksPage();
             } else {
               return Center(
                   child: Column(
@@ -252,20 +242,23 @@ class _MyHomePageState extends State<MyHomePage> {
     final taskListProvider =
         Provider.of<TasksListProvider>(context, listen: false);
 
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
+
     if (sessionID.isNotEmpty && ws != null) {
       try {
         subscription = ws!.stream.listen((messageJson) {
           WSMessage wsMsg = WSMessage.fromJson(messageJson);
           if (wsMsg.command == "getMessages") {
-            widget.msgListProvider.addItems(wsMsg.data);
+            msgListProvider.addItems(wsMsg.data);
           } else if (wsMsg.command == "createMessage") {
             var message = Message.fromJson(wsMsg.data);
-            final created = widget.msgListProvider.addItem(message);
+            final created = msgListProvider.addItem(message);
             taskListProvider.updateLastMessage(
                 message.taskID, message, created);
           } else if (wsMsg.command == "deleteMessage") {
             var message = Message.fromJson(wsMsg.data);
-            widget.msgListProvider.deleteItem(message.ID);
+            msgListProvider.deleteItem(message.ID);
           } else if (wsMsg.command == "createTask") {
             var task = Task.fromJson(wsMsg.data);
             taskListProvider.addItem(task);
@@ -316,8 +309,8 @@ class _MyHomePageState extends State<MyHomePage> {
     if (appInitialized) return true;
     bool res;
 
-    widget.msgListProvider =
-        Provider.of<MsgListProvider>(context, listen: false);
+    /*final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);*/
     /*widget.tasksListProvider =
         Provider.of<TasksListProvider>(context, listen: false);*/
 

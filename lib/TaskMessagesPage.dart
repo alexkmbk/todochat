@@ -131,7 +131,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                           color: Colors.black,
                         ),
                         label: Text(
-                          widget.task.Description,
+                          widget.task.description,
                           style: const TextStyle(
                               color: Colors.black, fontSize: 18),
                           overflow: TextOverflow.ellipsis,

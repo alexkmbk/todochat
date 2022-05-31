@@ -346,3 +346,25 @@ class TextInCircle extends StatelessWidget {
         child: Center(child: textWidget));
   }
 }
+
+class NumberInStadium extends StatelessWidget {
+  final int number;
+  const NumberInStadium({Key? key, required this.number}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        padding: const EdgeInsets.only(left: 5, right: 5),
+        decoration: BoxDecoration(
+            color: Colors.blue,
+            shape: number < 10 ? BoxShape.circle : BoxShape.rectangle,
+            borderRadius: number < 10
+                ? null
+                : const BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    bottomLeft: Radius.circular(10),
+                    topRight: Radius.circular(10),
+                    bottomRight: Radius.circular(10),
+                  )));
+  }
+}
