@@ -638,19 +638,15 @@ class _TaskListTileState extends State<TaskListTile> {
                   children: [
                     const Spacer(),
                     if (widget.task.completed)
-                      const Chip(
-                          shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5))),
-                          backgroundColor: Colors.green,
-                          label: Text("Done")),
+                      const Label(
+                        text: "Done",
+                        backgroundColor: Colors.green,
+                      ),
                     if (widget.task.cancelled)
-                      const Chip(
-                          shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5))),
-                          backgroundColor: Colors.grey,
-                          label: Text("Cancelled"))
+                      const Label(
+                        text: "Cancelled",
+                        backgroundColor: Colors.grey,
+                      ),
                   ],
                 )
               ]),

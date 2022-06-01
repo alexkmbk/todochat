@@ -758,16 +758,13 @@ class ChatBubble extends StatelessWidget {
       case MessageAction.ReopenTaskAction:
         return Text.rich(TextSpan(text: "The task was ", children: <InlineSpan>[
           const WidgetSpan(
-              //baseline: TextBaseline.ideographic,
-              alignment: PlaceholderAlignment.middle,
-              child: Chip(
-                  backgroundColor: Colors.orange,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(5))),
-                  //padding: EdgeInsets.all(),
-                  label: Text(
-                    "Reopen",
-                  ))),
+            //baseline: TextBaseline.ideographic,
+            alignment: PlaceholderAlignment.middle,
+            child: Label(
+              text: "Reopened",
+              backgroundColor: Colors.orange,
+            ),
+          ),
           const WidgetSpan(child: Text(" by ")),
           WidgetSpan(
               child: Text(message.userName,
@@ -779,14 +776,12 @@ class ChatBubble extends StatelessWidget {
         return Text.rich(
             TextSpan(text: "The task was marked as ", children: <InlineSpan>[
           const WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: Chip(
-                  backgroundColor: Colors.grey,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(5))),
-                  label: Text(
-                    "Cancelled",
-                  ))),
+            alignment: PlaceholderAlignment.middle,
+            child: Label(
+              text: "Cancelled",
+              backgroundColor: Colors.grey,
+            ),
+          ),
           const WidgetSpan(child: Text(" by ")),
           WidgetSpan(
               child: Text(message.userName,
@@ -797,13 +792,7 @@ class ChatBubble extends StatelessWidget {
             TextSpan(text: "The task was marked as ", children: <InlineSpan>[
           const WidgetSpan(
               alignment: PlaceholderAlignment.middle,
-              child: Chip(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(5))),
-                  backgroundColor: Colors.green,
-                  label: Text(
-                    "Done",
-                  ))),
+              child: Label(text: "Done", backgroundColor: Colors.green)),
           const WidgetSpan(child: Text(" by ")),
           WidgetSpan(
               child: Text(message.userName,
@@ -812,14 +801,12 @@ class ChatBubble extends StatelessWidget {
       case MessageAction.CloseTaskAction:
         return Text.rich(TextSpan(text: "The task was ", children: <InlineSpan>[
           const WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: Chip(
-                  backgroundColor: Colors.green,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(5))),
-                  label: Text(
-                    "Closed",
-                  ))),
+            alignment: PlaceholderAlignment.middle,
+            child: Label(
+              text: "Closed",
+              backgroundColor: Colors.green,
+            ),
+          ),
           const WidgetSpan(child: Text(" by ")),
           WidgetSpan(
               child: Text(message.userName,
@@ -829,14 +816,12 @@ class ChatBubble extends StatelessWidget {
       case MessageAction.RemoveCompletedLabelAction:
         return Text.rich(TextSpan(text: "The lable ", children: <InlineSpan>[
           const WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: Chip(
-                  backgroundColor: Colors.green,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(5))),
-                  label: Text(
-                    "Done",
-                  ))),
+            alignment: PlaceholderAlignment.middle,
+            child: Label(
+              text: "Done",
+              backgroundColor: Colors.green,
+            ),
+          ),
           const WidgetSpan(child: Text(" was removed by ")),
           WidgetSpan(
               child: Text(
@@ -1181,8 +1166,9 @@ class NewMessageActionsMenu extends StatelessWidget {
           value: "Closed", checked: task.closed, child: const Text('Closed')),*/
       if (!task.completed)
         PopupMenuItem(
-            child: const Text(
-              'Done',
+            child: const Label(
+              text: 'Done',
+              backgroundColor: Colors.green,
             ),
             onTap: () {
               createMessage(
@@ -1193,9 +1179,18 @@ class NewMessageActionsMenu extends StatelessWidget {
             }),
       if (task.completed)
         PopupMenuItem(
-            child: const Text(
-              'Remove the "Done" label',
-            ),
+            child: const Text.rich(
+                TextSpan(text: "Remove the ", children: <InlineSpan>[
+              WidgetSpan(
+                //baseline: TextBaseline.ideographic,
+                alignment: PlaceholderAlignment.middle,
+                child: Label(
+                  text: "Done",
+                  backgroundColor: Colors.green,
+                ),
+              ),
+              WidgetSpan(child: Text("label"))
+            ])),
             onTap: () {
               createMessage(
                   text: "",
@@ -1205,8 +1200,9 @@ class NewMessageActionsMenu extends StatelessWidget {
             }),
       if (!task.cancelled)
         PopupMenuItem(
-            child: const Text(
-              'Cancel task',
+            child: const Label(
+              text: 'Cancel task',
+              backgroundColor: Colors.grey,
             ),
             onTap: () {
               createMessage(
@@ -1217,8 +1213,9 @@ class NewMessageActionsMenu extends StatelessWidget {
             }),
       if (task.cancelled || task.closed)
         PopupMenuItem(
-            child: const Text(
-              'Reopen task',
+            child: const Label(
+              text: 'Reopen task',
+              backgroundColor: Colors.orange,
             ),
             onTap: () {
               createMessage(

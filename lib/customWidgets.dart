@@ -368,3 +368,24 @@ class NumberInStadium extends StatelessWidget {
                   )));
   }
 }
+
+class Label extends StatelessWidget {
+  final String text;
+  final Color? backgroundColor;
+
+  const Label({Key? key, required this.text, this.backgroundColor})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Chip(
+        visualDensity: const VisualDensity(horizontal: 0.0, vertical: -4),
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(5))),
+        backgroundColor: backgroundColor,
+        label: Text(
+          text,
+        ));
+  }
+}
