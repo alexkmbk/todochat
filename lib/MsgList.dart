@@ -693,7 +693,7 @@ class ChatBubble extends StatelessWidget {
           //const SizedBox(height: 5),
           Card(
               color: msgListProvider.task!.completed
-                  ? completedTaskColor
+                  ? closedTaskColor
                   : uncompletedTaskColor,
               shape: const BeveledRectangleBorder(),
               child: Padding(

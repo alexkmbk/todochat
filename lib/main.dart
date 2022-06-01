@@ -25,7 +25,7 @@ int currentUserID = 0;
 String currentUserName = "";
 bool isDesktopMode = false;
 bool appInitialized = false;
-const Color completedTaskColor = Color.fromARGB(255, 183, 242, 176);
+const Color closedTaskColor = Color.fromARGB(255, 183, 242, 176);
 const Color uncompletedTaskColor = Color.fromARGB(255, 248, 248, 147);
 const Color appBarColor = Color.fromARGB(240, 255, 255, 255);
 const Color unreadTaskColor = Color.fromARGB(255, 250, 161, 27);
@@ -130,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return const Scaffold(body: TasksPage());
     } else {
       return Scaffold(
-        backgroundColor: completedTaskColor, //Colors.orange[600],
+        backgroundColor: closedTaskColor, //Colors.orange[600],
         //appBar: AppBar(title: Text(widget.title), leading: MainMenu()),
         body: FutureBuilder<bool>(
           future: initApp(context), // function where you call your api
@@ -154,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           TextSpan(
                               text: "ToDo\n",
                               style: TextStyle(
-                                  color: completedTaskColor,
+                                  color: closedTaskColor,
                                   fontSize: 36,
                                   fontWeight: FontWeight.bold)),
                           TextSpan(

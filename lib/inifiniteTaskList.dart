@@ -348,8 +348,8 @@ class _TaskListTileState extends State<TaskListTile> {
     } else if (widget.task.cancelled) {
       return const Color.fromARGB(255, 228, 232, 233);
     }
-    return widget.task.completed
-        ? completedTaskColor
+    return widget.task.closed
+        ? closedTaskColor
         : widget.task.read
             ? uncompletedTaskColor
             : const Color.fromARGB(255, 250, 161, 27);
@@ -576,8 +576,10 @@ class _TaskListTileState extends State<TaskListTile> {
               onTap: () => onTap(widget.task),
               onLongPress: () => onLongPress(widget.task),
               leading: Checkbox(
+                  checkColor: widget.task.cancelled ? Colors.grey : null,
                   shape: const CircleBorder(),
-                  fillColor: MaterialStateProperty.all(Colors.green),
+                  fillColor: MaterialStateProperty.all(
+                      widget.task.cancelled ? Colors.grey : Colors.green),
                   value: widget.task.closed,
                   onChanged: (value) =>
                       taskCompletedOnChanged(value, widget.task)),

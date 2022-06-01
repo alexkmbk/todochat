@@ -80,7 +80,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 SizedBox(
                     height: 80,
                     child: Container(
-                      color: completedTaskColor,
+                      color: closedTaskColor,
                       child: Align(
                           alignment: Alignment.bottomCenter,
                           child: SizedBox(
@@ -97,7 +97,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     )),
                 Container(
                   height: 20,
-                  color: completedTaskColor,
+                  color: closedTaskColor,
                 )
               ])
             ],

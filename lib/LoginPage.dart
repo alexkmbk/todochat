@@ -181,7 +181,7 @@ class _LoginPageState extends State<LoginPage> {
                   SizedBox(
                       height: 80,
                       child: Container(
-                        color: completedTaskColor,
+                        color: closedTaskColor,
                         child: Align(
                             alignment: Alignment.bottomCenter,
                             child: SizedBox(
@@ -204,7 +204,7 @@ class _LoginPageState extends State<LoginPage> {
                       )),
                   Container(
                     height: 20,
-                    color: completedTaskColor,
+                    color: closedTaskColor,
                   )
                 ]),
               ],
@@ -269,7 +269,7 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(
                   height: 80,
                   child: Container(
-                    color: completedTaskColor,
+                    color: closedTaskColor,
                     child: Align(
                         alignment: Alignment.bottomCenter,
                         child: SizedBox(
@@ -290,7 +290,7 @@ class _LoginPageState extends State<LoginPage> {
                   )),
               Container(
                 height: 20,
-                color: completedTaskColor,
+                color: closedTaskColor,
               )
             ]),
           ],
