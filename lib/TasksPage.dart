@@ -298,6 +298,8 @@ class _TasksPageState extends State<TasksPage> {
   Future<void> searchTasks(String search, BuildContext context) async {
     final taskListProvider =
         Provider.of<TasksListProvider>(context, listen: false);
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
 
     if (search.isEmpty) {
       await requestTasks(taskListProvider, context);
@@ -331,7 +333,9 @@ class _TasksPageState extends State<TasksPage> {
       var tasks = data["tasks"];
 
       if (tasks == null) {
+        taskListProvider.currentTask = null;
         taskListProvider.refresh();
+        msgListProvider.clear(true);
         return;
       }
 

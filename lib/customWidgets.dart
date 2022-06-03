@@ -11,7 +11,7 @@ Widget getTextField({
   ValueChanged<String>? onFieldSubmitted,
   ValueChanged<String>? onChanged,
   final VoidCallback? onCleared,
-  bool showClearButton = false,
+  bool showClearButton = true,
   TextInputType? keyboardType,
   bool obscureText = false,
   Color? fillColor,
@@ -38,13 +38,16 @@ Widget getTextField({
           hintStyle: const TextStyle(color: Colors.grey),
           border: border ?? const OutlineInputBorder(),
           prefixIcon: prefixIcon,
-          suffixIcon: IconButton(
-            onPressed: () {
-              controller?.clear();
-              if (onCleared != null) onCleared();
-            },
-            icon: const Icon(Icons.clear),
-          ),
+          suffixIcon: showClearButton
+              ? IconButton(
+                  focusNode: FocusNode(skipTraversal: true),
+                  onPressed: () {
+                    controller?.clear();
+                    if (onCleared != null) onCleared();
+                  },
+                  icon: const Icon(Icons.clear),
+                )
+              : null,
         ),
         validator: validator,
         controller: controller,

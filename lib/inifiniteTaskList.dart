@@ -563,44 +563,45 @@ class _TaskListTileState extends State<TaskListTile> {
           }
         },
         child: Card(
-            color: getTileColor(taskListProvider.currentTask != null &&
-                taskListProvider.currentTask!.ID == widget.task.ID),
-            shape: const BeveledRectangleBorder(),
-            /* shape: const RoundedRectangleBorder(
+          color: getTileColor(taskListProvider.currentTask != null &&
+              taskListProvider.currentTask!.ID == widget.task.ID),
+          shape: const BeveledRectangleBorder(),
+          /* shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8.0))),*/
-            child: ListTile(
-              /*tileColor: taskListProvider.currentTask == null
+          child: ListTile(
+            /*tileColor: taskListProvider.currentTask == null
                       ? null
                       : getTileColor(
                           taskListProvider.currentTask!.ID == widget.task.ID),*/
-              onTap: () => onTap(widget.task),
-              onLongPress: () => onLongPress(widget.task),
-              leading: Checkbox(
-                  checkColor: widget.task.cancelled ? Colors.grey : null,
-                  shape: const CircleBorder(),
-                  fillColor: MaterialStateProperty.all(
-                      widget.task.cancelled ? Colors.grey : Colors.green),
-                  value: widget.task.closed,
-                  onChanged: (value) =>
-                      taskCompletedOnChanged(value, widget.task)),
-              title: taskListProvider.searchMode
-                  ? HighlightText(
-                      highlightColor: Colors.red,
-                      text: widget.task.description,
-                      words: taskListProvider.searchHighlightedWords,
-                      maxLines: 5,
-                    )
-                  : Text(
-                      widget.task.description,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 5,
-                      style: widget.task.cancelled
-                          ? TextStyle(
-                              decoration: TextDecoration.lineThrough,
-                              fontStyle: FontStyle.italic)
-                          : null,
-                    ),
-              subtitle: Column(children: [
+            onTap: () => onTap(widget.task),
+            onLongPress: () => onLongPress(widget.task),
+            leading: Checkbox(
+                checkColor: widget.task.cancelled ? Colors.grey : null,
+                shape: const CircleBorder(),
+                fillColor: MaterialStateProperty.all(
+                    widget.task.cancelled ? Colors.grey : Colors.green),
+                value: widget.task.closed,
+                onChanged: (value) =>
+                    taskCompletedOnChanged(value, widget.task)),
+            title: taskListProvider.searchMode
+                ? HighlightText(
+                    highlightColor: Colors.red,
+                    text: widget.task.description,
+                    words: taskListProvider.searchHighlightedWords,
+                    maxLines: 5,
+                  )
+                : Text(
+                    widget.task.description,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 5,
+                    style: widget.task.cancelled
+                        ? const TextStyle(
+                            decoration: TextDecoration.lineThrough,
+                            fontStyle: FontStyle.italic)
+                        : null,
+                  ),
+            subtitle: Column(
+              children: [
                 if (widget.task.lastMessage.isNotEmpty ||
                     widget.task.unreadMessages > 0)
                   taskListProvider.searchMode
@@ -651,8 +652,10 @@ class _TaskListTileState extends State<TaskListTile> {
                       ),
                   ],
                 )
-              ]),
-            )),
+              ],
+            ),
+          ),
+        ),
       );
     }
   }

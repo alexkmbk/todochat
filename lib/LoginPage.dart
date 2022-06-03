@@ -130,7 +130,7 @@ class _LoginPageState extends State<LoginPage> {
                       hintText: 'User name',
                       validator: (value) => validateEmpty(value, 'User name'),
                       onFieldSubmitted: (value) {
-                        FocusScope.of(context).nextFocus();
+                        //FocusScope.of(context).nextFocus();
                       },
                     )),
                 const SizedBox(
@@ -144,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
                         border: const UnderlineInputBorder(),
                         hintText: 'Password',
                         obscureText: true,
-                        textInputAction: TextInputAction.send,
+                        //textInputAction: TextInputAction.send,
                         onFieldSubmitted: (value) async {
                           if (_formKey.currentState!.validate() &&
                               await login(

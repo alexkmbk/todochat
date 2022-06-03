@@ -130,9 +130,9 @@ func InitDB() {
 
 	// MESSAGE INSERT TRIGGER
 	DB.Exec("DROP TRIGGER IF EXISTS messages_ai")
-	trigger_query := `CREATE TRIGGER IF NOT EXISTS messages_ai AFTER INSERT ON messages
+	trigger_query := `CREATE TRIGGER IF NOT EXISTS messages_ai AFTER INSERT ON messages 
 	    BEGIN
-	        INSERT INTO messages_fts (rowid, text, task_id, project_id)
+	        INSERT INTO messages_fts (rowid, text, task_id, project_id) 
 	        VALUES (new.id, new.text, new.task_id, new.project_id);
 	    END;`
 
