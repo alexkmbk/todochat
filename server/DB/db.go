@@ -125,7 +125,7 @@ func InitDB() {
 
 	// FTS Messages
 	DB.Exec("DROP TABLE IF EXISTS messages_fts")
-	DB.Exec("CREATE VIRTUAL TABLE IF NOT EXISTS messages_fts USING fts5(text, task_id, project_id, content=messages, content_rowid=ID)")
+	DB.Exec("CREATE VIRTUAL TABLE IF NOT EXISTS messages_fts USING fts5(text, task_id UNINDEXED, project_id UNINDEXED, content=messages, content_rowid=ID)")
 	DB.Exec("INSERT INTO messages_fts (rowid, text, task_id, project_id) SELECT ID, text, task_id, project_id FROM messages")
 
 	// MESSAGE INSERT TRIGGER
@@ -157,7 +157,7 @@ func InitDB() {
 
 	// FTS Tasks
 	DB.Exec("DROP TABLE IF EXISTS tasks_fts")
-	DB.Exec("CREATE VIRTUAL TABLE IF NOT EXISTS tasks_fts USING fts5(description, project_id, content=tasks, content_rowid=ID)")
+	DB.Exec("CREATE VIRTUAL TABLE IF NOT EXISTS tasks_fts USING fts5(description, project_id UNINDEXED, content=tasks, content_rowid=ID)")
 	DB.Exec("INSERT INTO tasks_fts (rowid, description, project_id) SELECT ID, description, project_id FROM tasks")
 
 	// TASK INSERT TRIGGER

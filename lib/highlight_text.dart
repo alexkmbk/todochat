@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+extension UtilExtensions on String {
+  List<String> multiSplit(Iterable<String> delimeters) => delimeters.isEmpty
+      ? [this]
+      : split(RegExp(delimeters.map(RegExp.escape).join('|')));
+}
+
 List<String> getHighlightedWords(String? str, [ignoreCase = true]) {
   List<String> res = [];
 
@@ -56,7 +62,7 @@ class HighlightText extends StatelessWidget {
       spans.add(leading!);
     }
 
-    var textWords = text.split(' ');
+    var textWords = text.multiSplit([' ', '.', ',']);
 
     for (var word in textWords) {
       var wordToSearch = ignoreCase ? word.toLowerCase() : word;
