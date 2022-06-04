@@ -7,10 +7,13 @@ import 'package:http/http.dart' as http;
 //import 'dart:convert' as convert;
 import 'package:crypto/crypto.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
 
 import 'HttpClient.dart';
+import 'MsgList.dart';
 import 'SettingsPage.dart';
 import 'customWidgets.dart';
+import 'inifiniteTaskList.dart';
 import 'main.dart';
 import 'utils.dart';
 
@@ -345,6 +348,8 @@ Future<bool> login(
     var data = jsonDecode(response.body);
 
     sessionID = data["SessionID"];
+
+    final userChanged = (currentUserID != data["UserID"]);
     currentUserID = data["UserID"];
     currentUserName = userName;
     httpClient.defaultHeaders = {"sessionID": sessionID};
@@ -353,6 +358,17 @@ Future<bool> login(
       const storage = FlutterSecureStorage();
       await storage.write(key: "userName", value: userName);
       await storage.write(key: "password", value: password);
+    }
+
+    if (userChanged && context != null) {
+      final msgListProvider =
+          Provider.of<MsgListProvider>(context, listen: false);
+
+      final taskListProvider =
+          Provider.of<TasksListProvider>(context, listen: false);
+      taskListProvider.clear();
+      taskListProvider.requestTasks(context);
+      msgListProvider.refresh();
     }
 
     return true;

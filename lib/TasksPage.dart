@@ -68,16 +68,22 @@ class _TasksPageState extends State<TasksPage> {
       }
     });*/
 
-    requestTasks(taskListProvider, context);
+    taskListProvider.requestTasks(context);
   }
 
   Future<bool> initBeforeBuild(
       BuildContext context, TasksListProvider taskListProvider) async {
     if (taskListProvider.projectID == null || taskListProvider.projectID == 0) {
+      if (sessionID.isEmpty) {
+        final res = await login(context: context);
+        if (!res) {
+          await openLoginPage(context);
+        }
+      }
       taskListProvider.project = await requestFirstItem();
       if (taskListProvider.project != null) {
         taskListProvider.projectID = taskListProvider.project!.ID;
-        await requestTasks(taskListProvider, context);
+        await taskListProvider.requestTasks(context);
       }
     }
 
@@ -88,7 +94,7 @@ class _TasksPageState extends State<TasksPage> {
         taskListProvider.project = await requestFirstItem();
         if (taskListProvider.project != null) {
           taskListProvider.projectID = taskListProvider.project!.ID;
-          await requestTasks(taskListProvider, context);
+          await taskListProvider.requestTasks(context);
         }
       }
     }
@@ -132,7 +138,7 @@ class _TasksPageState extends State<TasksPage> {
                   (itemPositionsListener.itemPositions.value.isEmpty ||
                       (itemPositionsListener.itemPositions.value.last.index >=
                           provider.items.length - 10))) {
-                requestTasks(provider, context);
+                provider.requestTasks(context);
               }
               return true;
             },
@@ -302,7 +308,7 @@ class _TasksPageState extends State<TasksPage> {
         Provider.of<MsgListProvider>(context, listen: false);
 
     if (search.isEmpty) {
-      await requestTasks(taskListProvider, context);
+      await taskListProvider.requestTasks(context);
       return;
     }
     taskListProvider.clear();
@@ -370,7 +376,7 @@ class _TasksPageState extends State<TasksPage> {
     taskListProvider.refresh();
   }
 
-  Future<void> requestTasks(
+  /*Future<void> requestTasks(
       TasksListProvider taskListProvider, BuildContext context,
       [bool forceRefresh = false]) async {
     List<Task> res = [];
@@ -455,7 +461,7 @@ class _TasksPageState extends State<TasksPage> {
       taskListProvider.items = [...taskListProvider.items, ...res];
       taskListProvider.refresh();
     }
-  }
+  }*/
 /*
   void _scrollDown() {
     _scrollController.jumpTo(index: taskListProvider.items.length - 1);
@@ -504,8 +510,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
               taskListProvider.project = res;
               taskListProvider.projectID = res.ID;
               taskListProvider.clear();
-              await widget.tasksPageState
-                  .requestTasks(taskListProvider, context, true);
+              await taskListProvider.requestTasks(context, true);
               //taskListProvider.setProjectID(res.ID);
               await settings.setInt("projectID", res.ID);
             }
@@ -545,7 +550,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
             widget.tasksPageState.showSearch = isDesktopMode;
           });
           taskListProvider.refresh();
-          widget.tasksPageState.requestTasks(taskListProvider, context);
+          taskListProvider.requestTasks(context);
         },
         onFieldSubmitted: (value) async {
           if (value.isNotEmpty) {

@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:todochat/TasksPage.dart';
 import 'HttpClient.dart';
+import 'LoginPage.dart';
 import 'MsgList.dart';
 import 'TaskMessagesPage.dart';
 import 'customWidgets.dart';
@@ -145,6 +146,79 @@ class TasksListProvider extends ChangeNotifier {
     if (item != null) {
       items[items.indexOf(item)] = task;
       notifyListeners();
+    }
+  }
+
+  Future<void> requestTasks(BuildContext context,
+      [bool forceRefresh = false]) async {
+    List<Task> res = [];
+
+    if (sessionID == "") {
+      return;
+    }
+
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
+    loading = true;
+
+    var url = setUriProperty(serverURI, path: 'tasks', queryParameters: {
+      "ProjectID": projectID.toString(),
+      "lastID": lastID.toString(),
+      "lastCreation_date": lastCreation_date.toString(),
+      "limit": "25",
+    });
+
+    Response response;
+    try {
+      //response = await httpClient.get(url, headers: {"sessionID": sessionID});
+      response = await httpClient.get(url);
+    } catch (e) {
+      return;
+    }
+
+    if (response.statusCode == 200 && response.body != "") {
+      var data = jsonDecode(response.body);
+
+      var tasks = data["tasks"];
+
+      if (tasks == null) return;
+
+      if (tasks.length > 0) {
+        var lastItem = tasks[tasks.length - 1];
+        lastID = lastItem["ID"];
+        lastCreation_date = DateTime.tryParse(lastItem["Creation_date"]);
+
+        for (var item in tasks) {
+          res.add(Task.fromJson(item));
+        }
+
+        if (currentTask == null || currentTask!.projectID != projectID) {
+          currentTask = Task.fromJson(tasks[0]);
+          res[0].read = true;
+          res[0].unreadMessages = 0;
+          msgListProvider.task = currentTask;
+          msgListProvider.taskID = msgListProvider.task?.ID ?? 0;
+          msgListProvider.clear();
+          if (isDesktopMode) {
+            msgListProvider.requestMessages();
+          }
+        }
+      } else if (items.isEmpty) {
+        currentTask == null;
+        msgListProvider.clear(true);
+      }
+    } else if (response.statusCode == 401) {
+      bool result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    }
+
+    loading = false;
+
+    if (res.isNotEmpty || forceRefresh) {
+      items = [...items, ...res];
+      refresh();
     }
   }
 }
