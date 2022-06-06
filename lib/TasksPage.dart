@@ -17,6 +17,8 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'main.dart';
 import 'dart:convert';
 import 'highlight_text.dart';
+//import 'package:resizable_widget/resizable_widget.dart';
+import 'package:multi_split_view/multi_split_view.dart';
 
 //late TasksListProvider taskListProvider;
 
@@ -147,11 +149,9 @@ class _TasksPageState extends State<TasksPage> {
 
     var currentTask = taskListProvider.currentTask;
     currentTask ??= Task(ID: 0);
-    return Expanded(
-        flex: 6,
-        child: TaskMessagesPage(
-          task: currentTask,
-        ));
+    return TaskMessagesPage(
+      task: currentTask,
+    );
     /*return Expanded(
         flex: 6,
         child: taskListProvider.currentTask != null
@@ -161,27 +161,50 @@ class _TasksPageState extends State<TasksPage> {
 
   Widget renderBody(TasksListProvider taskListProvider) {
     if (isDesktopMode) {
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        //mainAxisAlignment: MainAxisAlignment.,
-        children: [
-          Expanded(flex: 4, child: renderTasks(taskListProvider)),
-          const VerticalDivider(
+      return MultiSplitViewTheme(
+          data: MultiSplitViewThemeData(
+              dividerThickness: 2,
+              dividerPainter: DividerPainters.grooved1(
+                highlightedThickness: 6,
+                thickness: 3,
+                size: 5,
+                color: Colors.blueGrey,
+                backgroundColor: Colors.blueGrey.shade100,
+                highlightedBackgroundColor: Colors.blue,
+              )),
+          child: MultiSplitView(
+            onSizeChange: (childIndex1, childIndex2) {
+              /*print(
+                  'Index of children whose size has changed: $childIndex1 and $childIndex2');*/
+            },
+            initialAreas: [Area(weight: 0.3)],
+            /*key: UniqueKey(),
+        separatorColor: Colors.blueGrey.shade100,
+        separatorSize: 2,
+        isHorizontalSeparator: false,
+        isDisabledSmartHide: false,
+        percentages: const [0.3, 0.7],*/
+            //crossAxisAlignment: CrossAxisAlignment.start,
+            //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            //mainAxisAlignment: MainAxisAlignment.,
+            children: [
+              renderTasks(taskListProvider),
+              //Expanded(flex: 4, child: renderTasks(taskListProvider)),
+              /*const VerticalDivider(
             indent: 0.1,
             endIndent: 0.1,
             color: Colors.grey,
-          ),
-          renderMessages(taskListProvider),
-          //Expanded(flex: 6, child: const Text("data")),
+          ),*/
+              renderMessages(taskListProvider),
+              //Expanded(flex: 6, child: const Text("data")),
 
-          //renderTasks(),
-          /*Expanded(
+              //renderTasks(),
+              /*Expanded(
               child: currentTask != null
                   ? const Text("data") //TaskMessagesPage(task: currentTask!)
                   : const Text("data"))*/
-        ],
-      );
+            ],
+          ));
     } else {
       return Center(
         child: renderTasks(taskListProvider),

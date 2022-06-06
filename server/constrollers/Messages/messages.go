@@ -241,6 +241,9 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 	task, success := Tasks.GetItemByID(message.TaskID)
 	if success {
 		task.LastMessage = message.Text
+		if len(task.LastMessage) == 0 {
+			task.LastMessage = message.FileName
+		}
 		task.LastMessageID = message.ID
 		task.LastMessageUserName = message.UserName
 

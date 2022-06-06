@@ -362,6 +362,11 @@ class NumberInStadium extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+        child: Center(
+            child: Text(
+          number.toString(),
+          style: const TextStyle(color: Colors.white, fontSize: 12),
+        )),
         padding: const EdgeInsets.only(left: 5, right: 5),
         decoration: BoxDecoration(
             color: Colors.blue,
