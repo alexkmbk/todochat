@@ -477,6 +477,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                         if (_messageInputController.text.isNotEmpty) {
                           createMessage(
                             text: _messageInputController.text,
+                            task: msgListProvider.task,
                             msgListProvider: msgListProvider,
                           );
                           _messageInputController.text = "";
@@ -578,6 +579,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                       if (_messageInputController.text.isNotEmpty) {
                         createMessage(
                             text: _messageInputController.text,
+                            task: msgListProvider.task,
                             msgListProvider: msgListProvider);
                         _messageInputController.text = "";
                       }
@@ -1031,6 +1033,7 @@ class ChatBubble extends StatelessWidget {
 Future<bool> createMessage(
     {required String text,
     required MsgListProvider msgListProvider,
+    required Task? task, // task could be different from the current one
     bool isTaskDescriptionItem = false,
     bool isImage = false,
     String fileName = "",
@@ -1038,12 +1041,12 @@ Future<bool> createMessage(
     bool loadinInProcess = false,
     MessageAction messageAction =
         MessageAction.CreateUpdateMessageAction}) async {
-  if (sessionID == "") {
+  if (sessionID == "" || task == null) {
     return false;
   }
 
   Message message = Message(
-      taskID: msgListProvider.taskID,
+      taskID: task.ID,
       text: text,
       fileName: path.basename(fileName),
       isImage: isImage,
@@ -1058,6 +1061,11 @@ Future<bool> createMessage(
         setUriProperty(serverURI, path: 'createMessage'),
         body: jsonEncode(message));
   } catch (e) {
+    final context = NavigationService.navigatorKey.currentContext;
+    if (context != null) {
+      toast(e.toString(), context);
+    }
+
     return false;
   }
   //request.headers.contentLength = utf8.encode(body).length;
@@ -1066,7 +1074,10 @@ Future<bool> createMessage(
     var data = jsonDecode(response.body) as Map<String, dynamic>;
 
     Message message = Message.fromJson(data);
+    // final tempID = msgListProvider.taskID;
+    //msgListProvider.taskID = task.ID;
     msgListProvider.addItem(message);
+    //msgListProvider.taskID = tempID;
     return true;
   }
 
@@ -1098,6 +1109,7 @@ Future<bool> createMessageWithFile(
 
   final res = await createMessage(
       text: text,
+      task: msgListProvider.task,
       msgListProvider: msgListProvider,
       tempID: tempID,
       fileName: fileName,
@@ -1173,6 +1185,7 @@ class NewMessageActionsMenu extends StatelessWidget {
             onTap: () {
               createMessage(
                   text: "",
+                  task: msgListProvider.task,
                   msgListProvider: msgListProvider,
                   messageAction: MessageAction.CompleteTaskAction);
               msgListProvider.task!.completed = true;
@@ -1194,6 +1207,7 @@ class NewMessageActionsMenu extends StatelessWidget {
             onTap: () {
               createMessage(
                   text: "",
+                  task: msgListProvider.task,
                   msgListProvider: msgListProvider,
                   messageAction: MessageAction.RemoveCompletedLabelAction);
               msgListProvider.task!.completed = false;
@@ -1207,6 +1221,7 @@ class NewMessageActionsMenu extends StatelessWidget {
             onTap: () {
               createMessage(
                   text: "",
+                  task: msgListProvider.task,
                   msgListProvider: msgListProvider,
                   messageAction: MessageAction.CancelTaskAction);
               msgListProvider.task!.cancelled = true;
@@ -1220,6 +1235,7 @@ class NewMessageActionsMenu extends StatelessWidget {
             onTap: () {
               createMessage(
                   text: "",
+                  task: msgListProvider.task,
                   msgListProvider: msgListProvider,
                   messageAction: MessageAction.ReopenTaskAction);
               msgListProvider.task!.cancelled = false;

@@ -19,6 +19,8 @@ import 'utils.dart';
 
 //import 'dart:html' as html;
 
+bool isLoginPageOpen = false;
+
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
@@ -154,6 +156,7 @@ class _LoginPageState extends State<LoginPage> {
                                   userName: userNameController.text,
                                   password: value,
                                   context: context)) {
+                            isLoginPageOpen = false;
                             Navigator.pop(context, true);
                           }
                         })),
@@ -201,6 +204,7 @@ class _LoginPageState extends State<LoginPage> {
                                               userName: userNameController.text,
                                               password: passwordController.text,
                                               context: context)) {
+                                        isLoginPageOpen = false;
                                         Navigator.pop(context, true);
                                       }
                                     }))),
@@ -302,6 +306,10 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 Future<void> openLoginPage(BuildContext context) async {
+  if (isLoginPageOpen) {
+    return;
+  }
+  isLoginPageOpen = true;
   await Navigator.push(
     context,
     MaterialPageRoute(builder: (context) => const LoginPage()),

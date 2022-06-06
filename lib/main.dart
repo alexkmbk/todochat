@@ -148,9 +148,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       height: 50,
                     ),
                     const TextInCircle(
-                        width: 150,
-                        color: Colors.white,
-                        textWidget: Text.rich(TextSpan(children: [
+                      width: 150,
+                      color: Colors.white,
+                      textWidget: TextSpan(
+                        children: [
                           TextSpan(
                               text: "ToDo\n",
                               style: TextStyle(
@@ -164,7 +165,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                 fontSize: 36,
                                 fontWeight: FontWeight.bold),
                           )
-                        ]))),
+                        ],
+                      ),
+                    ),
                     const Spacer(),
                     if (snapshot.hasError)
                       IconButton(
@@ -264,7 +267,7 @@ class _MyHomePageState extends State<MyHomePage> {
             taskListProvider.addItem(task);
           } else if (wsMsg.command == "deleteTask") {
             var taskID = wsMsg.data;
-            taskListProvider.deleteItem(taskID);
+            taskListProvider.deleteItem(taskID, context);
           } else if (wsMsg.command == "updateTask") {
             var task = Task.fromJson(wsMsg.data);
             taskListProvider.updateItem(task);

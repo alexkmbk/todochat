@@ -26,6 +26,7 @@ class TasksListProvider extends ChangeNotifier {
   int lastID = 0;
   DateTime? lastCreation_date;
   bool loading = false;
+  bool uploading = false;
   bool searchMode = false;
   bool taskEditMode = false;
   List<String> searchHighlightedWords = [];
@@ -136,9 +137,29 @@ class TasksListProvider extends ChangeNotifier {
     }
   }
 
-  void deleteItem(int taskID) async {
-    items.removeWhere((item) => item.ID == taskID);
-    notifyListeners();
+  void deleteItem(int taskID, BuildContext context) async {
+    var index = items.indexWhere((item) => item.ID == taskID);
+    if (index >= 0) {
+      items.removeAt(index);
+
+      if (items.isEmpty) {
+        clear();
+        refresh();
+      } else {
+        if (index >= items.length) {
+          index = items.length - 1;
+        }
+      }
+      currentTask = items[index];
+      final msgListProvider =
+          Provider.of<MsgListProvider>(context, listen: false);
+      msgListProvider.clear();
+      msgListProvider.taskID = currentTask!.ID;
+      msgListProvider.task = currentTask;
+      msgListProvider.requestMessages();
+      msgListProvider.refresh();
+      notifyListeners();
+    }
   }
 
   void updateItem(Task task) async {
@@ -432,11 +453,18 @@ class _TaskListTileState extends State<TaskListTile> {
   void onSave(String text) async {
     final taskListProvider =
         Provider.of<TasksListProvider>(context, listen: false);
+
+    if (taskListProvider.loading) {
+      return;
+    }
+
     if (text.isNotEmpty) {
       if (widget.task.isNewItem) {
-        await widget.inifiniteTaskList.onAddFn(text);
-        taskListProvider.deleteEditorItem();
-        taskListProvider.taskEditMode = false;
+        final res = await widget.inifiniteTaskList.onAddFn(text);
+        if (res) {
+          taskListProvider.deleteEditorItem();
+          taskListProvider.taskEditMode = false;
+        }
       } else {
         var tempTask = Task.from(widget.task);
         tempTask.description = text;
@@ -588,9 +616,11 @@ class _TaskListTileState extends State<TaskListTile> {
                   style: OutlinedButton.styleFrom(
                     shape: const StadiumBorder(),
                   ),
-                  onPressed: () async {
-                    onSave(textEditingController.text.trim());
-                  },
+                  onPressed: taskListProvider.loading
+                      ? null
+                      : () async {
+                          onSave(textEditingController.text.trim());
+                        },
                   child: isDesktopMode
                       ? RichText(
                           text: const TextSpan(
@@ -633,7 +663,7 @@ class _TaskListTileState extends State<TaskListTile> {
         },
         onDismissed: (direction) async {
           if (await widget.inifiniteTaskList.onDeleteFn(widget.task.ID)) {
-            taskListProvider.deleteItem(widget.task.ID);
+            taskListProvider.deleteItem(widget.task.ID, context);
           }
         },
         child: Card(
@@ -655,8 +685,7 @@ class _TaskListTileState extends State<TaskListTile> {
                 fillColor: MaterialStateProperty.all(
                     widget.task.cancelled ? Colors.grey : Colors.green),
                 value: widget.task.closed,
-                onChanged: (value) =>
-                    taskCompletedOnChanged(value, widget.task)),
+                onChanged: (value) => taskClosedOnChanged(value, widget.task)),
             title: taskListProvider.searchMode
                 ? HighlightText(
                     highlightColor: Colors.red,
@@ -792,7 +821,7 @@ class _TaskListTileState extends State<TaskListTile> {
     });
   }
 
-  void taskCompletedOnChanged(bool? value, Task task) async {
+  void taskClosedOnChanged(bool? value, Task task) async {
     if (value == null) return;
 
     setState(() {
@@ -804,8 +833,9 @@ class _TaskListTileState extends State<TaskListTile> {
     //if (res) {
     final msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);
-    createMessage(
+    final res = await createMessage(
         text: "",
+        task: task,
         msgListProvider: msgListProvider,
         messageAction: value
             ? MessageAction.CloseTaskAction
@@ -815,6 +845,11 @@ class _TaskListTileState extends State<TaskListTile> {
         task.closed = !value;
       });*/
     //}
+    if (!res) {
+      setState(() {
+        task.closed = !value;
+      });
+    }
   }
 }
 

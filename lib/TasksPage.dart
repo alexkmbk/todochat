@@ -225,6 +225,7 @@ class _TasksPageState extends State<TasksPage> {
           body: jsonEncode(task),
           headers: {"ProjectID": taskListProvider.projectID.toString()});
     } catch (e) {
+      toast(e.toString(), context);
       return null;
     }
     //request.headers.contentLength = utf8.encode(body).length;
@@ -242,6 +243,7 @@ class _TasksPageState extends State<TasksPage> {
       msgListProvider.taskID = task.ID;
       createMessage(
           text: "",
+          task: task,
           msgListProvider: msgListProvider,
           isTaskDescriptionItem: true);
       return task;
@@ -262,6 +264,8 @@ class _TasksPageState extends State<TasksPage> {
         Provider.of<MsgListProvider>(context, listen: false);
 
     Task? task = await createTask(description);
+
+    taskListProvider.loading = false;
 
     if (task == null) return false;
 

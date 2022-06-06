@@ -330,7 +330,7 @@ class _RestartWidgetState extends State<RestartWidget> {
 }
 
 class TextInCircle extends StatelessWidget {
-  final Widget textWidget;
+  final TextSpan textWidget;
   final double? width;
   final Color? color;
   const TextInCircle(
@@ -339,14 +339,19 @@ class TextInCircle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        width: width,
-        height: width,
-        decoration: BoxDecoration(
-          //border: Border.all(width: 2),
-          shape: BoxShape.circle,
-          color: color,
-        ),
-        child: Center(child: textWidget));
+      width: width,
+      height: width,
+      decoration: BoxDecoration(
+        //border: Border.all(width: 2),
+        shape: BoxShape.circle,
+        color: color,
+      ),
+      child: Center(
+          child: Text.rich(
+        textWidget,
+        textAlign: TextAlign.center,
+      )),
+    );
   }
 }
 
