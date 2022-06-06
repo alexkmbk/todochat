@@ -73,13 +73,7 @@ class _TasksPageState extends State<TasksPage> {
 
   Future<bool> initBeforeBuild(
       BuildContext context, TasksListProvider taskListProvider) async {
-    if (taskListProvider.projectID == null || taskListProvider.projectID == 0) {
-      if (sessionID.isEmpty) {
-        final res = await login(context: context);
-        if (!res) {
-          await openLoginPage(context);
-        }
-      }
+/*    if (taskListProvider.projectID == null || taskListProvider.projectID == 0) {
       taskListProvider.project = await requestFirstItem();
       if (taskListProvider.project != null) {
         taskListProvider.projectID = taskListProvider.project!.ID;
@@ -97,55 +91,43 @@ class _TasksPageState extends State<TasksPage> {
           await taskListProvider.requestTasks(context);
         }
       }
-    }
+    }*/
     return true;
   }
 
   @override
   Widget build(BuildContext context) {
-    final taskListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);
-    return FutureBuilder<bool>(
-        future: initBeforeBuild(context, taskListProvider),
-        builder: (context, snapshot) {
-          return /*GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              child: */
-              Scaffold(
-                  appBar: TasksPageAppBar(tasksPageState: this),
-                  body: renderBody(taskListProvider),
-                  floatingActionButton:
-                      !isDesktopMode ? floatingActionButton : null);
-        });
+    return Consumer<TasksListProvider>(builder: (context, provider, child) {
+      return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Expanded(
+            child: Scaffold(
+                appBar: TasksPageAppBar(tasksPageState: this),
+                body: renderBody(provider),
+                floatingActionButton:
+                    !isDesktopMode ? floatingActionButton : null))
+      ]);
+    });
   }
 
-  Widget renderTasks() {
-    return Consumer<TasksListProvider>(builder: (context, provider, child) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-              child: NotificationListener<ScrollUpdateNotification>(
-            child: InifiniteTaskList(
-              scrollController: _scrollController,
-              itemPositionsListener: itemPositionsListener,
-              onDeleteFn: deleteTask,
-              onAddFn: onAddTask,
-            ),
-            onNotification: (notification) {
-              if (!provider.loading &&
-                  !provider.searchMode &&
-                  (itemPositionsListener.itemPositions.value.isEmpty ||
-                      (itemPositionsListener.itemPositions.value.last.index >=
-                          provider.items.length - 10))) {
-                provider.requestTasks(context);
-              }
-              return true;
-            },
-          ))
-        ],
-      );
-    });
+  Widget renderTasks(TasksListProvider taskListProvider) {
+    return NotificationListener<ScrollUpdateNotification>(
+      child: InifiniteTaskList(
+        scrollController: _scrollController,
+        itemPositionsListener: itemPositionsListener,
+        onDeleteFn: deleteTask,
+        onAddFn: onAddTask,
+      ),
+      onNotification: (notification) {
+        if (!taskListProvider.loading &&
+            !taskListProvider.searchMode &&
+            (itemPositionsListener.itemPositions.value.isEmpty ||
+                (itemPositionsListener.itemPositions.value.last.index >=
+                    taskListProvider.items.length - 10))) {
+          taskListProvider.requestTasks(context);
+        }
+        return true;
+      },
+    );
   }
 
   Widget renderMessages(TasksListProvider taskListProvider) {
@@ -184,7 +166,7 @@ class _TasksPageState extends State<TasksPage> {
         //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         //mainAxisAlignment: MainAxisAlignment.,
         children: [
-          Expanded(flex: 4, child: renderTasks()),
+          Expanded(flex: 4, child: renderTasks(taskListProvider)),
           const VerticalDivider(
             indent: 0.1,
             endIndent: 0.1,
@@ -202,7 +184,7 @@ class _TasksPageState extends State<TasksPage> {
       );
     } else {
       return Center(
-        child: renderTasks(),
+        child: renderTasks(taskListProvider),
       );
     }
   }

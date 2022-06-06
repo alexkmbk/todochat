@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'HttpClient.dart';
 import 'LoginPage.dart';
+import 'ProjectsList.dart';
 import 'SettingsPage.dart';
 import 'customWidgets.dart';
 import 'inifiniteTaskList.dart';
@@ -241,10 +242,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   StreamSubscription? subscription;
 
-  void listenWs() {
-    final taskListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);
-
+  void listenWs(TasksListProvider taskListProvider) {
     final msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);
 
@@ -314,8 +312,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     /*final msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);*/
-    /*widget.tasksListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);*/
+    final taskListProvider =
+        Provider.of<TasksListProvider>(context, listen: false);
 
     settings = await SharedPreferences.getInstance();
 
@@ -345,8 +343,28 @@ class _MyHomePageState extends State<MyHomePage> {
       await openLoginPage(context);
     }
     if (isServerURI && sessionID.isNotEmpty) {
+      if (taskListProvider.projectID == null ||
+          taskListProvider.projectID == 0) {
+        taskListProvider.project = await requestFirstItem();
+        if (taskListProvider.project != null) {
+          taskListProvider.projectID = taskListProvider.project!.ID;
+          await taskListProvider.requestTasks(context);
+        }
+      }
+
+      if (taskListProvider.projectID != null &&
+          taskListProvider.project == null) {
+        taskListProvider.project = await getProject(taskListProvider.projectID);
+        if (taskListProvider.project == null) {
+          taskListProvider.project = await requestFirstItem();
+          if (taskListProvider.project != null) {
+            taskListProvider.projectID = taskListProvider.project!.ID;
+            await taskListProvider.requestTasks(context);
+          }
+        }
+      }
       connectWebSocketChannel(serverURI).then((value) {
-        listenWs();
+        listenWs(taskListProvider);
       });
     }
 
@@ -361,14 +379,14 @@ class _MyHomePageState extends State<MyHomePage> {
           if (value) {
             connectWebSocketChannel(serverURI).then((value) {
               connectWebSocketInProcess = false;
-              listenWs();
+              listenWs(taskListProvider);
             });
           } else {
             login().then((isLogin) async {
               if (isLogin) {
                 connectWebSocketChannel(serverURI).then((value) {
                   connectWebSocketInProcess = false;
-                  listenWs();
+                  listenWs(taskListProvider);
                 });
               } else {
                 RestartWidget.restartApp();
@@ -382,6 +400,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     appInitialized = true;
+
     return true;
   }
 }
