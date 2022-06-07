@@ -553,7 +553,9 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
                       Icons.search,
                     ),
                   )))),*/
-      leading: const MainMenu(),
+      leading: MainMenu(
+        key: UniqueKey(),
+      ),
       actions: [
         if (!widget.tasksPageState.showSearch)
           IconButton(
