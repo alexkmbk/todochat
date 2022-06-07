@@ -99,6 +99,7 @@ class _LoginPageState extends State<LoginPage> {
       var data = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
       sessionID = data["sessionID"];
       currentUserID = data["userID"];
+      currentUserName = userNameController.text.trim();
       httpClient.defaultHeaders = {"sessionID": sessionID};
 
       if (serverURI.scheme != "http" || !isWeb()) {
@@ -108,6 +109,15 @@ class _LoginPageState extends State<LoginPage> {
         await storage.write(
             key: "password", value: passwordController.text.trim());
       }
+
+      final msgListProvider =
+          Provider.of<MsgListProvider>(context, listen: false);
+
+      final taskListProvider =
+          Provider.of<TasksListProvider>(context, listen: false);
+      taskListProvider.clear();
+      taskListProvider.requestTasks(context);
+      msgListProvider.refresh();
 
       return true;
     } else {
@@ -290,6 +300,7 @@ class _LoginPageState extends State<LoginPage> {
                               onPressed: () async {
                                 if (_formKey.currentState!.validate() &&
                                     await registration()) {
+                                  isLoginPageOpen = false;
                                   Navigator.pop(context, true);
                                 }
                               },

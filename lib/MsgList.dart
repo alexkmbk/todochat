@@ -121,16 +121,13 @@ class MsgListProvider extends ChangeNotifier {
       return false;
     }
     bool created = false;
-    if (message.tempID.isNotEmpty && message.userID == currentUserID) {
+    if (message.tempID.isNotEmpty) {
       int foundIndex =
           items.indexWhere((element) => element.tempID == message.tempID);
       if (foundIndex >= 0) {
-        /*final request = uploadingFiles[message.tempID];
-        if (request != null && request.loadingFileData.isNotEmpty) {
-          message.loadingFileData = request.loadingFileData;
-        }*/
         items[foundIndex] = message;
-      } else if (!message.loadinInProcess) {
+      } else if (!message.loadinInProcess ||
+          uploadingFiles.containsKey(message.tempID)) {
         items.insert(0, message);
         created = true;
         notifyListeners();
@@ -141,12 +138,6 @@ class MsgListProvider extends ChangeNotifier {
       if (foundItem == null && !message.loadinInProcess) {
         items.insert(0, message);
         created = true;
-        notifyListeners();
-      } else if (message.tempID.isNotEmpty &&
-          message.userID != currentUserID &&
-          !message.loadinInProcess &&
-          foundItem != null) {
-        items[items.indexOf(foundItem)] = message;
         notifyListeners();
       }
     }

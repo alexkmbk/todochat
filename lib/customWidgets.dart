@@ -225,6 +225,7 @@ class ImageDialog extends StatelessWidget {
     return Dialog(
         child: Stack(children: [
       PhotoView(
+        initialScale: PhotoViewComputedScale.covered,
         imageProvider: imageProvider,
         loadingBuilder: (context, event) => Center(
           child: SizedBox(
