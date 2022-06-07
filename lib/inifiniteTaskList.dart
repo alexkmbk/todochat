@@ -29,8 +29,10 @@ class TasksListProvider extends ChangeNotifier {
   bool uploading = false;
   bool searchMode = false;
   bool taskEditMode = false;
+  bool isNewItem = false;
   List<String> searchHighlightedWords = [];
   Task? currentTask;
+  TextEditingController textEditingController = TextEditingController(text: "");
 
   void refresh() {
     notifyListeners();
@@ -49,7 +51,9 @@ class TasksListProvider extends ChangeNotifier {
   }
 
   void addEditorItem() {
-    items.insert(0, Task(editMode: true, isNewItem: true));
+    taskEditMode = true;
+    isNewItem = true;
+    items.insert(0, Task(editMode: true));
     notifyListeners();
   }
 
@@ -162,6 +166,105 @@ class TasksListProvider extends ChangeNotifier {
     }
   }
 
+  Future<Task?> createTask(String description, MsgListProvider msgListProvider,
+      BuildContext context) async {
+    if (sessionID == "") {
+      return null;
+    }
+
+    Task task = Task(description: description);
+    Response response;
+    try {
+      response = await httpClient.post(setUriProperty(serverURI, path: 'todo'),
+          body: jsonEncode(task), headers: {"ProjectID": projectID.toString()});
+    } catch (e) {
+      toast(e.toString(), context);
+      return null;
+    }
+    //request.headers.contentLength = utf8.encode(body).length;
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body) as Map<String, dynamic>;
+      task.projectID = data["ProjectID"];
+      task.ID = data["ID"];
+      task.creation_date =
+          DateTime.tryParse(data["Creation_date"]) ?? DateTime.utc(0);
+      task.authorID = data["AuthorID"];
+      task.authorName = data["AuthorName"];
+      task.read = true;
+      currentTask = task;
+      addItem(task);
+      msgListProvider.task = task;
+      msgListProvider.taskID = task.ID;
+      createMessage(
+          text: "",
+          task: task,
+          msgListProvider: msgListProvider,
+          isTaskDescriptionItem: true);
+
+      return task;
+    }
+
+    return null;
+  }
+
+  Future<bool> onAddTask(String description, BuildContext context) async {
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
+
+    Task? task = await createTask(description, msgListProvider, context);
+
+    loading = false;
+
+    if (task == null) return false;
+
+    if (isDesktopMode) {
+      msgListProvider.clear(true);
+    } else {
+      msgListProvider.clear(false);
+      openTask(context, task, msgListProvider);
+    }
+
+    return true;
+  }
+
+  void saveEditingItem(BuildContext context) async {
+    if (loading) {
+      return;
+    }
+
+    var editingTask =
+        items.firstWhereOrNull((element) => element.editMode == true);
+
+    if (editingTask == null) {
+      return;
+    }
+
+    var text = textEditingController.text.trim();
+
+    if (text.isNotEmpty) {
+      if (isNewItem) {
+        final res = await onAddTask(text, context);
+        if (res) {
+          deleteEditorItem();
+        }
+      } else {
+        var tempTask = Task.from(editingTask);
+        tempTask.description = text;
+        if (tempTask.description.endsWith('\n')) {
+          tempTask.description = tempTask.description
+              .substring(0, tempTask.description.length - 1);
+        }
+        var res = await updateTask(tempTask);
+        if (res) {
+          editingTask.description = tempTask.description;
+          editingTask.editMode = false;
+          taskEditMode = false;
+        }
+      }
+    }
+  }
+
   void updateItem(Task task) async {
     var item = items.firstWhereOrNull((element) => element.ID == task.ID);
     if (item != null) {
@@ -258,7 +361,6 @@ class Task {
   int lastMessageID = 0;
   bool editMode = false;
   DateTime creation_date = DateTime.utc(0);
-  bool isNewItem = false;
   bool read = false;
   int unreadMessages = 0;
   String lastMessageUserName = "";
@@ -271,8 +373,7 @@ class Task {
       {this.ID = 0,
       this.description = "",
       this.completed = false,
-      this.editMode = false,
-      this.isNewItem = false});
+      this.editMode = false});
 
   Map<String, dynamic> toJson() {
     return {
@@ -353,14 +454,12 @@ typedef ItemBuilder = Widget Function(
 class InifiniteTaskList extends StatefulWidget {
   final ItemPositionsListener itemPositionsListener;
   final ItemScrollController scrollController;
-  final OnAddFn onAddFn;
   final OnDeleteFn onDeleteFn;
 
   const InifiniteTaskList(
       {Key? key,
       required this.scrollController,
       required this.itemPositionsListener,
-      required this.onAddFn,
       required this.onDeleteFn})
       : super(key: key);
 
@@ -431,7 +530,6 @@ class TaskListTile extends StatefulWidget {
 }
 
 class _TaskListTileState extends State<TaskListTile> {
-  var textEditingController = TextEditingController(text: "");
   @override
   Widget build(BuildContext context) {
     return buildListRow(context);
@@ -450,46 +548,12 @@ class _TaskListTileState extends State<TaskListTile> {
             : const Color.fromARGB(255, 250, 161, 27);
   }
 
-  void onSave(String text) async {
-    final taskListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);
-
-    if (taskListProvider.loading) {
-      return;
-    }
-
-    if (text.isNotEmpty) {
-      if (widget.task.isNewItem) {
-        final res = await widget.inifiniteTaskList.onAddFn(text);
-        if (res) {
-          taskListProvider.deleteEditorItem();
-          taskListProvider.taskEditMode = false;
-        }
-      } else {
-        var tempTask = Task.from(widget.task);
-        tempTask.description = text;
-        if (tempTask.description.endsWith('\n')) {
-          tempTask.description = tempTask.description
-              .substring(0, tempTask.description.length - 1);
-        }
-        var res = await updateTask(tempTask);
-        if (res) {
-          setState(() {
-            widget.task.description = tempTask.description;
-            widget.task.editMode = false;
-            taskListProvider.taskEditMode = false;
-          });
-        }
-      }
-    }
-  }
-
   Widget buildListRow(BuildContext context) {
     final taskListProvider =
         Provider.of<TasksListProvider>(context, listen: false);
 
     if (widget.task.editMode) {
-      textEditingController =
+      taskListProvider.textEditingController =
           TextEditingController(text: widget.task.description);
       return Card(
           shape: const RoundedRectangleBorder(
@@ -503,7 +567,7 @@ class _TaskListTileState extends State<TaskListTile> {
                           bindings: {
                             const SingleActivator(LogicalKeyboardKey.escape,
                                 control: false): () {
-                              if (widget.task.isNewItem) {
+                              if (taskListProvider.isNewItem) {
                                 taskListProvider.deleteEditorItem();
                               } else {
                                 setState(() {
@@ -514,13 +578,15 @@ class _TaskListTileState extends State<TaskListTile> {
                             },
                             const SingleActivator(LogicalKeyboardKey.enter,
                                 control: true): () {
-                              textEditingController.text =
-                                  '${textEditingController.text}\n';
-                              textEditingController.setCursorOnEnd();
+                              taskListProvider.textEditingController.text =
+                                  '${taskListProvider.textEditingController.text}\n';
+                              taskListProvider.textEditingController
+                                  .setCursorOnEnd();
                             },
                             const SingleActivator(LogicalKeyboardKey.enter,
                                 control: false): () {
-                              onSave(textEditingController.text.trim());
+                              taskListProvider.saveEditingItem(context);
+                              ;
                             },
                           },
                           child: Focus(
@@ -538,19 +604,20 @@ class _TaskListTileState extends State<TaskListTile> {
                             child: TextField(
                                 keyboardType: TextInputType.multiline,
                                 maxLines: null,
-                                controller: textEditingController,
+                                controller:
+                                    taskListProvider.textEditingController,
                                 decoration: InputDecoration(
                                     border: InputBorder.none,
-                                    hintText: widget.task.isNewItem
+                                    hintText: taskListProvider.isNewItem
                                         ? "New task name"
                                         : null),
                                 autofocus: true,
                                 textInputAction: TextInputAction.newline,
                                 onSubmitted: (value) async {
                                   if (value.isNotEmpty) {
-                                    if (widget.task.isNewItem) {
-                                      await widget.inifiniteTaskList
-                                          .onAddFn(value);
+                                    if (taskListProvider.isNewItem) {
+                                      await taskListProvider.onAddTask(
+                                          value, context);
                                       taskListProvider.deleteEditorItem();
                                     } else {
                                       var tempTask = Task.from(widget.task);
@@ -619,7 +686,7 @@ class _TaskListTileState extends State<TaskListTile> {
                   onPressed: taskListProvider.loading
                       ? null
                       : () async {
-                          onSave(textEditingController.text.trim());
+                          taskListProvider.saveEditingItem(context);
                         },
                   child: isDesktopMode
                       ? RichText(
@@ -642,7 +709,7 @@ class _TaskListTileState extends State<TaskListTile> {
                   ),
                   onPressed: () {
                     taskListProvider.taskEditMode = false;
-                    if (widget.task.isNewItem) {
+                    if (taskListProvider.isNewItem) {
                       taskListProvider.deleteEditorItem();
                     } else {
                       setState(() {
@@ -673,10 +740,6 @@ class _TaskListTileState extends State<TaskListTile> {
           /* shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8.0))),*/
           child: ListTile(
-            /*tileColor: taskListProvider.currentTask == null
-                      ? null
-                      : getTileColor(
-                          taskListProvider.currentTask!.ID == widget.task.ID),*/
             onTap: () => onTap(widget.task),
             onLongPress: () => onLongPress(widget.task),
             leading: Checkbox(
@@ -816,7 +879,7 @@ class _TaskListTileState extends State<TaskListTile> {
           .firstWhereOrNull((element) => element.ID == task.ID);
       if (foundTask != null) {
         foundTask.editMode = true;
-        foundTask.isNewItem = false;
+        taskListProvider.isNewItem = false;
       }
     });
   }

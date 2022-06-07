@@ -41,24 +41,11 @@ class _TasksPageState extends State<TasksPage> {
   void initState() {
     super.initState();
 
-    final taskListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);
+    /*final taskListProvider =
+        Provider.of<TasksListProvider>(context, listen: false);*/
     //msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
 
-    floatingActionButton = FloatingActionButton(
-      onPressed: () {
-        if (!taskListProvider.taskEditMode) {
-          taskListProvider.addEditorItem();
-          taskListProvider.taskEditMode = true;
-        }
-      },
-      child: const Icon(
-        Icons.add,
-        color: Colors.white,
-      ),
-    );
-
-    taskListProvider.projectID = settings.getInt("projectID");
+    //  taskListProvider.projectID = settings.getInt("projectID");
 
     /*itemPositionsListener.itemPositions.addListener(() {
       if (!taskListProvider.loading &&
@@ -70,7 +57,7 @@ class _TasksPageState extends State<TasksPage> {
       }
     });*/
 
-    taskListProvider.requestTasks(context);
+    //taskListProvider.requestTasks(context);
   }
 
   Future<bool> initBeforeBuild(
@@ -97,6 +84,19 @@ class _TasksPageState extends State<TasksPage> {
     return true;
   }
 
+  Widget floatingActionButtonToSave(
+      TasksListProvider provider, BuildContext context) {
+    return SizedBox(
+        width: 100,
+        child: FloatingActionButton(
+          shape: const StadiumBorder(),
+          onPressed: () {
+            provider.saveEditingItem(context);
+          },
+          child: const Text("Save"),
+        ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<TasksListProvider>(builder: (context, provider, child) {
@@ -105,8 +105,21 @@ class _TasksPageState extends State<TasksPage> {
             child: Scaffold(
                 appBar: TasksPageAppBar(tasksPageState: this),
                 body: renderBody(provider),
-                floatingActionButton:
-                    !isDesktopMode ? floatingActionButton : null))
+                floatingActionButton: !isDesktopMode
+                    ? provider.taskEditMode
+                        ? floatingActionButtonToSave(provider, context)
+                        : FloatingActionButton(
+                            onPressed: () {
+                              if (!provider.taskEditMode) {
+                                provider.addEditorItem();
+                              }
+                            },
+                            child: const Icon(
+                              Icons.add,
+                              color: Colors.white,
+                            ),
+                          )
+                    : null))
       ]);
     });
   }
@@ -117,7 +130,6 @@ class _TasksPageState extends State<TasksPage> {
         scrollController: _scrollController,
         itemPositionsListener: itemPositionsListener,
         onDeleteFn: deleteTask,
-        onAddFn: onAddTask,
       ),
       onNotification: (notification) {
         if (!taskListProvider.loading &&
@@ -164,13 +176,10 @@ class _TasksPageState extends State<TasksPage> {
       return MultiSplitViewTheme(
           data: MultiSplitViewThemeData(
               dividerThickness: 2,
-              dividerPainter: DividerPainters.grooved1(
-                highlightedThickness: 6,
-                thickness: 3,
-                size: 5,
-                color: Colors.blueGrey,
-                backgroundColor: Colors.blueGrey.shade100,
-                highlightedBackgroundColor: Colors.blue,
+              dividerPainter: DividerPainters.background(
+                animationEnabled: false,
+                highlightedColor: Colors.blue,
+                color: Colors.blueGrey.shade100,
               )),
           child: MultiSplitView(
             onSizeChange: (childIndex1, childIndex2) {
@@ -210,83 +219,6 @@ class _TasksPageState extends State<TasksPage> {
         child: renderTasks(taskListProvider),
       );
     }
-  }
-
-  Future<Task?> createTask(String description) async {
-    if (sessionID == "") {
-      return null;
-    }
-
-    final taskListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);
-
-    final msgListProvider =
-        Provider.of<MsgListProvider>(context, listen: false);
-
-    Task task = Task(description: description);
-    Response response;
-    try {
-      response = await httpClient.post(setUriProperty(serverURI, path: 'todo'),
-          body: jsonEncode(task),
-          headers: {"ProjectID": taskListProvider.projectID.toString()});
-    } catch (e) {
-      toast(e.toString(), context);
-      return null;
-    }
-    //request.headers.contentLength = utf8.encode(body).length;
-
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body) as Map<String, dynamic>;
-      task.projectID = data["ProjectID"];
-      task.ID = data["ID"];
-      task.creation_date =
-          DateTime.tryParse(data["Creation_date"]) ?? DateTime.utc(0);
-      task.authorID = data["AuthorID"];
-      task.authorName = data["AuthorName"];
-      task.read = true;
-      msgListProvider.task = task;
-      msgListProvider.taskID = task.ID;
-      createMessage(
-          text: "",
-          task: task,
-          msgListProvider: msgListProvider,
-          isTaskDescriptionItem: true);
-      return task;
-    }
-
-    return null;
-  }
-
-  Future<bool> onAddTask(String description) async {
-    if (sessionID == "") {
-      return false;
-    }
-
-    final taskListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);
-
-    final msgListProvider =
-        Provider.of<MsgListProvider>(context, listen: false);
-
-    Task? task = await createTask(description);
-
-    taskListProvider.loading = false;
-
-    if (task == null) return false;
-
-    taskListProvider.currentTask = task;
-    taskListProvider.addItem(task);
-    msgListProvider.taskID = task.ID;
-    msgListProvider.task = task;
-
-    if (isDesktopMode) {
-      msgListProvider.clear(true);
-    } else {
-      msgListProvider.clear(false);
-      openTask(context, task, msgListProvider);
-    }
-
-    return true;
   }
 
   Future<bool> deleteTask(int taskID) async {
@@ -660,7 +592,6 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
                   onPressed: () {
                     if (!taskListProvider.taskEditMode) {
                       taskListProvider.addEditorItem();
-                      taskListProvider.taskEditMode = true;
                     }
                   },
                   child: Row(

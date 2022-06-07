@@ -321,6 +321,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var httpScheme = settings.getString("httpScheme");
     var host = settings.getString("host");
     var port = settings.getInt("port");
+    taskListProvider.projectID = settings.getInt("projectID");
 
     if (port == null || port == 0) {
       port = null;
@@ -356,14 +357,13 @@ class _MyHomePageState extends State<MyHomePage> {
       if (taskListProvider.projectID != null &&
           taskListProvider.project == null) {
         taskListProvider.project = await getProject(taskListProvider.projectID);
-        if (taskListProvider.project == null) {
-          taskListProvider.project = await requestFirstItem();
-          if (taskListProvider.project != null) {
-            taskListProvider.projectID = taskListProvider.project!.ID;
-            await taskListProvider.requestTasks(context);
-          }
-        }
+        taskListProvider.project ??= await requestFirstItem();
       }
+      if (taskListProvider.project != null) {
+        taskListProvider.projectID = taskListProvider.project!.ID;
+        await taskListProvider.requestTasks(context);
+      }
+
       connectWebSocketChannel(serverURI).then((value) {
         listenWs(taskListProvider);
       });

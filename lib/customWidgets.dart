@@ -369,7 +369,7 @@ class NumberInStadium extends StatelessWidget {
         )),
         padding: const EdgeInsets.only(left: 5, right: 5),
         decoration: BoxDecoration(
-            color: Colors.blue,
+            color: Colors.lightBlue,
             shape: number < 10 ? BoxShape.circle : BoxShape.rectangle,
             borderRadius: number < 10
                 ? null
