@@ -37,6 +37,7 @@ func (h *Hub) Run() {
 			}
 		case message := <-h.broadcast:
 			for client := range h.clients {
+				//message.UserID = client.userI
 				select {
 				case client.send <- message:
 				default:

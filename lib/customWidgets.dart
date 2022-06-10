@@ -362,24 +362,25 @@ class NumberInStadium extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        child: Center(
+    return Align(
+        alignment: Alignment.topCenter,
+        child: Container(
             child: Text(
-          number.toString(),
-          style: const TextStyle(color: Colors.white, fontSize: 12),
-        )),
-        padding: const EdgeInsets.only(left: 5, right: 5),
-        decoration: BoxDecoration(
-            color: Colors.lightBlue,
-            shape: number < 10 ? BoxShape.circle : BoxShape.rectangle,
-            borderRadius: number < 10
-                ? null
-                : const BorderRadius.only(
-                    topLeft: Radius.circular(10),
-                    bottomLeft: Radius.circular(10),
-                    topRight: Radius.circular(10),
-                    bottomRight: Radius.circular(10),
-                  )));
+              number.toString(),
+              style: const TextStyle(color: Colors.white),
+            ),
+            padding: const EdgeInsets.only(left: 5, right: 5, bottom: 3),
+            decoration: BoxDecoration(
+                color: Colors.lightBlue,
+                shape: number < 10 ? BoxShape.circle : BoxShape.rectangle,
+                borderRadius: number < 10
+                    ? null
+                    : const BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        bottomLeft: Radius.circular(10),
+                        topRight: Radius.circular(10),
+                        bottomRight: Radius.circular(10),
+                      ))));
   }
 }
 

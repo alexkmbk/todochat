@@ -32,6 +32,7 @@ const Color uncompletedTaskColor = Colors.white;
 const Color appBarColor = Color.fromARGB(240, 255, 255, 255);
 const Color unreadTaskColor = Color.fromARGB(255, 250, 161, 27);
 late SharedPreferences settings;
+Timer? timer;
 
 void main() {
   runApp(
@@ -40,6 +41,9 @@ void main() {
         return const MyApp();
       },
       beforeRestart: () {
+        if (timer != null) {
+          timer!.cancel();
+        }
         appInitialized = false;
         sessionID = "";
         if (ws != null) {
@@ -68,7 +72,7 @@ class MyApp extends StatelessWidget {
     var mediaQueryData = MediaQueryData.fromWindow(instance!.window);
     var physicalPixelWidth = mediaQueryData.size.width;
     if (physicalPixelWidth > 1000) {
-      isDesktopMode = true;
+      //isDesktopMode = true;
     }
 
     return MultiProvider(
@@ -85,6 +89,10 @@ class MyApp extends StatelessWidget {
           navigatorKey: NavigationService.navigatorKey,
           title: 'ToDo Chat',
           theme: ThemeData(
+            textTheme: Theme.of(context).textTheme.apply(
+                  fontSizeFactor: 1.1,
+                  fontSizeDelta: 2.0,
+                ),
             primarySwatch: Colors.blue,
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
@@ -311,8 +319,8 @@ class _MyHomePageState extends State<MyHomePage> {
     if (appInitialized) return true;
     bool res;
 
-    /*final msgListProvider =
-        Provider.of<MsgListProvider>(context, listen: false);*/
+    final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);
     final taskListProvider =
         Provider.of<TasksListProvider>(context, listen: false);
 
@@ -369,8 +377,14 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     }
 
+    // int counter = 0;
     var connectWebSocketInProcess = false;
-    Timer.periodic(const Duration(seconds: 1), (Timer t) {
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      /* counter++;
+      createMessage(
+          text: counter.toString(),
+          msgListProvider: msgListProvider,
+          task: Task(ID: 1));*/
       if (!connectWebSocketInProcess &&
           !isWSConnected &&
           isServerURI &&

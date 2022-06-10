@@ -31,6 +31,8 @@ type Client struct {
 	send chan *WSMessage
 
 	sessionID uuid.UUID
+
+	//userID int64
 }
 
 var Upgrader = websocket.Upgrader{

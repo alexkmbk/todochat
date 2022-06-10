@@ -103,9 +103,9 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
   @override
   void dispose() {
     super.dispose();
-    final msgListProvider =
+    /*final msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);
-    msgListProvider.clear();
+    msgListProvider.clear();*/
 
     //ws.sink.close();
     //_scrollController.dispose();

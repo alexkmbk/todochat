@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:todochat/SettingsPage.dart';
 import 'LoginPage.dart';
+import 'customWidgets.dart';
 import 'main.dart';
 import 'utils.dart';
 
@@ -12,7 +13,9 @@ class MainMenu extends StatelessWidget {
   const MainMenu({Key? key, this.items}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context_) {
+    var context = NavigationService.navigatorKey.currentContext ?? context_;
+
     List<PopupMenuEntry> mainMenuCommonItems = [
       if (currentUserName.isNotEmpty)
         PopupMenuItem(

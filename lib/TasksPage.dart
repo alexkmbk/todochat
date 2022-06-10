@@ -503,9 +503,11 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
             taskListProvider.refresh();
 
             await widget.tasksPageState.searchTasks(value, context);
-            msgListProvider.taskID = taskListProvider.currentTask?.ID ?? 0;
-            msgListProvider.task = taskListProvider.currentTask;
-            msgListProvider.requestMessages();
+            if (isDesktopMode) {
+              msgListProvider.taskID = taskListProvider.currentTask?.ID ?? 0;
+              msgListProvider.task = taskListProvider.currentTask;
+              msgListProvider.requestMessages();
+            }
           } else {
             taskListProvider.searchMode = false;
           }

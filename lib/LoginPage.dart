@@ -116,7 +116,7 @@ class _LoginPageState extends State<LoginPage> {
       final taskListProvider =
           Provider.of<TasksListProvider>(context, listen: false);
       taskListProvider.clear();
-      taskListProvider.requestTasks(context);
+      await taskListProvider.requestTasks(context);
       msgListProvider.refresh();
 
       return true;
@@ -387,7 +387,9 @@ Future<bool> login(
           Provider.of<TasksListProvider>(context, listen: false);
       taskListProvider.clear();
       taskListProvider.requestTasks(context);
-      msgListProvider.refresh();
+      if (isDesktopMode) {
+        msgListProvider.refresh();
+      }
     }
 
     return true;

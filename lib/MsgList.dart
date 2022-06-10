@@ -47,6 +47,7 @@ class MsgListProvider extends ChangeNotifier {
   Task? task;
   int foundMessageID = 0;
   ItemScrollController? scrollController;
+  bool isOpen = isDesktopMode;
 
   void jumpTo(int messageID) {
     if (messageID == 0) return;
@@ -113,11 +114,19 @@ class MsgListProvider extends ChangeNotifier {
     items.insert(0, message);
     uploadingFiles[message.tempID] =
         UploadingFilesStruct(loadingFileData: loadingFileData);
+
+    createMessageWithFile(
+      text: message.text,
+      fileData: loadingFileData,
+      fileName: message.fileName,
+      msgListProvider: this,
+      tempID: message.tempID,
+    );
     notifyListeners();
   }
 
   bool addItem(Message message) {
-    if (message.taskID != taskID) {
+    if (message.taskID != taskID || !isOpen) {
       return false;
     }
     bool created = false;
@@ -657,23 +666,15 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foundStruct = uploadingFiles[message.tempID];
-    if (foundStruct != null && foundStruct.multipartRequest == null) {
+    /*if (foundStruct != null && foundStruct.multipartRequest == null) {
       createMessageWithFile(
-          text: message.text,
-          fileData: foundStruct.loadingFileData,
-          fileName: message.fileName,
-          msgListProvider: msgListProvider,
-          tempID: message.tempID,
-          onProgress: (int bytes, int totalBytes) {
-            //setState(() {
-            if (totalBytes == 0) {
-              progress = 0.0;
-            } else {
-              progress = bytes / totalBytes;
-            }
-            //});
-          });
-    }
+        text: message.text,
+        fileData: foundStruct.loadingFileData,
+        fileName: message.fileName,
+        msgListProvider: msgListProvider,
+        tempID: message.tempID,
+      );
+    }*/
     return LayoutBuilder(builder: (context, constraints) {
       if (message.isTaskDescriptionItem && msgListProvider.task != null) {
         return Column(children: [
@@ -703,7 +704,7 @@ class ChatBubble extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: SelectableText(
                         msgListProvider.task?.description ?? "",
-                        style: const TextStyle(fontSize: 14),
+                        //style: const TextStyle(fontSize: 14),
                       )),
                 ]),
               )),
@@ -909,7 +910,7 @@ class ChatBubble extends StatelessWidget {
                   height: 200,
                   onTap: () => onTapOnFileMessage(message, context),
                 ),
-                if (progress < 1)
+                if (message.loadinInProcess)
                   const Positioned(
                       width: 15,
                       height: 15,
@@ -969,7 +970,7 @@ class ChatBubble extends StatelessWidget {
                                               ? Colors.white
                                               : Colors.black87),
                                 )),
-                            if (progress < 1)
+                            if (message.loadinInProcess)
                               const Padding(
                                   padding: EdgeInsets.only(left: 5),
                                   child: SizedBox(
@@ -1081,7 +1082,6 @@ Future<bool> createMessageWithFile(
     Uint8List? fileData,
     String fileName = "",
     bool isTaskDescriptionItem = false,
-    Function(int bytes, int totalBytes)? onProgress,
     required String tempID}) async {
   if (sessionID == "" || fileData == null) {
     return false;
@@ -1090,10 +1090,6 @@ Future<bool> createMessageWithFile(
   final foundUploadingFile = uploadingFiles[tempID];
   if (foundUploadingFile == null) {
     return false;
-  }
-
-  if (onProgress != null && fileData != null) {
-    onProgress(1, fileData.length);
   }
 
   bool isImage = isImageFile(fileName);
@@ -1113,7 +1109,6 @@ Future<bool> createMessageWithFile(
   final request = HTTPClient.MultipartRequest(
     'POST',
     setUriProperty(serverURI, path: 'createMessageWithFile'),
-    onProgress: onProgress,
   );
 
   foundUploadingFile.multipartRequest = request;
