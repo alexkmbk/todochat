@@ -180,7 +180,10 @@ class _LoginPageState extends State<LoginPage> {
                               onPressed: () {
                                 showDialog(
                                     context: context,
-                                    builder: (context) => const SettingsPage());
+                                    builder: (context) => SettingsPage(
+                                          key: UniqueKey(),
+                                          restartAppOnChange: true,
+                                        ));
                                 /*MaterialPageRoute(
                               builder: (context) => const SettingsPage());*/
                               }),

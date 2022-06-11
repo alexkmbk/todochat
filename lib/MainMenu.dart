@@ -39,7 +39,11 @@ class MainMenu extends StatelessWidget {
           await Future.delayed(Duration.zero);
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const SettingsPage()),
+            MaterialPageRoute(
+                builder: (context) => SettingsPage(
+                      key: UniqueKey(),
+                      restartAppOnChange: true,
+                    )),
           );
         },
       ),

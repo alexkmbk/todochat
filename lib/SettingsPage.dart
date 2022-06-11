@@ -7,7 +7,9 @@ import 'main.dart';
 import 'utils.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  final bool restartAppOnChange;
+  const SettingsPage({Key? key, required this.restartAppOnChange})
+      : super(key: key);
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -105,12 +107,12 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Future<void> openLoginPage(BuildContext context) async {
+  /*Future<void> openLoginPage(BuildContext context) async {
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const SettingsPage()),
     );
-  }
+  }*/
 
   Future<void> saveAndClose() async {
     if (checkingConnection) return;
@@ -137,7 +139,9 @@ class _SettingsPageState extends State<SettingsPage> {
       settings.setString("httpScheme", serverURI.scheme);
       settings.setString("host", serverURI.host);
       settings.setInt("port", serverURI.port);
-      RestartWidget.restartApp(context);
+      if (widget.restartAppOnChange) {
+        RestartWidget.restartApp(context);
+      }
     }
     Navigator.pop(context, true);
   }

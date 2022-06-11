@@ -222,7 +222,9 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 	messages.task_id as task_id,
 	tasks.description as task_description,
 	tasks.creation_date as task_creation_date,
-	tasks.author_id
+	tasks.author_id,
+	tasks.author_name,
+	messages.user_name
 	from
 	(SELECT max(rowid) as message_id, task_id FROM messages_fts(@search) where project_id = @projectID group by task_id) as found_messages
 	inner join messages on messages.ID = found_messages.message_id AND NOT messages.Is_Task_Description_Item
@@ -234,7 +236,9 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 	tasks_fts.rowid,
 	tasks.description,
 	tasks.creation_date,
-	tasks.author_id
+	tasks.author_id,
+	tasks.author_name,
+	tasks.Last_Message_User_Name
 	FROM tasks_fts(@search)
 	inner join tasks as tasks on tasks.ID = tasks_fts.rowid
 	left join messages as messages on tasks.last_message_id = messages.ID where tasks_fts.project_id = @projectID AND (messages.project_id = @projectID OR messages.project_id IS NULL)`, sql.Named("search", search), sql.Named("projectID", projectID)).Order("created_at desc").Rows()
@@ -256,8 +260,10 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 		var task_id, author_id int64
 		var description string
 		var task Task
-		rows.Scan(&message_id, &text, &created_at, &task_id, &description, &task_creation_date, &author_id)
-		task = Task{ID: task_id, Description: description, LastMessage: text, LastMessageID: message_id, ProjectID: projectID, Creation_date: task_creation_date, AuthorID: author_id}
+		var lastMessageUserName string
+		var authorName string
+		rows.Scan(&message_id, &text, &created_at, &task_id, &description, &task_creation_date, &author_id, &authorName, &lastMessageUserName)
+		task = Task{ID: task_id, Description: description, LastMessage: text, LastMessageID: message_id, ProjectID: projectID, Creation_date: task_creation_date, AuthorID: author_id, AuthorName: authorName, LastMessageUserName: lastMessageUserName}
 
 		if UserID != 0 {
 			seenTask := SeenTask{UserID: UserID, TaskID: task.ID}

@@ -72,7 +72,7 @@ class MyApp extends StatelessWidget {
     var mediaQueryData = MediaQueryData.fromWindow(instance!.window);
     var physicalPixelWidth = mediaQueryData.size.width;
     if (physicalPixelWidth > 1000) {
-      //isDesktopMode = true;
+      isDesktopMode = true;
     }
 
     return MultiProvider(
@@ -201,7 +201,10 @@ class _MyHomePageState extends State<MyHomePage> {
                               await Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => const SettingsPage()),
+                                    builder: (context) => SettingsPage(
+                                          key: UniqueKey(),
+                                          restartAppOnChange: true,
+                                        )),
                               );
                               setState(() {});
                             },
@@ -319,8 +322,8 @@ class _MyHomePageState extends State<MyHomePage> {
     if (appInitialized) return true;
     bool res;
 
-    final msgListProvider =
-        Provider.of<MsgListProvider>(context, listen: false);
+    /* final msgListProvider =
+        Provider.of<MsgListProvider>(context, listen: false);*/
     final taskListProvider =
         Provider.of<TasksListProvider>(context, listen: false);
 
@@ -338,7 +341,11 @@ class _MyHomePageState extends State<MyHomePage> {
     if (host == null || host.isEmpty) {
       isServerURI = await Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const SettingsPage()),
+        MaterialPageRoute(
+            builder: (context) => SettingsPage(
+                  key: UniqueKey(),
+                  restartAppOnChange: false,
+                )),
       );
     } else {
       serverURI = Uri(scheme: httpScheme, host: host, port: port);

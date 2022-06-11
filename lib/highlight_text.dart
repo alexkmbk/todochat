@@ -62,7 +62,7 @@ class HighlightText extends StatelessWidget {
       spans.add(leading!);
     }
 
-    var textWords = text.multiSplit([' ', '.', ',']);
+    var textWords = text.multiSplit([' ', '.', ',', '?', ':']);
 
     for (var word in textWords) {
       var wordToSearch = ignoreCase ? word.toLowerCase() : word;
