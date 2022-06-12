@@ -12,15 +12,16 @@ import (
 	"gorm.io/gorm"
 )
 
-func InitDB_SQLite() {
+func InitDB_SQLite() bool {
 
 	var err error
 	DBPAth := filepath.Join(GetCurrentDir(), "gorm.db")
 	DB, err = gorm.Open(sqlite.Open("file:///"+DBPAth+"?cache=shared&_pragma=journal_mode(MEMORY)&_pragma=busy_timeout(20000)"), &gorm.Config{})
 	if err != nil {
 		log.Println(err)
-		return
+		return false
 	}
+	return true
 }
 
 func InitFTS_SQLite() {

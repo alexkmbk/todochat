@@ -10,11 +10,42 @@ import (
 	. "todochat_server/App"
 	"todochat_server/DB"
 	WS "todochat_server/constrollers/WebSocked"
+
+	"gopkg.in/ini.v1"
 )
 
 func main() {
 	//var err error
 	//db, _ = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+
+	DB.DBMS = "SQLite"
+	DBUserName := ""
+	DBPassword := ""
+	DBName := ""
+	DBHost := ""
+	DBPort := ""
+	DBTimeZone := ""
+	port := "80"
+
+	cfg, err := ini.Load("settings.ini")
+	if err == nil {
+		settings := cfg.Section("")
+		DB.DBMS = settings.Key("DBMS").String()
+		if DB.DBMS == "" {
+			DB.DBMS = "SQLite"
+		}
+		DBUserName = settings.Key("DBUserName").String()
+		DBName = settings.Key("DBName").String()
+		DBHost = settings.Key("DBHost").String()
+		DBPassword = settings.Key("DBPassword").String()
+		DBTimeZone = settings.Key("TimeZone").String()
+
+		port = settings.Key("Port").String()
+		if port == "" {
+			port = "80"
+		}
+
+	}
 
 	FileStoragePath = filepath.Join(GetCurrentDir(), "FileStorage")
 
@@ -24,19 +55,18 @@ func main() {
 
 	log.Info("Starting Todolist API server")
 
-	DB.InitDB()
+	DB.InitDB(DB.DBMS, DBUserName, DBPassword, DBName, DBHost, DBPort, DBTimeZone)
 
 	WS.WSHub = WS.NewHub()
 
 	go WS.WSHub.Run()
 
-	var err error
 	if len(os.Args) > 1 {
 		err = http.ListenAndServe(":"+os.Args[1], GetRoutesHandler())
 	} else {
-		port := os.Getenv("PORT")
-		if port == "" {
-			port = "80"
+		val := os.Getenv("PORT")
+		if val != "" {
+			port = val
 		}
 		err = http.ListenAndServe(":"+port, GetRoutesHandler())
 	}

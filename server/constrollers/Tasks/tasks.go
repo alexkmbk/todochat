@@ -214,8 +214,11 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 	//filter := query.Get("filter")
 
 	var tasks []*Task
+	var queryStr string
+	var err error
 
-	rows, err := DB.Raw(`SELECT
+	if DBMS == "SQLite" {
+		queryStr = `SELECT
 	ifnull(found_messages.message_id, 0) as message_id,
 	messages.text as text,
 	messages.created_at,
@@ -241,7 +244,39 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 	tasks.Last_Message_User_Name
 	FROM tasks_fts(@search)
 	inner join tasks as tasks on tasks.ID = tasks_fts.rowid
-	left join messages as messages on tasks.last_message_id = messages.ID where tasks_fts.project_id = @projectID AND (messages.project_id = @projectID OR messages.project_id IS NULL)`, sql.Named("search", search), sql.Named("projectID", projectID)).Order("created_at desc").Rows()
+	left join messages as messages on tasks.last_message_id = messages.ID where tasks_fts.project_id = @projectID AND (messages.project_id = @projectID OR messages.project_id IS NULL)`
+
+	} else {
+		search = "%" + search + "%"
+		queryStr = `SELECT
+		coalesce(found_messages.message_id, 0) as message_id,
+		messages.text as text,
+		messages.created_at,
+		messages.task_id as task_id,
+		tasks.description as task_description,
+		tasks.creation_date as task_creation_date,
+		tasks.author_id,
+		tasks.author_name,
+		messages.user_name
+		from
+		(SELECT max(id) as message_id, task_id FROM messages where project_id = @projectID  AND messages.text like @search group by task_id) as found_messages
+		inner join messages on messages.ID = found_messages.message_id AND NOT messages.Is_Task_Description_Item
+		inner join tasks as tasks on tasks.ID = found_messages.task_id
+		UNION
+		SELECT coalesce(found_tasks.last_message_id, 0),
+		coalesce(found_tasks.last_message, ''),
+		coalesce(messages.created_at, CURRENT_TIMESTAMP),
+		found_tasks.id,
+		found_tasks.description,
+		found_tasks.creation_date,
+		found_tasks.author_id,
+		found_tasks.author_name,
+		found_tasks.Last_Message_User_Name
+		FROM (SELECT * from tasks WHERE tasks.project_id = @projectID AND tasks.Description Like @search) as found_tasks
+		left join messages as messages on found_tasks.last_message_id = messages.ID where (messages.project_id = @projectID OR messages.project_id IS NULL)`
+	}
+
+	rows, err := DB.Raw(queryStr, sql.Named("search", search), sql.Named("projectID", projectID)).Order("created_at desc").Rows()
 
 	defer func() {
 		if rows != nil {

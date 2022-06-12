@@ -15,6 +15,7 @@ import (
 //+var db, _ = gorm.Open("mysql", "root:root@/todolist?charset=utf8&parseTime=True&loc=Local")
 //var dsn = "host=localhost user=postgres password=123 dbname=todolist port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 var DB *gorm.DB
+var DBMS string
 
 func DropUnusedColumns(dst interface{}) {
 
@@ -37,14 +38,7 @@ func DropUnusedColumns(dst interface{}) {
 	}
 }
 
-func InitDB() {
-
-	InitDB_SQLite()
-
-	SQLDB, _ := DB.DB()
-	SQLDB.SetMaxIdleConns(10)
-	SQLDB.SetMaxOpenConns(100)
-
+func AutoMigrate() {
 	DB.AutoMigrate(&User{})
 	DropUnusedColumns(&User{})
 	DB.AutoMigrate(&Project{})
@@ -58,7 +52,31 @@ func InitDB() {
 	DB.AutoMigrate(&SeenTask{})
 	DropUnusedColumns(&SeenTask{})
 
-	InitFTS_SQLite()
+}
+func InitDB(DBMS string, DBUserName string, DBPassword string, DBName string, DBHost string, DBPort string, TimeZone string) {
+
+	if DBMS == "SQLite" {
+		if !InitDB_SQLite() {
+			return
+		}
+	} else if DBMS == "PostgreSQL" {
+		if !InitDB_Postges(DBMS, DBUserName, DBPassword, DBName, DBHost, DBPort, TimeZone) {
+			return
+		}
+	} else {
+		log.Println("DBMS \"" + DBMS + "\" is not supported.")
+		return
+	}
+
+	SQLDB, _ := DB.DB()
+	SQLDB.SetMaxIdleConns(10)
+	SQLDB.SetMaxOpenConns(100)
+
+	AutoMigrate()
+
+	if DBMS == "SQLite" {
+		InitFTS_SQLite()
+	}
 
 	var count int64
 	DB.Model(&Project{}).Count(&count)
