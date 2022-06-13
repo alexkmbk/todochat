@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -12,7 +13,6 @@ import (
 	WS "todochat_server/constrollers/WebSocked"
 
 	"github.com/kardianos/service"
-	"gopkg.in/ini.v1"
 )
 
 var logger service.Logger
@@ -28,16 +28,28 @@ func (p *program) run() {
 	//var err error
 	//db, _ = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
-	DB.DBMS = "SQLite"
-	DBUserName := ""
-	DBPassword := ""
-	DBName := ""
-	DBHost := ""
-	DBPort := ""
-	DBTimeZone := ""
-	port := "80"
+	port_ := flag.String("port", "80", "port")
+	DBMS_ := flag.String("DBMS", "SQLite", "DBMS")
+	DBUserName_ := flag.String("DBUserName", "", "DBUserName")
+	DBPassword_ := flag.String("DBPassword", "", "DBPassword")
+	DBName_ := flag.String("DBName", "", "DBName")
+	DBHost_ := flag.String("DBHost", "", "DBHost")
+	DBPort_ := flag.String("DBPort", "", "DBPort")
+	DBTimeZone_ := flag.String("DBTimeZone", "", "DBTimeZone")
 
-	cfg, err := ini.Load("settings.ini")
+	flag.Parse()
+
+	port := *port_
+	DB.DBMS = *DBMS_
+	DBUserName := *DBUserName_
+	DBPassword := *DBPassword_
+	DBName := *DBName_
+	DBHost := *DBHost_
+	DBPort := *DBPort_
+	DBTimeZone := *DBTimeZone_
+
+	var err error
+	/*cfg, err := ini.Load("settings.ini")
 	if err == nil {
 		settings := cfg.Section("")
 		DB.DBMS = settings.Key("DBMS").String()
@@ -55,7 +67,7 @@ func (p *program) run() {
 			port = "80"
 		}
 
-	}
+	}*/
 
 	FileStoragePath = filepath.Join(GetCurrentDir(), "FileStorage")
 
@@ -71,15 +83,15 @@ func (p *program) run() {
 
 	go WS.WSHub.Run()
 
-	if len(os.Args) > 1 {
+	/*	if len(os.Args) > 1 {
 		err = http.ListenAndServe(":"+os.Args[1], GetRoutesHandler())
-	} else {
-		val := os.Getenv("PORT")
-		if val != "" {
-			port = val
-		}
-		err = http.ListenAndServe(":"+port, GetRoutesHandler())
+	} else {*/
+	val := os.Getenv("PORT")
+	if val != "" {
+		port = val
 	}
+	err = http.ListenAndServe(":"+port, GetRoutesHandler())
+	//}
 	if err != nil {
 		println(err.Error())
 	}
