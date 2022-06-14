@@ -485,45 +485,44 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                       },
                       const SingleActivator(LogicalKeyboardKey.keyV,
                           control: true): () async {
-                        final bytes = await Pasteboard.image;
-                        if (bytes != null) {
-                          msgListProvider.addUploadingItem(
-                              Message(
-                                  taskID: msgListProvider.taskID,
-                                  userID: currentUserID,
-                                  fileName: "clipboard_image.png",
-                                  loadingFile: true,
-                                  isImage: true),
-                              bytes);
-                        } else {
-                          final files = await Pasteboard.files();
-                          if (files.isNotEmpty) {
-                            for (final file in files) {
-                              var fileData = await readFile(file);
-                              if (fileData.isNotEmpty) {
-                                msgListProvider.addUploadingItem(
-                                    Message(
-                                        taskID: msgListProvider.taskID,
-                                        userID: currentUserID,
-                                        fileName: path.basename(file),
-                                        loadingFile: true,
-                                        isImage: isImageFile(file)),
-                                    fileData);
-                              }
-                            }
-                          } else {
-                            ClipboardData? data =
-                                await Clipboard.getData('text/plain');
+                        ClipboardData? data =
+                            await Clipboard.getData('text/plain');
 
-                            if (data != null &&
-                                data.text != null &&
-                                data.text!.trim().isNotEmpty) {
-                              String text = data.text ?? "";
-                              _messageInputController.text = text.trim();
-                              _messageInputController.selection =
-                                  TextSelection.fromPosition(TextPosition(
-                                      offset:
-                                          _messageInputController.text.length));
+                        if (data != null &&
+                            data.text != null &&
+                            data.text!.trim().isNotEmpty) {
+                          String text = data.text ?? "";
+                          _messageInputController.text = text.trim();
+                          _messageInputController.selection =
+                              TextSelection.fromPosition(TextPosition(
+                                  offset: _messageInputController.text.length));
+                        } else {
+                          final bytes = await Pasteboard.image;
+                          if (bytes != null) {
+                            msgListProvider.addUploadingItem(
+                                Message(
+                                    taskID: msgListProvider.taskID,
+                                    userID: currentUserID,
+                                    fileName: "clipboard_image.png",
+                                    loadingFile: true,
+                                    isImage: true),
+                                bytes);
+                          } else {
+                            final files = await Pasteboard.files();
+                            if (files.isNotEmpty) {
+                              for (final file in files) {
+                                var fileData = await readFile(file);
+                                if (fileData.isNotEmpty) {
+                                  msgListProvider.addUploadingItem(
+                                      Message(
+                                          taskID: msgListProvider.taskID,
+                                          userID: currentUserID,
+                                          fileName: path.basename(file),
+                                          loadingFile: true,
+                                          isImage: isImageFile(file)),
+                                      fileData);
+                                }
+                              }
                             } else {
                               var html = await Pasteboard.html;
                               if (html != null && html.isNotEmpty) {

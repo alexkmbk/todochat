@@ -478,6 +478,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
     final msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);
     return getTextField(
+        textInputAction: TextInputAction.done,
         controller: searchController,
         hintText: "Search",
         fillColor: Colors.white,
@@ -511,6 +512,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
           } else {
             taskListProvider.searchMode = false;
           }
+          //FocusScope.of(context).requestFocus();
         });
   }
 
