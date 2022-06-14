@@ -327,10 +327,10 @@ packages:
   pasteboard:
     dependency: "direct main"
     description:
-      path: "../pasteboard"
-      relative: true
-    source: path
-    version: "0.0.3"
+      name: pasteboard
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.0"
   path:
     dependency: transitive
     description:

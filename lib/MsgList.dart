@@ -595,10 +595,28 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                       FilePickerResult? result =
                           await FilePicker.platform.pickFiles();
 
-                      var fileName = result?.files.single.path?.trim() ?? "";
+                      if (result == null) {
+                        return;
+                      }
 
-                      if (fileName.isNotEmpty) {
-                        var res = await readFile(fileName);
+                      if (!isWeb() && result.files.single.path != null) {
+                        var fileName = result.files.single.path?.trim() ?? "";
+
+                        if (fileName.isNotEmpty) {
+                          var res = await readFile(fileName);
+                          msgListProvider.addUploadingItem(
+                              Message(
+                                  taskID: msgListProvider.taskID,
+                                  userID: currentUserID,
+                                  fileName: path.basename(fileName),
+                                  loadingFile: true,
+                                  isImage: isImageFile(fileName)),
+                              res);
+                          _messageInputController.text = "";
+                        }
+                      } else if (result.files.single.bytes != null &&
+                          result.files.single.bytes!.isNotEmpty) {
+                        var fileName = "image.jpg";
                         msgListProvider.addUploadingItem(
                             Message(
                                 taskID: msgListProvider.taskID,
@@ -606,7 +624,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                                 fileName: path.basename(fileName),
                                 loadingFile: true,
                                 isImage: isImageFile(fileName)),
-                            res);
+                            result.files.single.bytes!);
                         _messageInputController.text = "";
                       }
                     },

@@ -17,9 +17,9 @@ import (
 
 func FileServer(fs http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !CheckSessionID(w, r, false) {
+		/*if !CheckSessionID(w, r, false) {
 			return
-		}
+		}*/
 
 		fs.ServeHTTP(w, r)
 	}
