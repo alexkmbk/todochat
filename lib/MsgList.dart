@@ -615,7 +615,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                         }
                       } else if (result.files.single.bytes != null &&
                           result.files.single.bytes!.isNotEmpty) {
-                        var fileName = "image.jpg";
+                        var fileName = result.files.single.name;
                         msgListProvider.addUploadingItem(
                             Message(
                                 taskID: msgListProvider.taskID,
