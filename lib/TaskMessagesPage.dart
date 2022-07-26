@@ -34,7 +34,7 @@ class TaskMessagesPage extends StatefulWidget {
 class _TaskMessagesPageState extends State<TaskMessagesPage> {
   final _messageInputController = TextEditingController();
 
-  final ScrollController scrollController = ScrollController();
+  // final ScrollController scrollController = ScrollController();
   final ItemScrollController itemsScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();

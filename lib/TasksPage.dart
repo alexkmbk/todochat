@@ -132,6 +132,15 @@ class _TasksPageState extends State<TasksPage> {
         onDeleteFn: deleteTask,
       ),
       onNotification: (notification) {
+        /*var scrollDelta = notification.scrollDelta ?? 0;
+        if (taskListProvider.items.length >
+            itemPositionsListener.itemPositions.value.last.index + 5) {
+          final double? sign = scrollDelta.sign;
+          final index = itemPositionsListener.itemPositions.value.last.index +
+              (5 * (sign ?? 1)).toInt();
+          _scrollController.jumpTo(index: index);
+        }*/
+
         if (!taskListProvider.loading &&
             !taskListProvider.searchMode &&
             (itemPositionsListener.itemPositions.value.isEmpty ||

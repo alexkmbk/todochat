@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:todochat/TasksPage.dart';
+//import 'package:todochat/TasksPage.dart';
 import 'HttpClient.dart';
 import 'LoginPage.dart';
 import 'MsgList.dart';
@@ -17,7 +17,7 @@ import 'utils.dart';
 import 'package:collection/collection.dart';
 import 'ProjectsList.dart';
 import 'main.dart';
-import 'package:badges/badges.dart';
+//import 'package:badges/badges.dart';
 
 class TasksListProvider extends ChangeNotifier {
   Project? project;

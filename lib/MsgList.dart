@@ -922,11 +922,21 @@ class ChatBubble extends StatelessWidget {
           (message.smallImageName.isNotEmpty || loadingFileData != null)) {
         return loadingFileData != null
             ? Stack(children: [
-                memoryImage(
-                  loadingFileData,
-                  height: 200,
-                  onTap: () => onTapOnFileMessage(message, context),
-                ),
+                /*CrossPlatformClick(
+                    menuItems: [
+                      PopupMenuItem(
+                          onTap: () {},
+                          child: const Text('Copy',
+                              style: TextStyle(fontSize: 16)),
+                          value: "copied"),
+                    ],
+                    child: */
+                memoryImage(loadingFileData,
+                    height: 200,
+                    onTap: () => onTapOnFileMessage(message, context),
+                    onSecondaryTap: () {
+                      print("onSecondaryTap");
+                    }), //),
                 if (message.loadinInProcess)
                   const Positioned(
                       width: 15,
@@ -947,6 +957,19 @@ class ChatBubble extends StatelessWidget {
                     message.smallImageName,
                 headers: {"sessionID": sessionID}, onTap: () {
                 onTapOnFileMessage(message, context);
+              }, onSecondaryTap: () async {
+                /*await showMenu(
+                  context: context,
+                  position: const RelativeRect.fromLTRB(50, 50, 50, 50),
+                  items: [
+                    PopupMenuItem<String>(
+                        child: const Text('Copy'),
+                        onTap: () async {
+                          final fileData = await getFile(message.localFileName);
+                          Pasteboard.writeImage(fileData);
+                        }),
+                  ],
+                );*/
               },
                 width: message.smallImageWidth.toDouble(),
                 height: message.smallImageHeight.toDouble(),

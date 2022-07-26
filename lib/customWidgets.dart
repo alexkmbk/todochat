@@ -1,7 +1,12 @@
+import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:universal_html/html.dart' as html;
 
 Widget getTextField({
   TextEditingController? controller,
@@ -123,12 +128,14 @@ Widget getTextField({
 Widget networkImage(String src,
     {Map<String, String>? headers,
     GestureTapCallback? onTap,
+    GestureTapCallback? onSecondaryTap,
     double? width,
     double? height,
     Uint8List? previewImageData}) {
   try {
     return GestureDetector(
         onTap: onTap,
+        onSecondaryTap: onSecondaryTap,
         child: ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
             child: Image.network(
@@ -179,11 +186,15 @@ Widget networkImage(String src,
 Widget memoryImage(Uint8List data,
     {Map<String, String>? headers,
     GestureTapCallback? onTap,
+    GestureLongPressCallback? onLongPress,
+    GestureTapCallback? onSecondaryTap,
     double? width,
     double? height}) {
   try {
     return GestureDetector(
         onTap: onTap,
+        onLongPress: onLongPress,
+        onSecondaryTap: onSecondaryTap,
         child: ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
             child: Image.memory(
@@ -402,5 +413,22 @@ class Label extends StatelessWidget {
         label: Text(
           text,
         ));
+  }
+}
+
+class AdjustableScrollController extends ScrollController {
+  AdjustableScrollController([int extraScrollSpeed = 40]) {
+    super.addListener(() {
+      ScrollDirection scrollDirection = super.position.userScrollDirection;
+      if (scrollDirection != ScrollDirection.idle) {
+        double scrollEnd = super.offset +
+            (scrollDirection == ScrollDirection.reverse
+                ? extraScrollSpeed
+                : -extraScrollSpeed);
+        scrollEnd = min(super.position.maxScrollExtent,
+            max(super.position.minScrollExtent, scrollEnd));
+        jumpTo(scrollEnd);
+      }
+    });
   }
 }
