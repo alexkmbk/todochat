@@ -46,11 +46,7 @@ class MainMenu extends StatelessWidget {
                     )),
           );
         },
-      ),
-      const PopupMenuItem(
-        onTap: ExitApp,
-        child: Text("Exit"),
-      ),
+      )
     ];
 
     return PopupMenuButton(
@@ -67,7 +63,14 @@ class MainMenu extends StatelessWidget {
           if (items == null) {
             return mainMenuCommonItems;
           } else {
-            return [...mainMenuCommonItems, ...items!];
+            var res = [...mainMenuCommonItems, ...items!];
+            res.add(
+              const PopupMenuItem(
+                onTap: ExitApp,
+                child: Text("Exit"),
+              ),
+            );
+            return res;
           }
         });
   }

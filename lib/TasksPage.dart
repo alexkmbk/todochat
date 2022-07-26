@@ -273,6 +273,7 @@ class _TasksPageState extends State<TasksPage> {
     var url = setUriProperty(serverURI, path: 'searchTasks', queryParameters: {
       "ProjectID": taskListProvider.projectID.toString(),
       "search": search,
+      "showCompleted": taskListProvider.showCompleted.toString(),
     });
 
     Response response;
@@ -473,6 +474,19 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
                   )))),*/
       leading: MainMenu(
         key: UniqueKey(),
+        items: [
+          PopupMenuItem(
+            child: Text(taskListProvider.showCompleted
+                ? "Hide completed"
+                : "Show completed"),
+            onTap: () async {
+              taskListProvider.showCompleted = !taskListProvider.showCompleted;
+              settings.setBool("showCompleted", taskListProvider.showCompleted);
+              taskListProvider.clear();
+              taskListProvider.requestTasks(context, true);
+            },
+          ),
+        ],
       ),
       actions: [
         if (!widget.tasksPageState.showSearch)

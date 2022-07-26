@@ -133,6 +133,11 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	showCompleted, err := strconv.ParseBool(query.Get("showCompleted"))
+	if err != nil {
+		showCompleted = true
+	}
+
 	projectID, err := strconv.Atoi(query.Get("ProjectID"))
 	if err != nil {
 		return
@@ -142,9 +147,9 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 
 	var tasks []*Task
 	if lastID == 0 {
-		DB.Order("Creation_date desc, ID desc").Where("project_ID = @projectID", sql.Named("projectID", projectID)).Limit(limit).Find(&tasks)
+		DB.Order("Creation_date desc, ID desc").Where("project_ID = @projectID AND (NOT Completed OR @showCompleted)", sql.Named("projectID", projectID), sql.Named("showCompleted", showCompleted)).Limit(limit).Find(&tasks)
 	} else {
-		DB.Order("Creation_date desc, ID desc").Where("project_ID = @projectID AND (Creation_date < @Creation_date OR (Creation_date = @Creation_date AND ID < @ID))", sql.Named("projectID", projectID), sql.Named("Creation_date", lastCreation_Date), sql.Named("ID", lastID)).Limit(limit).Find(&tasks)
+		DB.Order("Creation_date desc, ID desc").Where("project_ID = @projectID AND (NOT Completed OR @showCompleted) AND (Creation_date < @Creation_date OR (Creation_date = @Creation_date AND ID < @ID))", sql.Named("projectID", projectID), sql.Named("showCompleted", showCompleted), sql.Named("Creation_date", lastCreation_Date), sql.Named("ID", lastID)).Limit(limit).Find(&tasks)
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -206,6 +211,10 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 
 	query := r.URL.Query()
 	search := query.Get("search")
+	showCompleted, errShowCompleted := strconv.ParseBool(query.Get("showCompleted"))
+	if errShowCompleted != nil {
+		showCompleted = true
+	}
 
 	projectID := ToInt64(query.Get("ProjectID"))
 
@@ -244,7 +253,7 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 	tasks.Last_Message_User_Name
 	FROM tasks_fts(@search)
 	inner join tasks as tasks on tasks.ID = tasks_fts.rowid
-	left join messages as messages on tasks.last_message_id = messages.ID where tasks_fts.project_id = @projectID AND (messages.project_id = @projectID OR messages.project_id IS NULL)`
+	left join messages as messages on tasks.last_message_id = messages.ID where tasks.project_id = @projectID AND (NOT Completed OR @showCompleted) AND (messages.project_id = @projectID OR messages.project_id IS NULL)`
 
 	} else {
 		search = "%" + search + "%"

@@ -30,6 +30,7 @@ class TasksListProvider extends ChangeNotifier {
   bool searchMode = false;
   bool taskEditMode = false;
   bool isNewItem = false;
+  bool showCompleted = true;
   List<String> searchHighlightedWords = [];
   Task? currentTask;
   TextEditingController textEditingController = TextEditingController(text: "");
@@ -290,6 +291,7 @@ class TasksListProvider extends ChangeNotifier {
       "lastID": lastID.toString(),
       "lastCreation_date": lastCreation_date.toString(),
       "limit": "25",
+      "showCompleted": showCompleted.toString(),
     });
 
     Response response;
