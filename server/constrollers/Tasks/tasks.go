@@ -240,7 +240,7 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 	from
 	(SELECT max(rowid) as message_id, task_id FROM messages_fts(@search) where project_id = @projectID group by task_id) as found_messages
 	inner join messages on messages.ID = found_messages.message_id AND NOT messages.Is_Task_Description_Item
-	inner join tasks as tasks on tasks.ID = found_messages.task_id
+	inner join tasks as tasks on tasks.ID = found_messages.task_id AND (NOT tasks.Completed OR @showCompleted) 
 	UNION
 	SELECT ifnull(tasks.last_message_id, 0),
 	ifnull(tasks.last_message, 0),
@@ -270,7 +270,7 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 		from
 		(SELECT max(id) as message_id, task_id FROM messages where project_id = @projectID  AND messages.text like @search group by task_id) as found_messages
 		inner join messages on messages.ID = found_messages.message_id AND NOT messages.Is_Task_Description_Item
-		inner join tasks as tasks on tasks.ID = found_messages.task_id
+		inner join tasks as tasks on tasks.ID = found_messages.task_id AND (NOT tasks.Completed OR @showCompleted)
 		UNION
 		SELECT coalesce(found_tasks.last_message_id, 0),
 		coalesce(found_tasks.last_message, ''),
@@ -281,11 +281,11 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 		found_tasks.author_id,
 		found_tasks.author_name,
 		found_tasks.Last_Message_User_Name
-		FROM (SELECT * from tasks WHERE tasks.project_id = @projectID AND tasks.Description Like @search) as found_tasks
+		FROM (SELECT * from tasks WHERE tasks.project_id = @projectID AND (NOT tasks.Completed OR @showCompleted) AND tasks.Description Like @search) as found_tasks
 		left join messages as messages on found_tasks.last_message_id = messages.ID where (messages.project_id = @projectID OR messages.project_id IS NULL)`
 	}
 
-	rows, err := DB.Raw(queryStr, sql.Named("search", search), sql.Named("projectID", projectID)).Order("created_at desc").Rows()
+	rows, err := DB.Raw(queryStr, sql.Named("search", search), sql.Named("showCompleted", showCompleted), sql.Named("projectID", projectID)).Order("created_at desc").Rows()
 
 	defer func() {
 		if rows != nil {

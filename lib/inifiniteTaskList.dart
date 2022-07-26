@@ -155,13 +155,21 @@ class TasksListProvider extends ChangeNotifier {
           index = items.length - 1;
         }
       }
-      currentTask = items[index];
+
       final msgListProvider =
           Provider.of<MsgListProvider>(context, listen: false);
       msgListProvider.clear();
-      msgListProvider.taskID = currentTask!.ID;
-      msgListProvider.task = currentTask;
-      msgListProvider.requestMessages();
+
+      if (index < items.length) {
+        currentTask = items[index];
+        msgListProvider.taskID = currentTask!.ID;
+        msgListProvider.task = currentTask;
+        msgListProvider.requestMessages();
+      } else {
+        currentTask = null;
+        msgListProvider.taskID = 0;
+        msgListProvider.task = null;
+      }
       msgListProvider.refresh();
       notifyListeners();
     }
@@ -913,7 +921,15 @@ class _TaskListTileState extends State<TaskListTile> {
         task.closed = !value;
       });*/
     //}
-    if (!res) {
+    if (res) {
+      final taskListProvider =
+          Provider.of<TasksListProvider>(context, listen: false);
+      if (!taskListProvider.showCompleted) {
+        if (task.closed) {
+          taskListProvider.deleteItem(task.ID, context);
+        }
+      }
+    } else {
       setState(() {
         task.closed = !value;
       });
