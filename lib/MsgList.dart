@@ -912,7 +912,8 @@ class ChatBubble extends StatelessWidget {
               item: const Text('Reply'),
               onItemPressed:
                   (String highlightedText, int startIndex, int endIndex) {
-                msgListProvider.quotedText = message.text;
+                msgListProvider.quotedText =
+                    message.text.substring(startIndex, endIndex);
                 msgListProvider.currentParentMessageID = message.ID;
                 messageTextFieldFocusNode.requestFocus();
                 msgListProvider.refresh();
