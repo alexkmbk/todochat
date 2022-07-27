@@ -59,6 +59,7 @@ dependencies:
   multi_split_view: ^2.0.1
   universal_html: ^2.0.8
   flutter_improved_scrolling: ^0.0.3
+  text_selection_controls: ^0.0.2
   
 
 dependency_overrides:

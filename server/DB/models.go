@@ -51,6 +51,7 @@ type Message struct {
 	ParentMessageID         int64
 	ProjectID               int64
 	Text                    string
+	QuotedText              string `gorm:"default:''"`
 	UserID                  int64
 	UserName                string
 	PreviewSmallImageBase64 string

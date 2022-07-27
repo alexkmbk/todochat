@@ -20,6 +20,8 @@ import 'utils.dart';
 import 'package:path/path.dart' as path;
 import 'main.dart';
 import 'package:collection/collection.dart';
+//import 'package:text_selection_controls/text_selection_controls.dart';
+import 'text_selection_controls.dart';
 
 class UploadingFilesStruct {
   late HTTPClient.MultipartRequest? multipartRequest;
@@ -48,6 +50,8 @@ class MsgListProvider extends ChangeNotifier {
   int foundMessageID = 0;
   ItemScrollController? scrollController;
   bool isOpen = isDesktopMode;
+  String quotedText = "";
+  int currentParentMessageID = 0;
 
   void jumpTo(int messageID) {
     if (messageID == 0) return;
@@ -73,6 +77,8 @@ class MsgListProvider extends ChangeNotifier {
     lastID = 0;
     //taskID = 0;
     loading = false;
+    quotedText = "";
+    currentParentMessageID = 0;
     if (refresh) {
       this.refresh();
     }
@@ -188,6 +194,8 @@ class Message {
   Task? task;
   DateTime? created_at;
   String text = "";
+  String? quotedText = "";
+  int? parentMessageID = 0;
   int userID = 0;
   String userName = "";
   String fileName = "";
@@ -207,6 +215,8 @@ class Message {
   Message(
       {required this.taskID,
       this.text = "",
+      this.quotedText = "",
+      this.parentMessageID = 0,
       this.created_at,
       this.ID = 0,
       this.userID = 0,
@@ -255,6 +265,8 @@ class Message {
       'projectID': projectID,
       'created_at': created_at,
       'text': text,
+      'quotedText': quotedText,
+      'parentMessageID': parentMessageID,
       'userID': userID,
       'userName': userName,
       'fileName': fileName,
@@ -276,6 +288,8 @@ class Message {
     ID = json['ID'];
     created_at = DateTime.tryParse(json['Created_at']);
     text = json['Text'];
+    quotedText = json['QuotedText'];
+    parentMessageID = json['ParentMessageID'];
     taskID = json['TaskID'];
     projectID = json['ProjectID'];
     userID = json['UserID'];
@@ -391,6 +405,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
   Widget build(BuildContext context) {
     final msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);
+    final messageTextFieldFocusNode = FocusNode();
 
     if (msgListProvider.task == null || msgListProvider.task?.ID == 0) {
       return const Center(child: Text("No any task was selected"));
@@ -431,6 +446,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                     message: item,
                     msgListProvider: msgListProvider,
                     getFile: widget.getFile,
+                    messageTextFieldFocusNode: messageTextFieldFocusNode,
                     onDismissed: (direction) async {
                       if (await widget.onDelete(item.ID)) {
                         msgListProvider.deleteItem(item.ID);
@@ -452,116 +468,133 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                 // },
                 )),
         Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Container(
-                padding: const EdgeInsets.only(left: 10, right: 10),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(30),
-                  /*border: Border(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Container(
+            padding: const EdgeInsets.only(left: 10, right: 10),
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(30),
+              /*border: Border(
                 
                 top: BorderSide(color: Colors.grey),
                 bottom: BorderSide(color: Colors.grey),
               ),*/
-                ),
-                child: Row(children: [
+            ),
+            child: Column(children: [
+              if (msgListProvider.quotedText.isNotEmpty)
+                Row(children: [
+                  Expanded(
+                      child: Text(
+                    msgListProvider.quotedText,
+                    style: const TextStyle(color: Colors.grey),
+                  )),
+                  IconButton(
+                      onPressed: () {
+                        msgListProvider.quotedText = "";
+                        msgListProvider.refresh();
+                      },
+                      icon: const Icon(Icons.close))
+                ]),
+              if (msgListProvider.quotedText.isNotEmpty) const Divider(),
+              Row(
+                children: [
                   if (msgListProvider.task != null)
                     NewMessageActionsMenu(
                       msgListProvider: msgListProvider,
                     ),
                   Expanded(
-                      child: CallbackShortcuts(
-                    bindings: {
-                      const SingleActivator(LogicalKeyboardKey.enter,
-                          control: false): () {
-                        if (_messageInputController.text.isNotEmpty) {
-                          createMessage(
-                            text: _messageInputController.text,
-                            task: msgListProvider.task,
-                            msgListProvider: msgListProvider,
-                          );
-                          _messageInputController.text = "";
-                        }
-                      },
-                      const SingleActivator(LogicalKeyboardKey.keyV,
-                          control: true): () async {
-                        ClipboardData? data =
-                            await Clipboard.getData('text/plain');
+                    child: CallbackShortcuts(
+                      bindings: {
+                        const SingleActivator(LogicalKeyboardKey.enter,
+                            control: false): () {
+                          if (_messageInputController.text.isNotEmpty) {
+                            createMessage(
+                              text: _messageInputController.text,
+                              task: msgListProvider.task,
+                              msgListProvider: msgListProvider,
+                            );
+                            _messageInputController.text = "";
+                          }
+                        },
+                        const SingleActivator(LogicalKeyboardKey.keyV,
+                            control: true): () async {
+                          ClipboardData? data =
+                              await Clipboard.getData('text/plain');
 
-                        if (data != null &&
-                            data.text != null &&
-                            data.text!.trim().isNotEmpty) {
-                          String text = data.text ?? "";
-                          _messageInputController.text = text.trim();
-                          _messageInputController.selection =
-                              TextSelection.fromPosition(TextPosition(
-                                  offset: _messageInputController.text.length));
-                        } else {
-                          final bytes = await Pasteboard.image;
-                          if (bytes != null) {
-                            msgListProvider.addUploadingItem(
-                                Message(
-                                    taskID: msgListProvider.taskID,
-                                    userID: currentUserID,
-                                    fileName: "clipboard_image.png",
-                                    loadingFile: true,
-                                    isImage: true),
-                                bytes);
+                          if (data != null &&
+                              data.text != null &&
+                              data.text!.trim().isNotEmpty) {
+                            String text = data.text ?? "";
+                            _messageInputController.text = text.trim();
+                            _messageInputController.selection =
+                                TextSelection.fromPosition(TextPosition(
+                                    offset:
+                                        _messageInputController.text.length));
                           } else {
-                            final files = await Pasteboard.files();
-                            if (files.isNotEmpty) {
-                              for (final file in files) {
-                                var fileData = await readFile(file);
-                                if (fileData.isNotEmpty) {
-                                  msgListProvider.addUploadingItem(
-                                      Message(
-                                          taskID: msgListProvider.taskID,
-                                          userID: currentUserID,
-                                          fileName: path.basename(file),
-                                          loadingFile: true,
-                                          isImage: isImageFile(file)),
-                                      fileData);
-                                }
-                              }
+                            final bytes = await Pasteboard.image;
+                            if (bytes != null) {
+                              msgListProvider.addUploadingItem(
+                                  Message(
+                                      taskID: msgListProvider.taskID,
+                                      userID: currentUserID,
+                                      fileName: "clipboard_image.png",
+                                      loadingFile: true,
+                                      isImage: true),
+                                  bytes);
                             } else {
-                              var html = await Pasteboard.html;
-                              if (html != null && html.isNotEmpty) {
-                                String imageURL = getImageURLFromHTML(html);
-                                if (imageURL.isNotEmpty) {
-                                  Response response;
-                                  try {
-                                    response = await get(Uri.parse(imageURL));
-                                  } catch (e) {
-                                    toast(e.toString(), context);
-                                    return;
-                                  }
-
-                                  if (response.statusCode == 200) {
+                              final files = await Pasteboard.files();
+                              if (files.isNotEmpty) {
+                                for (final file in files) {
+                                  var fileData = await readFile(file);
+                                  if (fileData.isNotEmpty) {
                                     msgListProvider.addUploadingItem(
                                         Message(
                                             taskID: msgListProvider.taskID,
                                             userID: currentUserID,
-                                            fileName: "clipboard_image.png",
+                                            fileName: path.basename(file),
                                             loadingFile: true,
-                                            isImage: true),
-                                        response.bodyBytes);
+                                            isImage: isImageFile(file)),
+                                        fileData);
                                   }
-                                } else {
-                                  _messageInputController.text = html.trim();
-                                  _messageInputController.selection =
-                                      TextSelection.fromPosition(TextPosition(
-                                          offset: _messageInputController
-                                              .text.length));
+                                }
+                              } else {
+                                var html = await Pasteboard.html;
+                                if (html != null && html.isNotEmpty) {
+                                  String imageURL = getImageURLFromHTML(html);
+                                  if (imageURL.isNotEmpty) {
+                                    Response response;
+                                    try {
+                                      response = await get(Uri.parse(imageURL));
+                                    } catch (e) {
+                                      toast(e.toString(), context);
+                                      return;
+                                    }
+
+                                    if (response.statusCode == 200) {
+                                      msgListProvider.addUploadingItem(
+                                          Message(
+                                              taskID: msgListProvider.taskID,
+                                              userID: currentUserID,
+                                              fileName: "clipboard_image.png",
+                                              loadingFile: true,
+                                              isImage: true),
+                                          response.bodyBytes);
+                                    }
+                                  } else {
+                                    _messageInputController.text = html.trim();
+                                    _messageInputController.selection =
+                                        TextSelection.fromPosition(TextPosition(
+                                            offset: _messageInputController
+                                                .text.length));
+                                  }
                                 }
                               }
                             }
                           }
-                        }
+                        },
                       },
-                    },
-                    child: Focus(
-                      autofocus: true,
                       child: TextField(
+                        focusNode: messageTextFieldFocusNode,
                         autofocus: true,
                         controller: _messageInputController,
                         keyboardType: TextInputType.multiline,
@@ -572,7 +605,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                         ),
                       ),
                     ),
-                  )),
+                  ),
                   IconButton(
                     onPressed: () {
                       if (_messageInputController.text.isNotEmpty) {
@@ -630,7 +663,11 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                     tooltip: 'Add file',
                     icon: const Icon(Icons.attach_file),
                   )
-                ])))
+                ],
+              ),
+            ]),
+          ),
+        ),
       ]));
     }
   }
@@ -644,12 +681,15 @@ class ChatBubble extends StatelessWidget {
       required this.getFile,
       required this.isCurrentUser,
       required this.msgListProvider,
-      required this.index})
+      required this.index,
+      required this.messageTextFieldFocusNode})
       : super(key: key);
   final Message message;
   final bool isCurrentUser;
   final MsgListProvider msgListProvider;
   final int index;
+  final FocusNode messageTextFieldFocusNode;
+
   double progress = 1.0;
   /*final String text;
   final String isImage = false;
@@ -860,7 +900,25 @@ class ChatBubble extends StatelessWidget {
       );
     } else if (message.fileName.isEmpty) {
       final textSpan = TextSpan(text: message.text);
-      final textWidget = SelectableText.rich(textSpan);
+      final textWidget = SelectableText.rich(
+        textSpan,
+        selectionControls: FlutterSelectionControls(toolBarItems: [
+          ToolBarItem(
+              item: const Text('Select All'),
+              itemControl: ToolBarItemControl.selectAll),
+          ToolBarItem(
+              item: const Text('Copy'), itemControl: ToolBarItemControl.copy),
+          ToolBarItem(
+              item: const Text('Reply'),
+              onItemPressed:
+                  (String highlightedText, int startIndex, int endIndex) {
+                msgListProvider.quotedText = message.text;
+                msgListProvider.currentParentMessageID = message.ID;
+                messageTextFieldFocusNode.requestFocus();
+                msgListProvider.refresh();
+              })
+        ]),
+      );
       /*final TextBox? lastBox =
           calcLastLineEnd(message.text, textSpan, context, constraints);
       bool fitsLastLine = false;
@@ -883,6 +941,15 @@ class ChatBubble extends StatelessWidget {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                  if (message.quotedText != null &&
+                      message.quotedText!.isNotEmpty)
+                    Text(
+                      message.quotedText ?? "",
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  if (message.quotedText != null &&
+                      message.quotedText!.isNotEmpty)
+                    const Divider(),
                   if (message.userName.isNotEmpty &&
                       (index == msgListProvider.items.length - 1 ||
                           msgListProvider.items[index + 1].userID !=
@@ -922,15 +989,6 @@ class ChatBubble extends StatelessWidget {
           (message.smallImageName.isNotEmpty || loadingFileData != null)) {
         return loadingFileData != null
             ? Stack(children: [
-                /*CrossPlatformClick(
-                    menuItems: [
-                      PopupMenuItem(
-                          onTap: () {},
-                          child: const Text('Copy',
-                              style: TextStyle(fontSize: 16)),
-                          value: "copied"),
-                    ],
-                    child: */
                 memoryImage(loadingFileData,
                     height: 200,
                     onTap: () => onTapOnFileMessage(message, context),
@@ -1078,14 +1136,17 @@ Future<bool> createMessage(
   }
 
   Message message = Message(
-      taskID: task.ID,
-      text: text,
-      fileName: path.basename(fileName),
-      isImage: isImage,
-      isTaskDescriptionItem: isTaskDescriptionItem,
-      tempID: tempID,
-      loadinInProcess: loadinInProcess,
-      messageAction: messageAction);
+    taskID: task.ID,
+    text: text,
+    fileName: path.basename(fileName),
+    isImage: isImage,
+    isTaskDescriptionItem: isTaskDescriptionItem,
+    tempID: tempID,
+    loadinInProcess: loadinInProcess,
+    messageAction: messageAction,
+    quotedText: msgListProvider.quotedText,
+    parentMessageID: msgListProvider.currentParentMessageID,
+  );
 
   Response response;
   try {
@@ -1110,6 +1171,9 @@ Future<bool> createMessage(
     //msgListProvider.taskID = task.ID;
     msgListProvider.addItem(message);
     //msgListProvider.taskID = tempID;
+    msgListProvider.quotedText = "";
+    msgListProvider.currentParentMessageID = 0;
+
     return true;
   }
 
