@@ -164,6 +164,32 @@ class MsgListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> deleteMesage(int messageID) async {
+    if (sessionID == "") {
+      return false;
+    }
+
+    Map<String, String> headers = <String, String>{};
+    headers["sessionID"] = sessionID;
+
+    Response response;
+
+    try {
+      response = await HTTPClient.httpClient.delete(
+          HTTPClient.setUriProperty(serverURI,
+              path: 'deleteMessage/$messageID'),
+          headers: headers);
+    } catch (e) {
+      return false;
+    }
+
+    if (response.statusCode == 200) {
+      return true;
+    }
+
+    return false;
+  }
+
   void requestMessages() async {
     if (sessionID == "") {
       return;
@@ -345,7 +371,7 @@ class InifiniteMsgList extends StatefulWidget {
   final ItemPositionsListener itemPositionsListener;
   final ItemScrollController scrollController;
 
-  final Future<bool> Function(int messageID) onDelete;
+  //final Future<bool> Function(int messageID) onDelete;
   final Future<Uint8List> Function(String localFileName) getFile;
 
   //final ItemBuilder itemBuilder;
@@ -354,7 +380,6 @@ class InifiniteMsgList extends StatefulWidget {
       {Key? key,
       required this.scrollController,
       required this.itemPositionsListener,
-      required this.onDelete,
       required this.getFile})
       : super(key: key);
 
@@ -449,7 +474,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                     getFile: widget.getFile,
                     messageTextFieldFocusNode: messageTextFieldFocusNode,
                     onDismissed: (direction) async {
-                      if (await widget.onDelete(item.ID)) {
+                      if (await msgListProvider.deleteMesage(item.ID)) {
                         msgListProvider.deleteItem(item.ID);
                       }
                     },
@@ -918,6 +943,16 @@ class ChatBubble extends StatelessWidget {
                 msgListProvider.currentParentMessageID = message.ID;
                 messageTextFieldFocusNode.requestFocus();
                 msgListProvider.refresh();
+              }),
+          ToolBarItem(
+              item: const Text('Delete'),
+              onItemPressed:
+                  (String highlightedText, int startIndex, int endIndex) async {
+                var res = await confirmDimissDlg(
+                    "Are you sure you wish to delete this item?", context);
+                if (res ?? false) {
+                  msgListProvider.deleteMesage(message.ID);
+                }
               })
         ]),
       );

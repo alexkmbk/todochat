@@ -158,7 +158,6 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                 child: InifiniteMsgList(
                   scrollController: itemsScrollController,
                   itemPositionsListener: itemPositionsListener,
-                  onDelete: deleteMesage,
                   getFile: getFile,
                 ),
                 onNotification: (notification) {
@@ -216,33 +215,5 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
       //return true;
     }
     return res;
-  }
-
-  Future<bool> deleteMesage(int messageID) async {
-    if (sessionID == "") {
-      return false;
-    }
-
-    Map<String, String> headers = <String, String>{};
-    headers["sessionID"] = sessionID;
-
-    Response response;
-
-    try {
-      response = await HTTPClient.httpClient.delete(
-          HTTPClient.setUriProperty(serverURI, path: 'deleteMessage/$messageID')
-          /*  Uri.http(
-              serverURI.authority, '/deleteMessage/' + messageID.toString())*/
-          ,
-          headers: headers);
-    } catch (e) {
-      return false;
-    }
-
-    if (response.statusCode == 200) {
-      return true;
-    }
-
-    return false;
   }
 }
