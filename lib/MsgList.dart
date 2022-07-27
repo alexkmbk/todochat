@@ -195,7 +195,7 @@ class Message {
   DateTime? created_at;
   String text = "";
   String? quotedText = "";
-  int? parentMessageID = 0;
+  int parentMessageID = 0;
   int userID = 0;
   String userName = "";
   String fileName = "";
@@ -289,7 +289,8 @@ class Message {
     created_at = DateTime.tryParse(json['Created_at']);
     text = json['Text'];
     quotedText = json['QuotedText'];
-    parentMessageID = json['ParentMessageID'];
+    var value = json['ParentMessageID'];
+    parentMessageID = value ?? 0;
     taskID = json['TaskID'];
     projectID = json['ProjectID'];
     userID = json['UserID'];
@@ -305,7 +306,7 @@ class Message {
     if (previewSmallImageBase64 != null && previewSmallImageBase64 != "") {
       previewSmallImageData = fromBase64(previewSmallImageBase64);
     }
-    var value = json['IsTaskDescriptionItem'];
+    value = json['IsTaskDescriptionItem'];
     isTaskDescriptionItem = value ?? false;
     tempID = json["TempID"];
     loadinInProcess = json["LoadinInProcess"];
@@ -944,10 +945,16 @@ class ChatBubble extends StatelessWidget {
                     children: [
                   if (message.quotedText != null &&
                       message.quotedText!.isNotEmpty)
-                    Text(
-                      message.quotedText ?? "",
-                      style: const TextStyle(color: Colors.grey),
-                    ),
+                    MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                            onTap: () {
+                              msgListProvider.jumpTo(message.parentMessageID);
+                            },
+                            child: Text(
+                              message.quotedText ?? "",
+                              style: const TextStyle(color: Colors.grey),
+                            ))),
                   if (message.quotedText != null &&
                       message.quotedText!.isNotEmpty)
                     const Divider(),
