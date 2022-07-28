@@ -452,6 +452,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                 itemScrollController: widget.scrollController,
                 itemPositionsListener: widget.itemPositionsListener,
                 itemCount: msgListProvider.items.length,
+                extraScrollSpeed: 40,
                 itemBuilder: (context, index) {
                   if (msgListProvider.items.isEmpty) {
                     return const Text("");
@@ -787,6 +788,11 @@ class ChatBubble extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: SelectableText(
                         msgListProvider.task?.description ?? "",
+                        selectionControls: messageSelectionControl(
+                            msgListProvider,
+                            msgListProvider.task?.description ?? "",
+                            message.ID,
+                            messageTextFieldFocusNode),
                         //style: const TextStyle(fontSize: 14),
                       )),
                 ]),
@@ -928,33 +934,8 @@ class ChatBubble extends StatelessWidget {
       final textSpan = TextSpan(text: message.text);
       final textWidget = SelectableText.rich(
         textSpan,
-        selectionControls: FlutterSelectionControls(toolBarItems: [
-          ToolBarItem(
-              item: const Text('Select All'),
-              itemControl: ToolBarItemControl.selectAll),
-          ToolBarItem(
-              item: const Text('Copy'), itemControl: ToolBarItemControl.copy),
-          ToolBarItem(
-              item: const Text('Reply'),
-              onItemPressed:
-                  (String highlightedText, int startIndex, int endIndex) {
-                msgListProvider.quotedText =
-                    message.text.substring(startIndex, endIndex);
-                msgListProvider.currentParentMessageID = message.ID;
-                messageTextFieldFocusNode.requestFocus();
-                msgListProvider.refresh();
-              }),
-          ToolBarItem(
-              item: const Text('Delete'),
-              onItemPressed:
-                  (String highlightedText, int startIndex, int endIndex) async {
-                var res = await confirmDimissDlg(
-                    "Are you sure you wish to delete this item?", context);
-                if (res ?? false) {
-                  msgListProvider.deleteMesage(message.ID);
-                }
-              })
-        ]),
+        selectionControls: messageSelectionControl(msgListProvider,
+            message.text, message.ID, messageTextFieldFocusNode),
       );
       /*final TextBox? lastBox =
           calcLastLineEnd(message.text, textSpan, context, constraints);
@@ -1414,4 +1395,26 @@ class NewMessageActionsMenu extends StatelessWidget {
       },*/
     );
   }
+}
+
+FlutterSelectionControls messageSelectionControl(
+    MsgListProvider msgListProvider,
+    String messageText,
+    int messageID,
+    FocusNode messageTextFieldFocusNode) {
+  return FlutterSelectionControls(toolBarItems: [
+    ToolBarItem(
+        item: const Text('Select All'),
+        itemControl: ToolBarItemControl.selectAll),
+    ToolBarItem(item: const Text('Copy'), itemControl: ToolBarItemControl.copy),
+    ToolBarItem(
+        item: const Text('Reply'),
+        onItemPressed: (String highlightedText, int startIndex, int endIndex) {
+          msgListProvider.quotedText =
+              messageText.substring(startIndex, endIndex);
+          msgListProvider.currentParentMessageID = messageID;
+          messageTextFieldFocusNode.requestFocus();
+          msgListProvider.refresh();
+        }),
+  ]);
 }
