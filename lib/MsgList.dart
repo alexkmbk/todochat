@@ -792,7 +792,8 @@ class ChatBubble extends StatelessWidget {
                             msgListProvider,
                             msgListProvider.task?.description ?? "",
                             message.ID,
-                            messageTextFieldFocusNode),
+                            messageTextFieldFocusNode,
+                            context),
                         //style: const TextStyle(fontSize: 14),
                       )),
                 ]),
@@ -801,37 +802,26 @@ class ChatBubble extends StatelessWidget {
           //const Text("***", style: TextStyle(color: Colors.grey)),
         ]);
       } else {
-        return Dismissible(
-            key: UniqueKey(),
-            direction:
-                message.messageAction == MessageAction.CreateUpdateMessageAction
-                    ? DismissDirection.startToEnd
-                    : DismissDirection.none,
-            confirmDismiss: (direction) {
-              return confirmDimissDlg(
-                  "Are you sure you wish to delete this item?", context);
-            },
-            onDismissed: onDismissed,
-            child: Padding(
-              // asymmetric padding
-              padding: EdgeInsets.fromLTRB(
-                isCurrentUser ? 64.0 : 16.0,
-                4,
-                isCurrentUser ? 16.0 : 64.0,
-                4,
-              ),
-              child: Align(
-                  // align the child within the container
-                  alignment: message.isTaskDescriptionItem ||
-                          message.messageAction !=
-                              MessageAction.CreateUpdateMessageAction
-                      ? Alignment.center
-                      : isCurrentUser
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
-                  child: drawBubble(
-                      context, constraints, foundStruct?.loadingFileData)),
-            ));
+        return Padding(
+          // asymmetric padding
+          padding: EdgeInsets.fromLTRB(
+            isCurrentUser ? 64.0 : 16.0,
+            4,
+            isCurrentUser ? 16.0 : 64.0,
+            4,
+          ),
+          child: Align(
+              // align the child within the container
+              alignment: message.isTaskDescriptionItem ||
+                      message.messageAction !=
+                          MessageAction.CreateUpdateMessageAction
+                  ? Alignment.center
+                  : isCurrentUser
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
+              child: drawBubble(
+                  context, constraints, foundStruct?.loadingFileData)),
+        );
       }
     });
   }
@@ -935,7 +925,7 @@ class ChatBubble extends StatelessWidget {
       final textWidget = SelectableText.rich(
         textSpan,
         selectionControls: messageSelectionControl(msgListProvider,
-            message.text, message.ID, messageTextFieldFocusNode),
+            message.text, message.ID, messageTextFieldFocusNode, context),
       );
       /*final TextBox? lastBox =
           calcLastLineEnd(message.text, textSpan, context, constraints);
@@ -1401,7 +1391,8 @@ FlutterSelectionControls messageSelectionControl(
     MsgListProvider msgListProvider,
     String messageText,
     int messageID,
-    FocusNode messageTextFieldFocusNode) {
+    FocusNode messageTextFieldFocusNode,
+    BuildContext context) {
   return FlutterSelectionControls(toolBarItems: [
     ToolBarItem(
         item: const Text('Select All'),
@@ -1416,5 +1407,15 @@ FlutterSelectionControls messageSelectionControl(
           messageTextFieldFocusNode.requestFocus();
           msgListProvider.refresh();
         }),
+    ToolBarItem(
+        item: const Text('Delete'),
+        onItemPressed:
+            (String highlightedText, int startIndex, int endIndex) async {
+          var res = await confirmDimissDlg(
+              "Are you sure you wish to delete this item?", context);
+          if (res ?? false) {
+            msgListProvider.deleteMesage(messageID);
+          }
+        })
   ]);
 }
