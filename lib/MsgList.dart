@@ -1401,6 +1401,14 @@ FlutterSelectionControls messageSelectionControl(
     ToolBarItem(
         item: const Text('Reply'),
         onItemPressed: (String highlightedText, int startIndex, int endIndex) {
+          msgListProvider.quotedText = messageText;
+          msgListProvider.currentParentMessageID = messageID;
+          messageTextFieldFocusNode.requestFocus();
+          msgListProvider.refresh();
+        }),
+    ToolBarItem(
+        item: const Text('Quote selection'),
+        onItemPressed: (String highlightedText, int startIndex, int endIndex) {
           msgListProvider.quotedText =
               messageText.substring(startIndex, endIndex);
           msgListProvider.currentParentMessageID = messageID;
