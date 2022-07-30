@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Product Id="DEAFBEEF-DEAD-DEAD-DEAD-DEADBEEF0001" Name="ToDoChat (server)" Language="1033" Version="1.0.0.0" Manufacturer="WixEdit" UpgradeCode="4C0C8660-B2A0-4862-8590-8352F6B36FFC">
+        <Package Description="ToDoChat (server)" Comments="ToDoChat (server)" InstallerVersion="200" Compressed="yes" />
+        <Media Id="1" Cabinet="simple.cab" EmbedCab="yes" />
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="ProgramFilesFolder" Name="PFiles">
+                <Directory Id="todochat_server" Name="todochat_server">
+                    <Component Id="TODOCHAT_SERVER.EXE" DiskId="1" Guid="71F81C50-6FC8-4E81-A6CA-E1FBC0F56234">
+                        <File Id="TODOCHAT_SERVER.EXE" Name="todochat_server.exe" Source="..\todochat_server.exe">
+                            <Shortcut Id="ExeShortcut" Directory="ProgramMenuDir" Name="todochat (server)" Advertise="yes" Icon="StartMenuIcon.exe" IconIndex="0" />
+                        </File>
+                    </Component>
+                    <Component Id="INSTALL_SERVICE.BAT" DiskId="1" Guid="2246B3F2-3C6F-4042-AA0F-8CF4436F9560">
+                        <File Id="INSTALL_SERVICE.BAT" Name="install_service.bat" Source="..\install_service.bat" />
+                    </Component>
+                    <Component Id="UNINSTALL_SERVICE.BAT" DiskId="1" Guid="3EAA6776-E901-4002-AFA1-3683BD387541">
+                        <File Id="UNINSTALL_SERVICE.BAT" Name="uninstall_service.bat" Source="..\uninstall_service.bat" />
+                    </Component>
+                    <Directory Id="WEBCLIENT" Name="WebClient">
+                        <Component Id="_.LAST_BUILD_ID" DiskId="1" Guid="6C7A7BBB-201C-470B-A490-2F87A49A8A3D">
+                            <File Id="_.LAST_BUILD_ID" Name=".last_build_id" Source="..\WebClient\.last_build_id" />
+                        </Component>
+                        <Component Id="FAVICON.PNG" DiskId="1" Guid="C67A8696-9CBB-47CF-8F8D-A45EFFD97697">
+                            <File Id="FAVICON.PNG" Name="favicon.png" Source="..\WebClient\favicon.png" />
+                        </Component>
+                        <Component Id="FLUTTER_SERVICE_WORKER.JS" DiskId="1" Guid="9E07FDF6-7E66-4EDE-9454-C5CC847A7F42">
+                            <File Id="FLUTTER_SERVICE_WORKER.JS" Name="flutter_service_worker.js" Source="..\WebClient\flutter_service_worker.js" />
+                        </Component>
+                        <Component Id="INDEX.HTML" DiskId="1" Guid="27577616-EECC-4120-A10C-6D50A8F6E413">
+                            <File Id="INDEX.HTML" Name="index.html" Source="..\WebClient\index.html" />
+                        </Component>
+                        <Component Id="MAIN.DART.JS" DiskId="1" Guid="591905B3-BC87-43DF-9578-95214885D20F">
+                            <File Id="MAIN.DART.JS" Name="main.dart.js" Source="..\WebClient\main.dart.js" />
+                        </Component>
+                        <Component Id="MANIFEST.JSON" DiskId="1" Guid="8CBAF6B2-E103-42BF-92FF-2322ECA851BC">
+                            <File Id="MANIFEST.JSON" Name="manifest.json" Source="..\WebClient\manifest.json" />
+                        </Component>
+                        <Component Id="VERSION.JSON" DiskId="1" Guid="DD326017-934A-4A6A-946A-709FA87A976D">
+                            <File Id="VERSION.JSON" Name="version.json" Source="..\WebClient\version.json" />
+                        </Component>
+                        <Directory Id="ASSETS" Name="assets">
+                            <Component Id="ASSETMANIFEST.JSON" DiskId="1" Guid="50629BE3-4F2C-4743-980B-CC7B416900AE">
+                                <File Id="ASSETMANIFEST.JSON" Name="AssetManifest.json" Source="..\WebClient\assets\AssetManifest.json" />
+                            </Component>
+                            <Component Id="FONTMANIFEST.JSON" DiskId="1" Guid="0F8F6461-A09D-47F9-A447-21B4EDC50FC7">
+                                <File Id="FONTMANIFEST.JSON" Name="FontManifest.json" Source="..\WebClient\assets\FontManifest.json" />
+                            </Component>
+                            <Component Id="NOTICES" DiskId="1" Guid="0BAA29BC-DC62-4502-A247-7FBED16DF07D">
+                                <File Id="NOTICES" Name="NOTICES" Source="..\WebClient\assets\NOTICES" />
+                            </Component>
+                            <Directory Id="ASSETS_1" Name="assets">
+                                <Directory Id="IMAGES" Name="images">
+                                    <Component Id="IMAGE_ERROR.PNG" DiskId="1" Guid="9FC8DD0E-99F7-4AFD-BC62-4CB46E744D57">
+                                        <File Id="IMAGE_ERROR.PNG" Name="image_error.png" Source="..\WebClient\assets\assets\images\image_error.png" />
+                                    </Component>
+                                </Directory>
+                            </Directory>
+                            <Directory Id="FONTS" Name="fonts">
+                                <Component Id="MATERIALICONS_REGULAR.OTF" DiskId="1" Guid="910E8CF8-287A-401C-9BB3-1F89A8134006">
+                                    <File Id="MATERIALICONS_REGULAR.OTF" Name="MaterialIcons-Regular.otf" Source="..\WebClient\assets\fonts\MaterialIcons-Regular.otf" />
+                                </Component>
+                            </Directory>
+                            <Directory Id="PACKAGES" Name="packages">
+                                <Directory Id="CUPERTINO_ICONS" Name="cupertino_icons">
+                                    <Directory Id="ASSETS_2" Name="assets">
+                                        <Component Id="CUPERTINOICONS.TTF" DiskId="1" Guid="6A91C4B7-39EE-4801-9116-9303F215F682">
+                                            <File Id="CUPERTINOICONS.TTF" Name="CupertinoIcons.ttf" Source="..\WebClient\assets\packages\cupertino_icons\assets\CupertinoIcons.ttf" />
+                                        </Component>
+                                    </Directory>
+                                </Directory>
+                            </Directory>
+                        </Directory>
+                        <Directory Id="CANVASKIT" Name="canvaskit">
+                            <Component Id="CANVASKIT.JS" DiskId="1" Guid="96E79265-F6F6-4FB9-B8F8-1DF8B72048AE">
+                                <File Id="CANVASKIT.JS" Name="canvaskit.js" Source="..\WebClient\canvaskit\canvaskit.js" />
+                            </Component>
+                            <Component Id="CANVASKIT.WASM" DiskId="1" Guid="0645F764-5CF6-48CA-B3CC-3F9227959C59">
+                                <File Id="CANVASKIT.WASM" Name="canvaskit.wasm" Source="..\WebClient\canvaskit\canvaskit.wasm" />
+                            </Component>
+                            <Directory Id="PROFILING" Name="profiling">
+                                <Component Id="CANVASKIT.JS_1" DiskId="1" Guid="08E0E285-D96B-4228-A73F-AACD134F27CB">
+                                    <File Id="CANVASKIT.JS_1" Name="canvaskit.js" Source="..\WebClient\canvaskit\profiling\canvaskit.js" />
+                                </Component>
+                                <Component Id="CANVASKIT.WASM_1" DiskId="1" Guid="EDC4C220-FFE1-4B98-9783-89753AD768E8">
+                                    <File Id="CANVASKIT.WASM_1" Name="canvaskit.wasm" Source="..\WebClient\canvaskit\profiling\canvaskit.wasm" />
+                                </Component>
+                            </Directory>
+                        </Directory>
+                        <Directory Id="ICONS" Name="icons">
+                            <Component Id="ICON_192.PNG" DiskId="1" Guid="3547E807-2509-4C5E-8A44-1802336F21A1">
+                                <File Id="ICON_192.PNG" Name="Icon-192.png" Source="..\WebClient\icons\Icon-192.png" />
+                            </Component>
+                            <Component Id="ICON_512.PNG" DiskId="1" Guid="6AB3B89D-D93A-49F9-A112-4AE0B59B6311">
+                                <File Id="ICON_512.PNG" Name="Icon-512.png" Source="..\WebClient\icons\Icon-512.png" />
+                            </Component>
+                            <Component Id="ICON_MASKABLE_192.PNG" DiskId="1" Guid="B75A042E-8E75-47B9-8534-62E10C238A86">
+                                <File Id="ICON_MASKABLE_192.PNG" Name="Icon-maskable-192.png" Source="..\WebClient\icons\Icon-maskable-192.png" />
+                            </Component>
+                            <Component Id="ICON_MASKABLE_512.PNG" DiskId="1" Guid="4B4B5928-512D-434A-B8D8-84A301EFB5BA">
+                                <File Id="ICON_MASKABLE_512.PNG" Name="Icon-maskable-512.png" Source="..\WebClient\icons\Icon-maskable-512.png" />
+                            </Component>
+                        </Directory>
+                    </Directory>
+                </Directory>
+            </Directory>
+            <Directory Id="ProgramMenuFolder">
+                <Directory Id="ProgramMenuDir" Name="todochat_server">
+                    <Component Id="StartMenuShortcuts" Guid="4E79AA22-583C-458D-8423-A94495831B23">
+                        <RemoveFolder Id="ProgramMenuDir" On="uninstall" />
+                        <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="" />
+                    </Component>
+                </Directory>
+            </Directory>
+        </Directory>
+        <UI></UI>
+        <Feature Id="todochat">
+            <ComponentRef Id="TODOCHAT_SERVER.EXE" />
+            <ComponentRef Id="StartMenuShortcuts" />
+            <ComponentRef Id="INSTALL_SERVICE.BAT" />
+            <ComponentRef Id="UNINSTALL_SERVICE.BAT" />
+            <ComponentRef Id="_.LAST_BUILD_ID" />
+            <ComponentRef Id="FAVICON.PNG" />
+            <ComponentRef Id="FLUTTER_SERVICE_WORKER.JS" />
+            <ComponentRef Id="INDEX.HTML" />
+            <ComponentRef Id="MAIN.DART.JS" />
+            <ComponentRef Id="MANIFEST.JSON" />
+            <ComponentRef Id="VERSION.JSON" />
+            <ComponentRef Id="ASSETMANIFEST.JSON" />
+            <ComponentRef Id="FONTMANIFEST.JSON" />
+            <ComponentRef Id="NOTICES" />
+            <ComponentRef Id="IMAGE_ERROR.PNG" />
+            <ComponentRef Id="MATERIALICONS_REGULAR.OTF" />
+            <ComponentRef Id="CUPERTINOICONS.TTF" />
+            <ComponentRef Id="CANVASKIT.JS" />
+            <ComponentRef Id="CANVASKIT.WASM" />
+            <ComponentRef Id="CANVASKIT.JS_1" />
+            <ComponentRef Id="CANVASKIT.WASM_1" />
+            <ComponentRef Id="ICON_192.PNG" />
+            <ComponentRef Id="ICON_512.PNG" />
+            <ComponentRef Id="ICON_MASKABLE_192.PNG" />
+            <ComponentRef Id="ICON_MASKABLE_512.PNG" />
+        </Feature>
+        <Icon Id="StartMenuIcon.exe" SourceFile="..\todochat_server.exe" />
+    </Product>
+</Wix>
