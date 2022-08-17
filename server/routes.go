@@ -2,10 +2,13 @@ package main
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"todochat_server/App"
 	. "todochat_server/DB"
 	"todochat_server/constrollers/Messages"
+
 	"todochat_server/constrollers/Projects"
 	"todochat_server/constrollers/Tasks"
 	"todochat_server/constrollers/Users"
@@ -91,9 +94,19 @@ func GetRoutesHandler() http.Handler {
 	router.HandleFunc("/getFile", CommonHandler(Messages.GetFile)).Methods("GET")
 
 	// File server
-	fs := http.StripPrefix("/FileStorage/", http.FileServer(http.Dir("./FileStorage")))
+
+	var currentDir string
+
+	exePath, err := os.Executable()
+	if err == nil {
+		currentDir = filepath.Dir(exePath)
+	} else {
+		currentDir = App.GetCurrentDir()
+	}
+
+	fs := http.StripPrefix("/FileStorage/", http.FileServer(http.Dir(filepath.Join(currentDir, "FileStorage"))))
 	router.PathPrefix("/FileStorage/").Handler(FileServer(fs))
-	router.PathPrefix("/").Handler(WebClient(http.FileServer(http.Dir("./WebClient")))).Methods("GET")
+	router.PathPrefix("/").Handler(WebClient(http.FileServer(http.Dir(filepath.Join(currentDir, "WebClient"))))).Methods("GET")
 
 	router.PathPrefix("/").HandlerFunc(corsHandler).Methods("OPTIONS")
 

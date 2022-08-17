@@ -1,6 +1,7 @@
 package DB
 
 import (
+	"os"
 	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
@@ -15,7 +16,29 @@ import (
 func InitDB_SQLite() bool {
 
 	var err error
-	DBPAth := filepath.Join(GetCurrentDir(), "gorm.db")
+	var currentDir string
+
+	exePath, err := os.Executable()
+	if err == nil {
+		currentDir = filepath.Dir(exePath)
+	} else {
+		currentDir = GetCurrentDir()
+	}
+
+	/*f, err := os.Create("d:\\todochat.log")
+	defer f.Close()
+
+	if err == nil {
+		w := bufio.NewWriter(f)
+		w.WriteString("current dir:" + GetCurrentDir())
+		ex, err := os.Executable()
+		if err == nil {
+			w.WriteString("current exe:" + filepath.Dir(ex))
+		}
+		w.Flush()
+	}*/
+
+	DBPAth := filepath.Join(currentDir, "gorm.db")
 	DB, err = gorm.Open(sqlite.Open("file:///"+DBPAth+"?cache=shared&_pragma=journal_mode(MEMORY)&_pragma=busy_timeout(20000)"), &gorm.Config{})
 	if err != nil {
 		log.Println(err)
