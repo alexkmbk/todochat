@@ -51,6 +51,7 @@ class MsgListProvider extends ChangeNotifier {
   ItemScrollController? scrollController;
   bool isOpen = isDesktopMode;
   String quotedText = "";
+  Uint8List? parentPreviewSmallImageData;
   int currentParentMessageID = 0;
 
   void jumpTo(int messageID) {
@@ -227,6 +228,7 @@ class Message {
   String fileName = "";
   int fileSize = 0;
   String localFileName = "";
+  Uint8List? parentPreviewSmallImageData;
   String smallImageName = "";
   bool isImage = false;
   Uint8List? previewSmallImageData;
@@ -452,7 +454,8 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                 itemScrollController: widget.scrollController,
                 itemPositionsListener: widget.itemPositionsListener,
                 itemCount: msgListProvider.items.length,
-                extraScrollSpeed: 40,
+                extraScrollSpeed:
+                    Platform().isAndroid || Platform().isIOS ? 0 : 40,
                 itemBuilder: (context, index) {
                   if (msgListProvider.items.isEmpty) {
                     return const Text("");
@@ -508,8 +511,15 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
               ),*/
             ),
             child: Column(children: [
-              if (msgListProvider.quotedText.isNotEmpty)
+              if (msgListProvider.quotedText.isNotEmpty ||
+                  msgListProvider.parentPreviewSmallImageData != null)
                 Row(children: [
+                  if (msgListProvider.parentPreviewSmallImageData != null)
+                    memoryImage(
+                        msgListProvider.parentPreviewSmallImageData
+                            as Uint8List,
+                        height: 30,
+                        width: 30),
                   Expanded(
                       child: Text(
                     msgListProvider.quotedText,
@@ -760,7 +770,7 @@ class ChatBubble extends StatelessWidget {
       );
     }*/
     return LayoutBuilder(builder: (context, constraints) {
-      if (message.isTaskDescriptionItem && msgListProvider.task != null) {
+      /*if (message.isTaskDescriptionItem && msgListProvider.task != null) {
         return Column(children: [
           /*Align(
               alignment: Alignment.centerLeft,
@@ -801,28 +811,28 @@ class ChatBubble extends StatelessWidget {
           const SizedBox(height: 10),
           //const Text("***", style: TextStyle(color: Colors.grey)),
         ]);
-      } else {
-        return Padding(
-          // asymmetric padding
-          padding: EdgeInsets.fromLTRB(
-            isCurrentUser ? 64.0 : 16.0,
-            4,
-            isCurrentUser ? 16.0 : 64.0,
-            4,
-          ),
-          child: Align(
-              // align the child within the container
-              alignment: message.isTaskDescriptionItem ||
-                      message.messageAction !=
-                          MessageAction.CreateUpdateMessageAction
-                  ? Alignment.center
-                  : isCurrentUser
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-              child: drawBubble(
-                  context, constraints, foundStruct?.loadingFileData)),
-        );
-      }
+      } else {*/
+      return Padding(
+        // asymmetric padding
+        padding: EdgeInsets.fromLTRB(
+          isCurrentUser ? 64.0 : 16.0,
+          4,
+          isCurrentUser ? 16.0 : 64.0,
+          4,
+        ),
+        child: Align(
+            // align the child within the container
+            alignment: message.isTaskDescriptionItem ||
+                    message.messageAction !=
+                        MessageAction.CreateUpdateMessageAction
+                ? Alignment.center
+                : isCurrentUser
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+            child:
+                drawBubble(context, constraints, foundStruct?.loadingFileData)),
+      );
+      //}
     });
   }
 
@@ -907,6 +917,18 @@ class ChatBubble extends StatelessWidget {
     }
   }
 
+  Color getBubbleColor() {
+    if (message.isTaskDescriptionItem) {
+      return msgListProvider.task!.completed
+          ? closedTaskColor
+          : uncompletedTaskColor;
+    } else {
+      return isCurrentUser
+          ? const Color.fromARGB(255, 187, 239, 251)
+          : const Color.fromARGB(255, 224, 224, 224);
+    }
+  }
+
   Widget drawBubble(BuildContext context, BoxConstraints constraints,
       Uint8List? loadingFileData) {
     if (message.messageAction != MessageAction.CreateUpdateMessageAction) {
@@ -938,42 +960,46 @@ class ChatBubble extends StatelessWidget {
       return DecoratedBox(
         // chat bubble decoration
         decoration: BoxDecoration(
-          color: isCurrentUser
-              ? const Color.fromARGB(255, 187, 239, 251)
-              : const Color.fromARGB(255, 224, 224, 224),
-          borderRadius: BorderRadius.circular(8),
+          color: getBubbleColor(),
+          borderRadius:
+              BorderRadius.circular(message.isTaskDescriptionItem ? 0 : 8),
         ),
         child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: IntrinsicWidth(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                  if (message.quotedText != null &&
-                      message.quotedText!.isNotEmpty)
-                    MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                            onTap: () {
-                              msgListProvider.jumpTo(message.parentMessageID);
-                            },
-                            child: Text(
-                              message.quotedText ?? "",
-                              style: const TextStyle(color: Colors.grey),
-                            ))),
-                  if (message.quotedText != null &&
-                      message.quotedText!.isNotEmpty)
-                    const Divider(),
-                  if (message.userName.isNotEmpty &&
-                      (index == msgListProvider.items.length - 1 ||
-                          msgListProvider.items[index + 1].userID !=
-                              message.userID))
-                    Text(
-                      message.userName,
-                      style: const TextStyle(color: Colors.blue),
-                    ),
-                  Stack(children: [
-                    /*if (lastBox != null)
+          padding: const EdgeInsets.all(12),
+          //child: IntrinsicWidth(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            if (message.quotedText != null && message.quotedText!.isNotEmpty)
+              MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                      onTap: () {
+                        msgListProvider.jumpTo(message.parentMessageID);
+                      },
+                      child: Text(
+                        message.quotedText ?? "",
+                        style: const TextStyle(color: Colors.grey),
+                      ))),
+            if (message.quotedText != null && message.quotedText!.isNotEmpty)
+              const Divider(),
+            if (!message.isTaskDescriptionItem &&
+                message.userName.isNotEmpty &&
+                (index == msgListProvider.items.length - 1 ||
+                    msgListProvider.items[index + 1].userID != message.userID))
+              Text(
+                message.userName,
+                style: const TextStyle(color: Colors.blue),
+              ),
+            //Stack(children: [
+            if (message.isTaskDescriptionItem)
+              Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Created by ${msgListProvider.task!.authorName} at ${dateFormat(msgListProvider.task!.creation_date)}",
+                    style: const TextStyle(color: Colors.grey),
+                  )),
+            const SizedBox(height: 5),
+            /*if (lastBox != null)
                       SizedBox.fromSize(
                           size: Size(
                             Timestamp.size.width + lastBox.right,
@@ -982,8 +1008,8 @@ class ChatBubble extends StatelessWidget {
                                 5,
                           ),
                           child: Container()),*/
-                    textWidget,
-                    /*Positioned(
+            textWidget,
+            /*Positioned(
                       left: lastBox != null ? lastBox.right + 5 : 0,
                       //constraints.maxWidth - (Timestamp.size.width + 10.0),
                       top: lastBox != null
@@ -991,13 +1017,15 @@ class ChatBubble extends StatelessWidget {
                           : 0.0,
                       child: Timestamp(message.created_at ?? DateTime.now()),
                     ),*/
-                    /*Align(
+            /*Align(
                       alignment: Alignment.bottomRight,
                       child: Timestamp(message.created_at ?? DateTime.now()),
                     )*/
-                  ]),
-                ]))),
+          ]),
+        ),
+        //  ),
       );
+      //);
     } else {
       if (message.isImage &&
           (message.smallImageName.isNotEmpty || loadingFileData != null)) {
@@ -1029,10 +1057,12 @@ class ChatBubble extends StatelessWidget {
                     message.smallImageName,
                 headers: {"sessionID": sessionID}, onTap: () {
                 onTapOnFileMessage(message, context);
-              }, onSecondaryTap: () async {
-                /*await showMenu(
+              }, onSecondaryTapDown: (TapDownDetails details) async {
+                final x = details.globalPosition.dx;
+                final y = details.globalPosition.dy;
+                await showMenu(
                   context: context,
-                  position: const RelativeRect.fromLTRB(50, 50, 50, 50),
+                  position: RelativeRect.fromLTRB(x, y, x, y),
                   items: [
                     PopupMenuItem<String>(
                         child: const Text('Copy'),
@@ -1040,8 +1070,18 @@ class ChatBubble extends StatelessWidget {
                           final fileData = await getFile(message.localFileName);
                           Pasteboard.writeImage(fileData);
                         }),
+                    PopupMenuItem<String>(
+                        child: const Text('Reply'),
+                        onTap: () async {
+                          msgListProvider.parentPreviewSmallImageData =
+                              message.previewSmallImageData;
+                          msgListProvider.quotedText = message.text;
+                          msgListProvider.currentParentMessageID = message.ID;
+                          messageTextFieldFocusNode.requestFocus();
+                          msgListProvider.refresh();
+                        }),
                   ],
-                );*/
+                );
               },
                 width: message.smallImageWidth.toDouble(),
                 height: message.smallImageHeight.toDouble(),

@@ -37,6 +37,13 @@ String? validateEmpty(String? value, String FieldName) {
   return null;
 }
 
+class Platform {
+  bool get isWindows => io.Platform.isWindows;
+  bool get isAndroid => io.Platform.isAndroid;
+  bool get isIOS => io.Platform.isIOS;
+  bool get isWeb => kIsWeb;
+}
+
 void ExitApp() {
   if (kIsWeb) {
     SystemChannels.platform.invokeMethod('SystemNavigator.pop');

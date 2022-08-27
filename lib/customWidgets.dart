@@ -128,14 +128,18 @@ Widget getTextField({
 Widget networkImage(String src,
     {Map<String, String>? headers,
     GestureTapCallback? onTap,
+    GestureTapDownCallback? onTapDown,
     GestureTapCallback? onSecondaryTap,
+    GestureTapDownCallback? onSecondaryTapDown,
     double? width,
     double? height,
     Uint8List? previewImageData}) {
   try {
     return GestureDetector(
         onTap: onTap,
+        onTapDown: onTapDown,
         onSecondaryTap: onSecondaryTap,
+        onSecondaryTapDown: onSecondaryTapDown,
         child: ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
             child: Image.network(
