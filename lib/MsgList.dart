@@ -980,13 +980,14 @@ class ChatBubble extends StatelessWidget {
                     var text = message.isTaskDescriptionItem
                         ? msgListProvider.task?.description ?? ""
                         : message.text;
-                    text = text.substring(
-                        textWidgetSelection.start, textWidgetSelection.end);
-                    Pasteboard.writeText(text);
-                    //Clipboard.setData(ClipboardData(text: text));
+                    if (textWidgetSelection.start != textWidgetSelection.end) {
+                      text = text.substring(
+                          textWidgetSelection.start, textWidgetSelection.end);
+                    }
+                    //Pasteboard.writeText(text);
+                    Clipboard.setData(ClipboardData(text: text));
                   }),
-              if (textWidgetSelection.start != 0 ||
-                  textWidgetSelection.end != 0)
+              if (textWidgetSelection.start != textWidgetSelection.end)
                 PopupMenuItem<String>(
                     child: const Text('Quote selection'),
                     onTap: () async {
