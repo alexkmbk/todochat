@@ -1396,6 +1396,7 @@ class NewMessageActionsMenu extends StatelessWidget {
             child: const Label(
               text: 'Done',
               backgroundColor: Colors.green,
+              clickableCursor: true,
             ),
             onTap: () {
               createMessage(
@@ -1415,6 +1416,7 @@ class NewMessageActionsMenu extends StatelessWidget {
                 child: Label(
                   text: "Done",
                   backgroundColor: Colors.green,
+                  clickableCursor: true,
                 ),
               ),
               WidgetSpan(child: Text("label"))
@@ -1432,6 +1434,7 @@ class NewMessageActionsMenu extends StatelessWidget {
             child: const Label(
               text: 'Cancel task',
               backgroundColor: Colors.grey,
+              clickableCursor: true,
             ),
             onTap: () {
               createMessage(
@@ -1446,6 +1449,7 @@ class NewMessageActionsMenu extends StatelessWidget {
             child: const Label(
               text: 'Reopen task',
               backgroundColor: Colors.orange,
+              clickableCursor: true,
             ),
             onTap: () {
               createMessage(

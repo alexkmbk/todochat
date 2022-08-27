@@ -402,12 +402,18 @@ class NumberInStadium extends StatelessWidget {
 class Label extends StatelessWidget {
   final String text;
   final Color? backgroundColor;
+  final VoidCallback? onPressed;
+  final bool clickableCursor;
 
-  const Label({Key? key, required this.text, this.backgroundColor})
+  const Label(
+      {Key? key,
+      required this.text,
+      this.backgroundColor,
+      this.onPressed,
+      this.clickableCursor = false})
       : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
+  Widget chip() {
     return Chip(
         visualDensity: const VisualDensity(horizontal: 0.0, vertical: -4),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -417,6 +423,25 @@ class Label extends StatelessWidget {
         label: Text(
           text,
         ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (onPressed != null || clickableCursor) {
+      return ActionChip(
+        visualDensity: const VisualDensity(horizontal: 0.0, vertical: -4),
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(5))),
+        backgroundColor: backgroundColor,
+        onPressed: onPressed ?? () {},
+        label: Text(
+          text,
+        ),
+      );
+    } else {
+      return chip();
+    }
   }
 }
 
