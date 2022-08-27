@@ -814,12 +814,14 @@ class ChatBubble extends StatelessWidget {
       } else {*/
       return Padding(
         // asymmetric padding
-        padding: EdgeInsets.fromLTRB(
-          isCurrentUser ? 64.0 : 16.0,
-          4,
-          isCurrentUser ? 16.0 : 64.0,
-          4,
-        ),
+        padding: message.isTaskDescriptionItem
+            ? const EdgeInsets.fromLTRB(0, 0, 0, 0)
+            : EdgeInsets.fromLTRB(
+                isCurrentUser ? 64.0 : 16.0,
+                4,
+                isCurrentUser ? 16.0 : 64.0,
+                4,
+              ),
         child: Align(
             // align the child within the container
             alignment: message.isTaskDescriptionItem ||
@@ -943,12 +945,19 @@ class ChatBubble extends StatelessWidget {
             child: getMessageActionDescription(message)),
       );
     } else if (message.fileName.isEmpty) {
-      final textSpan = TextSpan(text: message.text);
-      final textWidget = SelectableText.rich(
-        textSpan,
-        selectionControls: messageSelectionControl(msgListProvider,
-            message.text, message.ID, messageTextFieldFocusNode, context),
-      );
+      final text = message.isTaskDescriptionItem
+          ? msgListProvider.task?.description
+          : message.text;
+      final textSpan = TextSpan(text: text);
+      TextSelection textWidgetSelection =
+          const TextSelection(baseOffset: 0, extentOffset: 0);
+      final textWidget = SelectableText.rich(textSpan,
+          selectionControls: messageSelectionControl(msgListProvider, text,
+              message.ID, messageTextFieldFocusNode, context),
+          onSelectionChanged:
+              (TextSelection selection, SelectionChangedCause? cause) {
+        textWidgetSelection = selection;
+      });
       /*final TextBox? lastBox =
           calcLastLineEnd(message.text, textSpan, context, constraints);
       bool fitsLastLine = false;
@@ -957,49 +966,109 @@ class ChatBubble extends StatelessWidget {
             constraints.maxWidth - lastBox.right > Timestamp.size.width + 10.0;
       }*/
 
-      return DecoratedBox(
-        // chat bubble decoration
-        decoration: BoxDecoration(
-          color: getBubbleColor(),
-          borderRadius:
-              BorderRadius.circular(message.isTaskDescriptionItem ? 0 : 8),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          //child: IntrinsicWidth(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            if (message.quotedText != null && message.quotedText!.isNotEmpty)
-              MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                      onTap: () {
-                        msgListProvider.jumpTo(message.parentMessageID);
-                      },
-                      child: Text(
-                        message.quotedText ?? "",
-                        style: const TextStyle(color: Colors.grey),
-                      ))),
-            if (message.quotedText != null && message.quotedText!.isNotEmpty)
-              const Divider(),
-            if (!message.isTaskDescriptionItem &&
-                message.userName.isNotEmpty &&
-                (index == msgListProvider.items.length - 1 ||
-                    msgListProvider.items[index + 1].userID != message.userID))
-              Text(
-                message.userName,
-                style: const TextStyle(color: Colors.blue),
-              ),
-            //Stack(children: [
-            if (message.isTaskDescriptionItem)
-              Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Created by ${msgListProvider.task!.authorName} at ${dateFormat(msgListProvider.task!.creation_date)}",
-                    style: const TextStyle(color: Colors.grey),
-                  )),
-            const SizedBox(height: 5),
-            /*if (lastBox != null)
+      return GestureDetector(
+        onSecondaryTapDown: (details) async {
+          final x = details.globalPosition.dx;
+          final y = details.globalPosition.dy;
+          final selected = await showMenu(
+            context: context,
+            position: RelativeRect.fromLTRB(x, y, x, y),
+            items: [
+              PopupMenuItem<String>(
+                  child: const Text('Copy'),
+                  onTap: () async {
+                    var text = message.isTaskDescriptionItem
+                        ? msgListProvider.task?.description ?? ""
+                        : message.text;
+                    text = text.substring(
+                        textWidgetSelection.start, textWidgetSelection.end);
+                    Pasteboard.writeText(text);
+                    //Clipboard.setData(ClipboardData(text: text));
+                  }),
+              if (textWidgetSelection.start != 0 ||
+                  textWidgetSelection.end != 0)
+                PopupMenuItem<String>(
+                    child: const Text('Quote selection'),
+                    onTap: () async {
+                      var text = message.isTaskDescriptionItem
+                          ? msgListProvider.task?.description ?? ""
+                          : message.text;
+                      text = text.substring(
+                          textWidgetSelection.start, textWidgetSelection.end);
+                      msgListProvider.quotedText = text;
+                      msgListProvider.currentParentMessageID = message.ID;
+                      messageTextFieldFocusNode.requestFocus();
+                      msgListProvider.refresh();
+                    }),
+              PopupMenuItem<String>(
+                  child: const Text('Reply'),
+                  onTap: () async {
+                    msgListProvider.quotedText = message.isTaskDescriptionItem
+                        ? msgListProvider.task?.description ?? ""
+                        : message.text;
+                    msgListProvider.currentParentMessageID = message.ID;
+                    messageTextFieldFocusNode.requestFocus();
+                    msgListProvider.refresh();
+                  }),
+              if (!message.isTaskDescriptionItem)
+                const PopupMenuItem<String>(
+                  value: 'Delete',
+                  child: Text('Delete'),
+                ),
+            ],
+          );
+          if (selected == "Delete") {
+            var res = await confirmDimissDlg(
+                "Are you sure you wish to delete this item?", context);
+            if (res ?? false) {
+              msgListProvider.deleteMesage(message.ID);
+            }
+          }
+        },
+        child: DecoratedBox(
+          // chat bubble decoration
+          decoration: BoxDecoration(
+            color: getBubbleColor(),
+            borderRadius:
+                BorderRadius.circular(message.isTaskDescriptionItem ? 0 : 8),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            //child: IntrinsicWidth(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              if (message.quotedText != null && message.quotedText!.isNotEmpty)
+                MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                        onTap: () {
+                          msgListProvider.jumpTo(message.parentMessageID);
+                        },
+                        child: Text(
+                          message.quotedText ?? "",
+                          style: const TextStyle(color: Colors.grey),
+                        ))),
+              if (message.quotedText != null && message.quotedText!.isNotEmpty)
+                const Divider(),
+              if (!message.isTaskDescriptionItem &&
+                  message.userName.isNotEmpty &&
+                  (index == msgListProvider.items.length - 1 ||
+                      msgListProvider.items[index + 1].userID !=
+                          message.userID))
+                Text(
+                  message.userName,
+                  style: const TextStyle(color: Colors.blue),
+                ),
+              //Stack(children: [
+              if (message.isTaskDescriptionItem)
+                Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Created by ${msgListProvider.task!.authorName} at ${dateFormat(msgListProvider.task!.creation_date)}",
+                      style: const TextStyle(color: Colors.grey),
+                    )),
+              if (message.isTaskDescriptionItem) const SizedBox(height: 5),
+              /*if (lastBox != null)
                       SizedBox.fromSize(
                           size: Size(
                             Timestamp.size.width + lastBox.right,
@@ -1008,8 +1077,8 @@ class ChatBubble extends StatelessWidget {
                                 5,
                           ),
                           child: Container()),*/
-            textWidget,
-            /*Positioned(
+              textWidget,
+              /*Positioned(
                       left: lastBox != null ? lastBox.right + 5 : 0,
                       //constraints.maxWidth - (Timestamp.size.width + 10.0),
                       top: lastBox != null
@@ -1017,13 +1086,14 @@ class ChatBubble extends StatelessWidget {
                           : 0.0,
                       child: Timestamp(message.created_at ?? DateTime.now()),
                     ),*/
-            /*Align(
+              /*Align(
                       alignment: Alignment.bottomRight,
                       child: Timestamp(message.created_at ?? DateTime.now()),
                     )*/
-          ]),
+            ]),
+          ),
+          //  ),
         ),
-        //  ),
       );
       //);
     } else {
@@ -1429,7 +1499,7 @@ class NewMessageActionsMenu extends StatelessWidget {
 
 FlutterSelectionControls messageSelectionControl(
     MsgListProvider msgListProvider,
-    String messageText,
+    String? messageText,
     int messageID,
     FocusNode messageTextFieldFocusNode,
     BuildContext context) {
@@ -1441,20 +1511,22 @@ FlutterSelectionControls messageSelectionControl(
     ToolBarItem(
         item: const Text('Reply'),
         onItemPressed: (String highlightedText, int startIndex, int endIndex) {
-          msgListProvider.quotedText = messageText;
+          msgListProvider.quotedText = messageText ?? "";
           msgListProvider.currentParentMessageID = messageID;
           messageTextFieldFocusNode.requestFocus();
           msgListProvider.refresh();
         }),
-    ToolBarItem(
-        item: const Text('Quote selection'),
-        onItemPressed: (String highlightedText, int startIndex, int endIndex) {
-          msgListProvider.quotedText =
-              messageText.substring(startIndex, endIndex);
-          msgListProvider.currentParentMessageID = messageID;
-          messageTextFieldFocusNode.requestFocus();
-          msgListProvider.refresh();
-        }),
+    if (messageText != null)
+      ToolBarItem(
+          item: const Text('Quote selection'),
+          onItemPressed:
+              (String highlightedText, int startIndex, int endIndex) {
+            msgListProvider.quotedText =
+                messageText.substring(startIndex, endIndex);
+            msgListProvider.currentParentMessageID = messageID;
+            messageTextFieldFocusNode.requestFocus();
+            msgListProvider.refresh();
+          }),
     ToolBarItem(
         item: const Text('Delete'),
         onItemPressed:

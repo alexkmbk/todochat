@@ -35,7 +35,7 @@ class FlutterSelectionControls extends MaterialTextSelectionControls {
       {required this.toolBarItems,
       this.horizontalPadding = 16,
       this.verticalPadding = 10})
-      : assert(toolBarItems.length > 0);
+      : assert(toolBarItems.isNotEmpty);
 
   final List<ToolBarItem> toolBarItems;
 
