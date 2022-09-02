@@ -8,6 +8,7 @@ import (
 	"image"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	//"github.com/h2non/bimg"
@@ -34,6 +35,12 @@ func FileExists(path string) bool {
 }
 
 func GetCurrentDir() string {
+
+	exePath, err := os.Executable()
+	if err == nil {
+		return filepath.Dir(exePath)
+	}
+
 	res, err := os.Getwd()
 	if err != nil {
 		return ""
