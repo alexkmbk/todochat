@@ -1131,7 +1131,7 @@ class ChatBubble extends StatelessWidget {
               }, onSecondaryTapDown: (TapDownDetails details) async {
                 final x = details.globalPosition.dx;
                 final y = details.globalPosition.dy;
-                await showMenu(
+                final res = await showMenu(
                   context: context,
                   position: RelativeRect.fromLTRB(x, y, x, y),
                   items: [
@@ -1151,8 +1151,19 @@ class ChatBubble extends StatelessWidget {
                           messageTextFieldFocusNode.requestFocus();
                           msgListProvider.refresh();
                         }),
+                    const PopupMenuItem<String>(
+                      value: 'Delete',
+                      child: Text('Delete'),
+                    ),
                   ],
                 );
+                if (res == "Delete") {
+                  var res = await confirmDimissDlg(
+                      "Are you sure you wish to delete this item?", context);
+                  if (res ?? false) {
+                    msgListProvider.deleteMesage(message.ID);
+                  }
+                }
               },
                 width: message.smallImageWidth.toDouble(),
                 height: message.smallImageHeight.toDouble(),
