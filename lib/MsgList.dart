@@ -1138,6 +1138,13 @@ class ChatBubble extends StatelessWidget {
                     PopupMenuItem<String>(
                         child: const Text('Copy'),
                         onTap: () async {
+                          final fileData =
+                              await getFile(message.smallImageName);
+                          Pasteboard.writeImage(fileData);
+                        }),
+                    PopupMenuItem<String>(
+                        child: const Text('Copy original quality picure'),
+                        onTap: () async {
                           final fileData = await getFile(message.localFileName);
                           Pasteboard.writeImage(fileData);
                         }),
