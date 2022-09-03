@@ -421,7 +421,7 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 		if message.SmallImageName != "" {
 			err := os.Remove(filepath.Join(FileStoragePath, message.SmallImageName))
 			if err != nil {
-				log.Fatal(err)
+				log.Info(err)
 			}
 		}
 		DB.Delete(&message)

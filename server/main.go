@@ -55,6 +55,8 @@ func runMain() {
 		os.Mkdir(FileStoragePath, 0777)
 	}
 
+	//log.Info("FileStoragePath:" + FileStoragePath)
+
 	log.Info("Starting Todolist API server")
 
 	DB.InitDB(DB.DBMS, DBUserName, DBPassword, DBName, DBHost, DBPort, DBTimeZone)
