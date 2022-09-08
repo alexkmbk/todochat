@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
+import 'package:pasteboard/pasteboard.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 //import 'package:todochat/TasksPage.dart';
@@ -732,109 +733,142 @@ class _TaskListTileState extends State<TaskListTile> {
             ]),
           ]));
     } else {
-      return Dismissible(
-        key: UniqueKey(),
-        direction: DismissDirection.startToEnd,
-        confirmDismiss: (direction) {
-          return confirmDimissDlg(
-              "Are you sure you wish to delete this item?", context);
-        },
-        onDismissed: (direction) async {
-          if (await widget.inifiniteTaskList.onDeleteFn(widget.task.ID)) {
-            taskListProvider.deleteItem(widget.task.ID, context);
-          }
-        },
-        child: /*Card(
+      return GestureDetector(
+          onSecondaryTapDown: (details) async {
+            final x = details.globalPosition.dx;
+            final y = details.globalPosition.dy;
+            final res = await showMenu(
+              context: context,
+              position: RelativeRect.fromLTRB(x, y, x, y),
+              items: [
+                const PopupMenuItem<String>(
+                  value: 'Delete',
+                  child: Text('Delete'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'Copy',
+                  child: Text('Copy'),
+                ),
+              ],
+            );
+            if (res == "Delete") {
+              var res = await confirmDimissDlg(
+                  "Are you sure you wish to delete this item?", context);
+              if (res ?? false) {
+                if (await widget.inifiniteTaskList.onDeleteFn(widget.task.ID)) {
+                  taskListProvider.deleteItem(widget.task.ID, context);
+                }
+              }
+            } else if (res == "Copy") {
+              Pasteboard.writeText(widget.task.description);
+            }
+          },
+          child: Dismissible(
+            key: UniqueKey(),
+            direction: DismissDirection.startToEnd,
+            confirmDismiss: (direction) {
+              return confirmDimissDlg(
+                  "Are you sure you wish to delete this item?", context);
+            },
+            onDismissed: (direction) async {
+              if (await widget.inifiniteTaskList.onDeleteFn(widget.task.ID)) {
+                taskListProvider.deleteItem(widget.task.ID, context);
+              }
+            },
+            child: /*Card(
           color: getTileColor(taskListProvider.currentTask != null &&
               taskListProvider.currentTask!.ID == widget.task.ID),
           shape: const BeveledRectangleBorder(),
           /* shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8.0))),*/
           child:*/
-            ListTile(
-          tileColor: getTileColor(taskListProvider.currentTask != null &&
-              taskListProvider.currentTask!.ID == widget.task.ID),
-          onTap: () => onTap(widget.task),
-          onLongPress: () => onLongPress(widget.task),
-          leading: Checkbox(
-              checkColor: widget.task.cancelled ? Colors.grey : null,
-              shape: const CircleBorder(),
-              fillColor: MaterialStateProperty.all(
-                  widget.task.cancelled ? Colors.grey : Colors.green),
-              value: widget.task.closed,
-              onChanged: (value) => taskClosedOnChanged(value, widget.task)),
-          title: taskListProvider.searchMode
-              ? HighlightText(
-                  highlightColor: Colors.red,
-                  text: widget.task.description,
-                  words: taskListProvider.searchHighlightedWords,
-                  maxLines: 5,
-                )
-              : Text(
-                  widget.task.description,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 5,
-                  style: widget.task.cancelled
-                      ? const TextStyle(
-                          decoration: TextDecoration.lineThrough,
-                          fontStyle: FontStyle.italic)
-                      : null,
-                ),
-          subtitle: Column(
-            children: [
-              if (widget.task.lastMessage.isNotEmpty ||
-                  widget.task.unreadMessages > 0)
-                taskListProvider.searchMode
-                    ? HighlightText(
-                        leading: widget.task.lastMessageUserName.isNotEmpty
-                            ? TextSpan(
-                                text: "${widget.task.lastMessageUserName}: ",
-                                style: const TextStyle(color: Colors.blue))
-                            : null,
-                        highlightColor: Colors.red,
-                        text: widget.task.lastMessage,
-                        words: taskListProvider.searchHighlightedWords,
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                            Expanded(
-                                child: Text.rich(
-                              TextSpan(children: [
-                                if (widget.task.lastMessageUserName.isNotEmpty)
-                                  TextSpan(
-                                      text:
-                                          "${widget.task.lastMessageUserName}: ",
-                                      style:
-                                          const TextStyle(color: Colors.blue)),
-                                TextSpan(text: widget.task.lastMessage)
-                              ]),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            )),
-                            if (widget.task.unreadMessages > 0)
-                              NumberInStadium(
-                                  number: widget.task.unreadMessages),
-                          ]),
-              Row(
+                ListTile(
+              tileColor: getTileColor(taskListProvider.currentTask != null &&
+                  taskListProvider.currentTask!.ID == widget.task.ID),
+              onTap: () => onTap(widget.task),
+              onLongPress: () => onLongPress(widget.task),
+              leading: Checkbox(
+                  checkColor: widget.task.cancelled ? Colors.grey : null,
+                  shape: const CircleBorder(),
+                  fillColor: MaterialStateProperty.all(
+                      widget.task.cancelled ? Colors.grey : Colors.green),
+                  value: widget.task.closed,
+                  onChanged: (value) =>
+                      taskClosedOnChanged(value, widget.task)),
+              title: taskListProvider.searchMode
+                  ? HighlightText(
+                      highlightColor: Colors.red,
+                      text: widget.task.description,
+                      words: taskListProvider.searchHighlightedWords,
+                      maxLines: 5,
+                    )
+                  : Text(
+                      widget.task.description,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 5,
+                      style: widget.task.cancelled
+                          ? const TextStyle(
+                              decoration: TextDecoration.lineThrough,
+                              fontStyle: FontStyle.italic)
+                          : null,
+                    ),
+              subtitle: Column(
                 children: [
-                  const Spacer(),
-                  if (widget.task.completed)
-                    const Label(
-                      text: "Done",
-                      backgroundColor: Colors.green,
-                    ),
-                  if (widget.task.cancelled)
-                    const Label(
-                      text: "Cancelled",
-                      backgroundColor: Colors.grey,
-                    ),
+                  if (widget.task.lastMessage.isNotEmpty ||
+                      widget.task.unreadMessages > 0)
+                    taskListProvider.searchMode
+                        ? HighlightText(
+                            leading: widget.task.lastMessageUserName.isNotEmpty
+                                ? TextSpan(
+                                    text:
+                                        "${widget.task.lastMessageUserName}: ",
+                                    style: const TextStyle(color: Colors.blue))
+                                : null,
+                            highlightColor: Colors.red,
+                            text: widget.task.lastMessage,
+                            words: taskListProvider.searchHighlightedWords,
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                                Expanded(
+                                    child: Text.rich(
+                                  TextSpan(children: [
+                                    if (widget
+                                        .task.lastMessageUserName.isNotEmpty)
+                                      TextSpan(
+                                          text:
+                                              "${widget.task.lastMessageUserName}: ",
+                                          style: const TextStyle(
+                                              color: Colors.blue)),
+                                    TextSpan(text: widget.task.lastMessage)
+                                  ]),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                )),
+                                if (widget.task.unreadMessages > 0)
+                                  NumberInStadium(
+                                      number: widget.task.unreadMessages),
+                              ]),
+                  Row(
+                    children: [
+                      const Spacer(),
+                      if (widget.task.completed)
+                        const Label(
+                          text: "Done",
+                          backgroundColor: Colors.green,
+                        ),
+                      if (widget.task.cancelled)
+                        const Label(
+                          text: "Cancelled",
+                          backgroundColor: Colors.grey,
+                        ),
+                    ],
+                  )
                 ],
-              )
-            ],
-          ),
-        ),
-      );
+              ),
+            ),
+          ));
       //);
     }
   }

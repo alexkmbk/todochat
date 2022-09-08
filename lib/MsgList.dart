@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:pasteboard/pasteboard.dart';
+import 'package:sn_progress_dialog/sn_progress_dialog.dart';
+
 import 'package:provider/provider.dart';
 //import 'package:http/http.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -374,7 +376,11 @@ class InifiniteMsgList extends StatefulWidget {
   final ItemScrollController scrollController;
 
   //final Future<bool> Function(int messageID) onDelete;
-  final Future<Uint8List> Function(String localFileName) getFile;
+  final Future<Uint8List> Function(String localFileName,
+      {Function(List<int> value)? onData,
+      Function? onError,
+      void Function()? onDone,
+      bool? cancelOnError}) getFile;
 
   //final ItemBuilder itemBuilder;
   //final Task task;
@@ -733,7 +739,11 @@ class ChatBubble extends StatelessWidget {
   final Uint8List? smallImageData;
   final bool isCurrentUser;*/
   final DismissDirectionCallback onDismissed;
-  final Future<Uint8List> Function(String localFileName) getFile;
+  final Future<Uint8List> Function(String localFileName,
+      {Function(List<int> value)? onData,
+      Function? onError,
+      void Function()? onDone,
+      bool? cancelOnError}) getFile;
 
   TextBox? calcLastLineEnd(String text, TextSpan textSpan, BuildContext context,
       BoxConstraints constraints) {
@@ -1143,11 +1153,9 @@ class ChatBubble extends StatelessWidget {
                           Pasteboard.writeImage(fileData);
                         }),
                     PopupMenuItem<String>(
+                        value: "CopyOriginal",
                         child: const Text('Copy original quality picure'),
-                        onTap: () async {
-                          final fileData = await getFile(message.localFileName);
-                          Pasteboard.writeImage(fileData);
-                        }),
+                        onTap: () async {}),
                     PopupMenuItem<String>(
                         child: const Text('Reply'),
                         onTap: () async {
@@ -1170,6 +1178,17 @@ class ChatBubble extends StatelessWidget {
                   if (res ?? false) {
                     msgListProvider.deleteMesage(message.ID);
                   }
+                } else if (res == "CopyOriginal") {
+                  final ProgressDialog pd = ProgressDialog(context: context);
+                  //pr.show();
+                  pd.show(max: 100, msg: 'File Downloading...');
+                  List<int> fileData = []; // = Uint8List(0);
+                  getFile(message.localFileName, onData: (value) {
+                    fileData.addAll(value);
+                  }, onDone: () {
+                    pd.close();
+                    Pasteboard.writeImage(Uint8List.fromList(fileData));
+                  });
                 }
               },
                 width: message.smallImageWidth.toDouble(),

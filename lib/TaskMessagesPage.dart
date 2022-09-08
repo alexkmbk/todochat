@@ -11,6 +11,7 @@ import 'MsgList.dart';
 import 'main.dart';
 //import 'dart:io';
 import 'inifiniteTaskList.dart';
+//import 'package:progress_dialog/progress_dialog.dart';
 
 //import 'package:web_socket_channel/web_socket_channel.dart';
 //import 'package:web_socket_channel/status.dart' as status;
@@ -185,7 +186,11 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     );
   }
 
-  Future<Uint8List> getFile(String localFileName) async {
+  Future<Uint8List> getFile(String localFileName,
+      {Function(List<int> value)? onData,
+      Function? onError,
+      void Function()? onDone,
+      bool? cancelOnError}) async {
     Uint8List res = Uint8List(0);
     if (sessionID == "" || !mounted) {
       return res;
@@ -203,8 +208,13 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     var streamedResponse = await request.send();
     if (streamedResponse.statusCode == 200) {
       try {
-        Response response = await Response.fromStream(streamedResponse);
-        res = response.bodyBytes;
+        if (onData != null || onDone != null || cancelOnError != null) {
+          streamedResponse.stream.listen(onData,
+              onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+        } else {
+          Response response = await Response.fromStream(streamedResponse);
+          res = response.bodyBytes;
+        }
       } catch (e) {
         toast(e.toString(), context);
         return res;
