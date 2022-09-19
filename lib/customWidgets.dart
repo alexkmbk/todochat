@@ -428,7 +428,8 @@ class Label extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (onPressed != null || clickableCursor) {
-      return ActionChip(
+      return AbsorbPointer(
+          child: ActionChip(
         visualDensity: const VisualDensity(horizontal: 0.0, vertical: -4),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: const RoundedRectangleBorder(
@@ -438,12 +439,53 @@ class Label extends StatelessWidget {
         label: Text(
           text,
         ),
-      );
+      ));
     } else {
       return chip();
     }
   }
 }
+
+/*
+class Label extends StatelessWidget {
+  final String text;
+  final Color? backgroundColor;
+  final VoidCallback? onPressed;
+  final bool clickableCursor;
+
+  const Label(
+      {Key? key,
+      required this.text,
+      this.backgroundColor,
+      this.onPressed,
+      this.clickableCursor = false})
+      : super(key: key);
+
+  Widget chip() {
+    return Chip(
+        visualDensity: const VisualDensity(horizontal: 0.0, vertical: -4),
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(5))),
+        backgroundColor: backgroundColor,
+        label: Text(
+          text,
+        ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (onPressed != null || clickableCursor) {
+      return InkWell(
+        child: chip(),
+        onTap: onPressed,
+        mouseCursor: SystemMouseCursors.click,
+      );
+    } else {
+      return chip();
+    }
+  }
+}*/
 
 class AdjustableScrollController extends ScrollController {
   AdjustableScrollController([int extraScrollSpeed = 40]) {
