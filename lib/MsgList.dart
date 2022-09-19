@@ -456,32 +456,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
   @override
   void initState() {
     super.initState();
-
-    //_msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
-    //getMoreItems();
-    /*WidgetsBinding.instance?.addPostFrameCallback((_) {
-      getMoreItems();
-    });*/
-
-/*    _scrollController.addListener(() {
-      if (!_msgListProvider.loading &&
-          _scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent) getMoreItems();
-    });*/
-    //messageTextFieldFocusNode = FocusNode();
   }
-
-/*  InifiniteListState() {
-    _controller.addListener(() {
-      _getMoreItems();
-    });
-  }*/
-
-  /*final ScrollController _scrollController = ScrollController();
-// This is what you're looking for!
-  void _scrollDown() {
-    _scrollController.jumpTo(_scrollController.position.minScrollExtent);
-  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -788,7 +763,7 @@ class ChatBubble extends StatelessWidget {
   final bool isCurrentUser;
   final MsgListProvider msgListProvider;
   final int index;
-  FocusNode messageTextFieldFocusNode;
+  final FocusNode messageTextFieldFocusNode;
 
   double progress = 1.0;
   /*final String text;
@@ -837,48 +812,6 @@ class ChatBubble extends StatelessWidget {
       );
     }*/
     return LayoutBuilder(builder: (context, constraints) {
-      /*if (message.isTaskDescriptionItem && msgListProvider.task != null) {
-        return Column(children: [
-          /*Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Created by ${msgListProvider.task!.authorName} at ${dateFormat(msgListProvider.task!.Creation_date)}",
-                style: const TextStyle(color: Colors.grey),
-              )),*/
-          //const SizedBox(height: 5),
-          Card(
-              color: msgListProvider.task!.completed
-                  ? closedTaskColor
-                  : uncompletedTaskColor,
-              shape: const BeveledRectangleBorder(),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(children: [
-                  Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Created by ${msgListProvider.task!.authorName} at ${dateFormat(msgListProvider.task!.creation_date)}",
-                        style: const TextStyle(color: Colors.grey),
-                      )),
-                  const SizedBox(height: 5),
-                  Align(
-                      alignment: Alignment.centerLeft,
-                      child: SelectableText(
-                        msgListProvider.task?.description ?? "",
-                        selectionControls: messageSelectionControl(
-                            msgListProvider,
-                            msgListProvider.task?.description ?? "",
-                            message.ID,
-                            messageTextFieldFocusNode,
-                            context),
-                        //style: const TextStyle(fontSize: 14),
-                      )),
-                ]),
-              )),
-          const SizedBox(height: 10),
-          //const Text("***", style: TextStyle(color: Colors.grey)),
-        ]);
-      } else {*/
       return Padding(
         // asymmetric padding
         padding: message.isTaskDescriptionItem
@@ -1070,7 +1003,6 @@ class ChatBubble extends StatelessWidget {
                       //FocusScope.of(context).unfocus();
                       searchFocusNode.unfocus();
                       //messageTextFieldFocusNode.dispose();
-                      messageTextFieldFocusNode = FocusNode();
                       messageTextFieldFocusNode.requestFocus();
                       msgListProvider.refresh();
                     }),
@@ -1086,7 +1018,6 @@ class ChatBubble extends StatelessWidget {
                     //FocusScope.of(context).unfocus();
                     searchFocusNode.unfocus();
                     //messageTextFieldFocusNode.dispose();
-                    messageTextFieldFocusNode = FocusNode();
                     messageTextFieldFocusNode.requestFocus();
                     msgListProvider.refresh();
                   }),
@@ -1250,7 +1181,6 @@ class ChatBubble extends StatelessWidget {
                           //messageTextFieldFocusNode.dispose();
 
                           searchFocusNode.unfocus();
-                          messageTextFieldFocusNode = FocusNode();
                           messageTextFieldFocusNode.requestFocus();
                           msgListProvider.refresh();
                         }),
