@@ -23,10 +23,11 @@ class WSMessage {
   }
 }
 
-void toast(String? msg, BuildContext context) {
+void toast(String? msg, BuildContext context, [int duration = 4000]) {
   if (msg == null) return;
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
     content: Text(msg),
+    duration: Duration(milliseconds: duration),
   ));
 }
 

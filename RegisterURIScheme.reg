@@ -5,12 +5,13 @@ Windows Registry Editor Version 5.00
 @="URL:Todochat Link"
 
 [HKEY_CLASSES_ROOT\todochat\DefaultIcon]
-@="\"C:\\Program Files (x86)\\todochat\\todochat.exe,1\""
+@="\"E:\\DEV\\Flutter\\todochat\\build\\windows\\runner\\Debug\\todochat.exe,1\""
 
 [HKEY_CLASSES_ROOT\todochat\shell]
 
 [HKEY_CLASSES_ROOT\todochat\shell\open]
 
 [HKEY_CLASSES_ROOT\todochat\shell\open\command]
-@="\"C:\\Program Files (x86)\\todochat\\todochat.exe\" -workdir \"C:/Program Files (x86)/todochat/\" -- \"%1\""
+@="\"E:\\DEV\\Flutter\\todochat\\build\\windows\\runner\\Debug\\todochat.exe\" -workdir \"C:/Program Files (x86)/todochat/\" -- \"%1\""
+
 

@@ -61,6 +61,7 @@ type Message struct {
 	LocalFileName           string
 	FileSize                int64 `gorm:"default:0"`
 	SmallImageName          string
+	ParentsmallImageName    string `gorm:"default:''"`
 	IsImage                 bool
 	Created_at              time.Time
 	IsTaskDescriptionItem   bool `gorm:"default:false"`

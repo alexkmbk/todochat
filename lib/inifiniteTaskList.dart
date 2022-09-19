@@ -17,7 +17,7 @@ import 'highlight_text.dart';
 import 'utils.dart';
 import 'package:collection/collection.dart';
 import 'ProjectsList.dart';
-import 'main.dart';
+import 'todochat.dart';
 //import 'package:badges/badges.dart';
 
 class TasksListProvider extends ChangeNotifier {
@@ -749,6 +749,10 @@ class _TaskListTileState extends State<TaskListTile> {
                   value: 'Copy',
                   child: Text('Copy'),
                 ),
+                /*const PopupMenuItem<String>(
+                  value: 'CopyTaskLink',
+                  child: Text('Copy task link'),
+                ),*/
               ],
             );
             if (res == "Delete") {
@@ -761,6 +765,8 @@ class _TaskListTileState extends State<TaskListTile> {
               }
             } else if (res == "Copy") {
               Pasteboard.writeText(widget.task.description);
+            } else if (res == "CopyTaskLink") {
+              Pasteboard.writeText("todochat://" + widget.task.ID.toString());
             }
           },
           child: Dismissible(

@@ -14,7 +14,7 @@ import 'MsgList.dart';
 import 'SettingsPage.dart';
 import 'customWidgets.dart';
 import 'inifiniteTaskList.dart';
-import 'main.dart';
+import 'todochat.dart';
 import 'utils.dart';
 
 //import 'dart:html' as html;

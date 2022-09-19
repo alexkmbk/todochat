@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:todochat/MainMenu.dart';
 import 'HttpClient.dart';
 import 'customWidgets.dart';
-import 'main.dart';
+import 'todochat.dart';
 import 'utils.dart';
 
 class SettingsPage extends StatefulWidget {

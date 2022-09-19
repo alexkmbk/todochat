@@ -1,6 +1,7 @@
 //import 'dart:ffi';
 
 import 'dart:convert';
+//import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -14,16 +15,17 @@ import 'package:provider/provider.dart';
 //import 'package:http/http.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'HttpClient.dart' as HTTPClient;
+
 import 'package:http/http.dart' as http;
 import 'HttpClient.dart';
 import 'customWidgets.dart';
 import 'inifiniteTaskList.dart';
 import 'utils.dart';
 import 'package:path/path.dart' as path;
-import 'main.dart';
 import 'package:collection/collection.dart';
 //import 'package:text_selection_controls/text_selection_controls.dart';
 import 'text_selection_controls.dart';
+import 'todochat.dart';
 
 class UploadingFilesStruct {
   late HTTPClient.MultipartRequest? multipartRequest;
@@ -53,7 +55,7 @@ class MsgListProvider extends ChangeNotifier {
   ItemScrollController? scrollController;
   bool isOpen = isDesktopMode;
   String quotedText = "";
-  Uint8List? parentPreviewSmallImageData;
+  String parentsmallImageName = "";
   int currentParentMessageID = 0;
 
   void jumpTo(int messageID) {
@@ -214,6 +216,48 @@ class MsgListProvider extends ChangeNotifier {
     }
     // }
   }
+
+  Future<Uint8List> getFile(String localFileName,
+      {required BuildContext context,
+      Function(List<int> value)? onData,
+      Function? onError,
+      void Function()? onDone,
+      bool? cancelOnError}) async {
+    Uint8List res = Uint8List(0);
+    if (sessionID == "") {
+      return res;
+    }
+
+    http.MultipartRequest request = http.MultipartRequest(
+        'GET',
+        HTTPClient.setUriProperty(serverURI,
+            path: 'getFile',
+            queryParameters: {"localFileName": localFileName}));
+
+    request.headers["sessionID"] = sessionID;
+    request.headers["content-type"] = "application/json; charset=utf-8";
+
+    var streamedResponse = await request.send();
+    if (streamedResponse.statusCode == 200) {
+      try {
+        if (onData != null || onDone != null || cancelOnError != null) {
+          streamedResponse.stream.listen(onData,
+              onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+        } else {
+          Response response = await Response.fromStream(streamedResponse);
+          res = response.bodyBytes;
+        }
+      } catch (e) {
+        toast(e.toString(), context);
+        return res;
+      }
+      /*var data = jsonDecode(response.body) as Map<String, dynamic>;
+      message.ID = data["ID"];
+      message.userID = data["UserID"];*/
+      //return true;
+    }
+    return res;
+  }
 }
 
 class Message {
@@ -230,7 +274,7 @@ class Message {
   String fileName = "";
   int fileSize = 0;
   String localFileName = "";
-  Uint8List? parentPreviewSmallImageData;
+  String parentsmallImageName = "";
   String smallImageName = "";
   bool isImage = false;
   Uint8List? previewSmallImageData;
@@ -247,6 +291,7 @@ class Message {
       this.text = "",
       this.quotedText = "",
       this.parentMessageID = 0,
+      this.parentsmallImageName = "",
       this.created_at,
       this.ID = 0,
       this.userID = 0,
@@ -297,6 +342,7 @@ class Message {
       'text': text,
       'quotedText': quotedText,
       'parentMessageID': parentMessageID,
+      'parentsmallImageName': parentsmallImageName,
       'userID': userID,
       'userName': userName,
       'fileName': fileName,
@@ -321,6 +367,7 @@ class Message {
     quotedText = json['QuotedText'];
     var value = json['ParentMessageID'];
     parentMessageID = value ?? 0;
+    parentsmallImageName = json['ParentsmallImageName'] ?? "";
     taskID = json['TaskID'];
     projectID = json['ProjectID'];
     userID = json['UserID'];
@@ -376,20 +423,19 @@ class InifiniteMsgList extends StatefulWidget {
   final ItemScrollController scrollController;
 
   //final Future<bool> Function(int messageID) onDelete;
-  final Future<Uint8List> Function(String localFileName,
+  /*final Future<Uint8List> Function(String localFileName,
       {Function(List<int> value)? onData,
       Function? onError,
       void Function()? onDone,
-      bool? cancelOnError}) getFile;
+      bool? cancelOnError}) getFile;*/
 
   //final ItemBuilder itemBuilder;
   //final Task task;
-  const InifiniteMsgList(
-      {Key? key,
-      required this.scrollController,
-      required this.itemPositionsListener,
-      required this.getFile})
-      : super(key: key);
+  const InifiniteMsgList({
+    Key? key,
+    required this.scrollController,
+    required this.itemPositionsListener,
+  }) : super(key: key);
 
   @override
   InifiniteMsgListState createState() {
@@ -405,6 +451,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
   final ItemScrollController itemsScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
+  final messageTextFieldFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -421,6 +468,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
           _scrollController.position.pixels >=
               _scrollController.position.maxScrollExtent) getMoreItems();
     });*/
+    //messageTextFieldFocusNode = FocusNode();
   }
 
 /*  InifiniteListState() {
@@ -439,7 +487,6 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
   Widget build(BuildContext context) {
     final msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);
-    final messageTextFieldFocusNode = FocusNode();
 
     if (msgListProvider.task == null || msgListProvider.task?.ID == 0) {
       return const Center(child: Text("No any task was selected"));
@@ -481,7 +528,6 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                     isCurrentUser: item.userID == currentUserID,
                     message: item,
                     msgListProvider: msgListProvider,
-                    getFile: widget.getFile,
                     messageTextFieldFocusNode: messageTextFieldFocusNode,
                     onDismissed: (direction) async {
                       if (await msgListProvider.deleteMesage(item.ID)) {
@@ -518,14 +564,16 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
             ),
             child: Column(children: [
               if (msgListProvider.quotedText.isNotEmpty ||
-                  msgListProvider.parentPreviewSmallImageData != null)
+                  msgListProvider.parentsmallImageName.isNotEmpty)
                 Row(children: [
-                  if (msgListProvider.parentPreviewSmallImageData != null)
-                    memoryImage(
-                        msgListProvider.parentPreviewSmallImageData
-                            as Uint8List,
-                        height: 30,
-                        width: 30),
+                  if (msgListProvider.parentsmallImageName.isNotEmpty)
+                    networkImage(
+                        serverURI.scheme +
+                            '://' +
+                            serverURI.authority +
+                            "/FileStorage/" +
+                            msgListProvider.parentsmallImageName,
+                        height: 60),
                   Expanded(
                       child: Text(
                     msgListProvider.quotedText,
@@ -534,6 +582,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                   IconButton(
                       onPressed: () {
                         msgListProvider.quotedText = "";
+                        msgListProvider.parentsmallImageName = "";
                         msgListProvider.refresh();
                       },
                       icon: const Icon(Icons.close))
@@ -557,6 +606,15 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                               msgListProvider: msgListProvider,
                             );
                             _messageInputController.text = "";
+                          }
+                        },
+                        const SingleActivator(LogicalKeyboardKey.escape,
+                            control: false): () {
+                          if (msgListProvider.quotedText.isNotEmpty ||
+                              msgListProvider.parentsmallImageName.isNotEmpty) {
+                            msgListProvider.quotedText = "";
+                            msgListProvider.parentsmallImageName = "";
+                            msgListProvider.refresh();
                           }
                         },
                         const SingleActivator(LogicalKeyboardKey.keyV,
@@ -721,7 +779,6 @@ class ChatBubble extends StatelessWidget {
       {Key? key,
       required this.message,
       required this.onDismissed,
-      required this.getFile,
       required this.isCurrentUser,
       required this.msgListProvider,
       required this.index,
@@ -731,7 +788,7 @@ class ChatBubble extends StatelessWidget {
   final bool isCurrentUser;
   final MsgListProvider msgListProvider;
   final int index;
-  final FocusNode messageTextFieldFocusNode;
+  FocusNode messageTextFieldFocusNode;
 
   double progress = 1.0;
   /*final String text;
@@ -739,11 +796,11 @@ class ChatBubble extends StatelessWidget {
   final Uint8List? smallImageData;
   final bool isCurrentUser;*/
   final DismissDirectionCallback onDismissed;
-  final Future<Uint8List> Function(String localFileName,
+  /*final Future<Uint8List> Function(String localFileName,
       {Function(List<int> value)? onData,
       Function? onError,
       void Function()? onDone,
-      bool? cancelOnError}) getFile;
+      bool? cancelOnError}) getFile;*/
 
   TextBox? calcLastLineEnd(String text, TextSpan textSpan, BuildContext context,
       BoxConstraints constraints) {
@@ -995,7 +1052,9 @@ class ChatBubble extends StatelessWidget {
                           textWidgetSelection.start, textWidgetSelection.end);
                     }
                     //Pasteboard.writeText(text);
-                    Clipboard.setData(ClipboardData(text: text));
+                    Clipboard.setData(ClipboardData(text: text)).then((value) {
+                      //toast("Text copied to clipboard", context, 500);
+                    });
                   }),
               if (textWidgetSelection.start != textWidgetSelection.end)
                 PopupMenuItem<String>(
@@ -1008,6 +1067,10 @@ class ChatBubble extends StatelessWidget {
                           textWidgetSelection.start, textWidgetSelection.end);
                       msgListProvider.quotedText = text;
                       msgListProvider.currentParentMessageID = message.ID;
+                      //FocusScope.of(context).unfocus();
+                      searchFocusNode.unfocus();
+                      //messageTextFieldFocusNode.dispose();
+                      messageTextFieldFocusNode = FocusNode();
                       messageTextFieldFocusNode.requestFocus();
                       msgListProvider.refresh();
                     }),
@@ -1018,6 +1081,12 @@ class ChatBubble extends StatelessWidget {
                         ? msgListProvider.task?.description ?? ""
                         : message.text;
                     msgListProvider.currentParentMessageID = message.ID;
+
+                    msgListProvider.refresh();
+                    //FocusScope.of(context).unfocus();
+                    searchFocusNode.unfocus();
+                    //messageTextFieldFocusNode.dispose();
+                    messageTextFieldFocusNode = FocusNode();
                     messageTextFieldFocusNode.requestFocus();
                     msgListProvider.refresh();
                   }),
@@ -1059,6 +1128,21 @@ class ChatBubble extends StatelessWidget {
                           message.quotedText ?? "",
                           style: const TextStyle(color: Colors.grey),
                         ))),
+              if (message.parentsmallImageName.isNotEmpty)
+                MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: networkImage(
+                      serverURI.scheme +
+                          '://' +
+                          serverURI.authority +
+                          "/FileStorage/" +
+                          message.parentsmallImageName,
+                      height: 60,
+                      headers: {"sessionID": sessionID},
+                      onTap: () {
+                        msgListProvider.jumpTo(message.parentMessageID);
+                      },
+                    )),
               if (message.quotedText != null && message.quotedText!.isNotEmpty)
                 const Divider(),
               if (!message.isTaskDescriptionItem &&
@@ -1112,12 +1196,11 @@ class ChatBubble extends StatelessWidget {
           (message.smallImageName.isNotEmpty || loadingFileData != null)) {
         return loadingFileData != null
             ? Stack(children: [
-                memoryImage(loadingFileData,
-                    height: 200,
-                    onTap: () => onTapOnFileMessage(message, context),
-                    onSecondaryTap: () {
-                      print("onSecondaryTap");
-                    }), //),
+                memoryImage(
+                  loadingFileData,
+                  height: 200,
+                  onTap: () => onTapOnFileMessage(message, context),
+                ),
                 if (message.loadinInProcess)
                   const Positioned(
                       width: 15,
@@ -1148,8 +1231,9 @@ class ChatBubble extends StatelessWidget {
                     PopupMenuItem<String>(
                         child: const Text('Copy'),
                         onTap: () async {
-                          final fileData =
-                              await getFile(message.smallImageName);
+                          final fileData = await msgListProvider.getFile(
+                              message.smallImageName,
+                              context: context);
                           Pasteboard.writeImage(fileData);
                         }),
                     PopupMenuItem<String>(
@@ -1159,10 +1243,14 @@ class ChatBubble extends StatelessWidget {
                     PopupMenuItem<String>(
                         child: const Text('Reply'),
                         onTap: () async {
-                          msgListProvider.parentPreviewSmallImageData =
-                              message.previewSmallImageData;
+                          msgListProvider.parentsmallImageName =
+                              message.smallImageName;
                           msgListProvider.quotedText = message.text;
                           msgListProvider.currentParentMessageID = message.ID;
+                          //messageTextFieldFocusNode.dispose();
+
+                          searchFocusNode.unfocus();
+                          messageTextFieldFocusNode = FocusNode();
                           messageTextFieldFocusNode.requestFocus();
                           msgListProvider.refresh();
                         }),
@@ -1183,9 +1271,10 @@ class ChatBubble extends StatelessWidget {
                   //pr.show();
                   pd.show(max: 100, msg: 'File Downloading...');
                   List<int> fileData = []; // = Uint8List(0);
-                  getFile(message.localFileName, onData: (value) {
+                  msgListProvider.getFile(message.localFileName,
+                      context: context, onData: (value) {
                     fileData.addAll(value);
-                  }, onDone: () {
+                  }, onDone: () async {
                     pd.close();
                     Pasteboard.writeImage(Uint8List.fromList(fileData));
                   });
@@ -1271,7 +1360,8 @@ class ChatBubble extends StatelessWidget {
                   imageProvider: res.image, fileSize: message.fileSize)));
       //}
     } else if (message.localFileName.isNotEmpty) {
-      var res = await getFile(message.localFileName);
+      var res = await msgListProvider.getFile(message.localFileName,
+          context: context);
       if (res.isNotEmpty) {
         var localFullName = await saveInDownloads(res, message.fileName);
         if (localFullName.isNotEmpty) {
@@ -1307,6 +1397,7 @@ Future<bool> createMessage(
     loadinInProcess: loadinInProcess,
     messageAction: messageAction,
     quotedText: msgListProvider.quotedText,
+    parentsmallImageName: msgListProvider.parentsmallImageName,
     parentMessageID: msgListProvider.currentParentMessageID,
   );
 
@@ -1334,6 +1425,7 @@ Future<bool> createMessage(
     msgListProvider.addItem(message);
     //msgListProvider.taskID = tempID;
     msgListProvider.quotedText = "";
+    msgListProvider.parentsmallImageName = "";
     msgListProvider.currentParentMessageID = 0;
 
     return true;
@@ -1555,6 +1647,10 @@ FlutterSelectionControls messageSelectionControl(
         onItemPressed: (String highlightedText, int startIndex, int endIndex) {
           msgListProvider.quotedText = messageText ?? "";
           msgListProvider.currentParentMessageID = messageID;
+
+          //messageTextFieldFocusNode.dispose();
+          searchFocusNode.unfocus();
+          messageTextFieldFocusNode = FocusNode();
           messageTextFieldFocusNode.requestFocus();
           msgListProvider.refresh();
         }),
@@ -1566,6 +1662,9 @@ FlutterSelectionControls messageSelectionControl(
             msgListProvider.quotedText =
                 messageText.substring(startIndex, endIndex);
             msgListProvider.currentParentMessageID = messageID;
+            //messageTextFieldFocusNode.dispose();
+            searchFocusNode.unfocus();
+            messageTextFieldFocusNode = FocusNode();
             messageTextFieldFocusNode.requestFocus();
             msgListProvider.refresh();
           }),

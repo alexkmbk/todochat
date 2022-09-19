@@ -7,13 +7,19 @@
         {
             "name": "todochat",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            //"args": ["--dart-entrypoint-args", "value1", "--arg2", "value2"],
+            /*"toolArgs": [
+                "--dart-define",
+                "FOO=bar",
+            ]*/
         },
         {
             "name": "todochat (profile mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "profile"
+            "flutterMode": "profile",
+            //"args": ["arg1", "arg2", "arg3"]
         }
     ]
 }

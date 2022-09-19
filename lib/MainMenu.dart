@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:todochat/SettingsPage.dart';
 import 'LoginPage.dart';
 import 'customWidgets.dart';
-import 'main.dart';
 import 'utils.dart';
+import 'todochat.dart';
 
 //enum MenuItemsEnum { Exit, Logout }
 

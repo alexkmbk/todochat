@@ -14,7 +14,7 @@ import 'ProjectsList.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 //import 'customWidgets.dart';
-import 'main.dart';
+import 'todochat.dart';
 import 'dart:convert';
 import 'highlight_text.dart';
 //import 'package:resizable_widget/resizable_widget.dart';
@@ -393,6 +393,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
     final msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);
     return getTextField(
+        focusNode: searchFocusNode,
         textInputAction: TextInputAction.done,
         controller: searchController,
         hintText: "Search",

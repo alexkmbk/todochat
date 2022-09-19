@@ -19,22 +19,11 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'MsgList.dart';
+import 'todochat.dart';
 
-Uri serverURI = Uri();
-String sessionID = "";
-int currentUserID = 0;
-String currentUserName = "";
-bool isDesktopMode = false;
-bool appInitialized = false;
-const Color closedTaskColor = Color.fromARGB(255, 183, 242, 176);
-//const Color uncompletedTaskColor = Color.fromARGB(255, 248, 248, 147);
-const Color uncompletedTaskColor = Colors.white;
-const Color appBarColor = Color.fromARGB(240, 255, 255, 255);
-const Color unreadTaskColor = Color.fromARGB(255, 250, 161, 27);
-late SharedPreferences settings;
 Timer? timer;
 
-void main() {
+void main(List<String> arguments) {
   runApp(
     RestartWidget(
       builder: () {
@@ -428,3 +417,77 @@ class _MyHomePageState extends State<MyHomePage> {
     return true;
   }
 }
+
+
+
+/*void _incomingLinkHandler() {
+  // 1
+  if (!kIsWeb) {
+    // 2
+    _streamSubscription = uriLinkStream.listen((Uri? uri) {
+      if (!mounted) {
+        return;
+      }
+      debugPrint('Received URI: $uri');
+      setState(() {
+        _currentURI = uri;
+        _err = null;
+      });
+      // 3
+    }, onError: (Object err) {
+      if (!mounted) {
+        return;
+      }
+      debugPrint('Error occurred: $err');
+      setState(() {
+        _currentURI = null;
+        if (err is FormatException) {
+          _err = err;
+        } else {
+          _err = null;
+        }
+      });
+    });
+  }
+}*/
+
+/*Future<void> _initURIHandler() async {
+  // 1
+  /*if (!_initialURILinkHandled) {
+    _initialURILinkHandled = true;
+    // 2
+    Fluttertoast.showToast(
+        msg: "Invoked _initURIHandler",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.green,
+        textColor: Colors.white);*/
+    try {
+      // 3
+      final initialURI = await getInitialUri();
+      // 4
+      if (initialURI != null) {
+        debugPrint("Initial URI received $initialURI");
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _initialURI = initialURI;
+        });
+      } else {
+        debugPrint("Null Initial URI received");
+      }
+    } on PlatformException {
+      // 5
+      debugPrint("Failed to receive initial uri");
+    } on FormatException catch (err) {
+      // 6
+      if (!mounted) {
+        return;
+      }
+      debugPrint('Malformed Initial URI received');
+      setState(() => _err = err);
+    }
+ // }
+}*/
