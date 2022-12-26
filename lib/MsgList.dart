@@ -233,15 +233,7 @@ class MsgListProvider extends ChangeNotifier {
           headers: headers);
     } catch (e) {
       reconnect(taskListProvider, context);
-      int count = 0;
-      while (count < 5) {
-        var res = await requestMessages(taskListProvider, context);
-        if (res) {
-          return true;
-        }
-        count += 1;
-      }
-      return false;
+      return await requestMessages(taskListProvider, context);
     }
 
     if (response.statusCode == 200) {
@@ -511,6 +503,15 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
         }
       });
 
+      if (msgListProvider.loading) {
+        return const Align(
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: 15,
+              height: 15,
+              child: CircularProgressIndicator(),
+            ));
+      }
       return Column(children: <Widget>[
         Expanded(
             child: ScrollablePositionedList.builder(
