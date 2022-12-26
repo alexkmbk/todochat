@@ -174,9 +174,7 @@ class MsgListProvider extends ChangeNotifier {
       return false;
     }
 
-    Map<String, String> headers = <String, String>{};
-    headers["sessionID"] = sessionID;
-
+    Map<String, String> headers = {"sessionID": sessionID};
     Response response;
 
     try {
@@ -195,13 +193,14 @@ class MsgListProvider extends ChangeNotifier {
     return false;
   }
 
-  void requestMessages() async {
+  Future<bool> requestMessages(
+      TasksListProvider taskListProvider, BuildContext context) async {
     if (sessionID == "") {
-      return;
+      return false;
     }
 
     loading = true;
-    if (ws == null) {
+    /*if (ws == null) {
       await Future.delayed(const Duration(seconds: 2));
     }
     if (ws != null) {
@@ -213,8 +212,46 @@ class MsgListProvider extends ChangeNotifier {
         "limit": "30",
         "taskID": taskID.toString(),
       }));
-    }
+    }*/
     // }
+
+    if (sessionID == "") {
+      return false;
+    }
+
+    Map<String, String> headers = {
+      "sessionID": sessionID,
+      "taskID": taskID.toString(),
+      "lastID": lastID.toString(),
+      "limit": "30"
+    };
+    Response response;
+
+    try {
+      response = await HTTPClient.httpClient.get(
+          HTTPClient.setUriProperty(serverURI, path: "messages"),
+          headers: headers);
+    } catch (e) {
+      reconnect(taskListProvider, context);
+      int count = 0;
+      while (count < 5) {
+        var res = await requestMessages(taskListProvider, context);
+        if (res) {
+          return true;
+        }
+        count += 1;
+      }
+      return false;
+    }
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      addItems(data);
+    }
+
+    loading = false;
+
+    return true;
   }
 
   Future<Uint8List> getFile(String localFileName,
@@ -474,8 +511,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
         }
       });
 
-      return Expanded(
-          child: Column(children: <Widget>[
+      return Column(children: <Widget>[
         Expanded(
             child: ScrollablePositionedList.builder(
                 reverse: true,
@@ -744,7 +780,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
             ]),
           ),
         ),
-      ]));
+      ]);
     }
   }
 }
@@ -1214,54 +1250,75 @@ class ChatBubble extends StatelessWidget {
                 height: message.smallImageHeight.toDouble(),
                 previewImageData: message.previewSmallImageData);
       } else {
-        return DecoratedBox(
-            // attached file
-            decoration: BoxDecoration(
-              color: isCurrentUser
-                  ? Colors.blue
-                  : const Color.fromARGB(255, 224, 224, 224),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: GestureDetector(
-              onTap: () => onTapOnFileMessage(message, context),
-              child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Icon(Icons.file_present_rounded,
-                                color: Colors.white),
-                            const SizedBox(width: 10),
-                            FittedBox(
-                                fit: BoxFit.fill,
-                                alignment: Alignment.center,
-                                child: SelectableText(
-                                  message.fileName,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyText1!
-                                      .copyWith(
-                                          color: isCurrentUser
-                                              ? Colors.white
-                                              : Colors.black87),
-                                )),
-                            if (message.loadinInProcess)
-                              const Padding(
-                                  padding: EdgeInsets.only(left: 5),
-                                  child: SizedBox(
-                                      width: 15,
-                                      height: 15,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                        //value: progress,
-                                      )))
-                          ]))),
-            ));
+        return GestureDetector(
+            onSecondaryTapDown: (details) async {
+              final x = details.globalPosition.dx;
+              final y = details.globalPosition.dy;
+              final selected = await showMenu(
+                  context: context,
+                  position: RelativeRect.fromLTRB(x, y, x, y),
+                  items: [
+                    const PopupMenuItem<String>(
+                      value: 'Delete',
+                      child: Text('Delete'),
+                    ),
+                  ]);
+              if (selected == "Delete") {
+                var res = await confirmDimissDlg(
+                    "Are you sure you wish to delete this item?", context);
+                if (res ?? false) {
+                  msgListProvider.deleteMesage(message.ID);
+                }
+              }
+            },
+            child: DecoratedBox(
+                // attached file
+                decoration: BoxDecoration(
+                  color: isCurrentUser
+                      ? Colors.blue
+                      : const Color.fromARGB(255, 224, 224, 224),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: GestureDetector(
+                  onTap: () => onTapOnFileMessage(message, context),
+                  child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Icon(Icons.file_present_rounded,
+                                    color: Colors.white),
+                                const SizedBox(width: 10),
+                                FittedBox(
+                                    fit: BoxFit.fill,
+                                    alignment: Alignment.center,
+                                    child: SelectableText(
+                                      message.fileName,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyText1!
+                                          .copyWith(
+                                              color: isCurrentUser
+                                                  ? Colors.white
+                                                  : Colors.black87),
+                                    )),
+                                if (message.loadinInProcess)
+                                  const Padding(
+                                      padding: EdgeInsets.only(left: 5),
+                                      child: SizedBox(
+                                          width: 15,
+                                          height: 15,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                            //value: progress,
+                                          )))
+                              ]))),
+                )));
       }
     }
   }

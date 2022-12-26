@@ -241,72 +241,6 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
-  StreamSubscription? subscription;
-
-  void listenWs(TasksListProvider taskListProvider) {
-    final msgListProvider =
-        Provider.of<MsgListProvider>(context, listen: false);
-
-    if (sessionID.isNotEmpty && ws != null) {
-      try {
-        subscription = ws!.stream.listen((messageJson) {
-          WSMessage wsMsg = WSMessage.fromJson(messageJson);
-          if (wsMsg.command == "getMessages") {
-            msgListProvider.addItems(wsMsg.data);
-          } else if (wsMsg.command == "createMessage") {
-            var message = Message.fromJson(wsMsg.data);
-            final created = msgListProvider.addItem(message);
-            taskListProvider.updateLastMessage(
-                message.taskID, message, created);
-          } else if (wsMsg.command == "deleteMessage") {
-            var message = Message.fromJson(wsMsg.data);
-            msgListProvider.deleteItem(message.ID);
-          } else if (wsMsg.command == "createTask") {
-            var task = Task.fromJson(wsMsg.data);
-            taskListProvider.addItem(task);
-          } else if (wsMsg.command == "deleteTask") {
-            var taskID = wsMsg.data;
-            taskListProvider.deleteItem(taskID, context);
-          } else if (wsMsg.command == "updateTask") {
-            var task = Task.fromJson(wsMsg.data);
-            taskListProvider.updateItem(task);
-          }
-        }, onDone: () {
-          isWSConnected = false;
-          subscription!.cancel();
-          /*checkLogin().then((value) async {
-            if (value) {
-//              subscription!.cancel();
-              //connectWebSocketChannel(serverURI);
-            } else {
-              login().then((isLogin) async {
-                if (isLogin) {
-//                  subscription!.cancel();
-                  //connectWebSocketChannel(serverURI);
-                } else {
-                  RestartWidget.restartApp();
-                }
-              });
-            }
-          }).onError((error, stackTrace) {
-            RestartWidget.restartApp();
-          });*/
-        }, onError: (error) {
-          if (kDebugMode) {
-            print(error.toString());
-          }
-          RestartWidget.restartApp();
-        });
-      } catch (e) {
-        if (kDebugMode) {
-          print(e.toString());
-        }
-        Future.delayed(const Duration(seconds: 2))
-            .then((value) => RestartWidget.restartApp());
-      }
-    }
-  }
-
   Future<bool> initApp(BuildContext context) async {
     if (appInitialized) return true;
     bool res;
@@ -328,7 +262,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (port == null || port == 0) {
       port = null;
     }
-    var isServerURI = true;
+    //var isServerURI = true;
     if (host == null || host.isEmpty) {
       isServerURI = await Navigator.push(
         context,
@@ -371,19 +305,21 @@ class _MyHomePageState extends State<MyHomePage> {
       }
 
       connectWebSocketChannel(serverURI).then((value) {
-        listenWs(taskListProvider);
+        listenWs(taskListProvider, context);
       });
     }
 
     // int counter = 0;
-    var connectWebSocketInProcess = false;
+    //var connectWebSocketInProcess = false;
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      reconnect(taskListProvider, context);
+
       /* counter++;
       createMessage(
           text: counter.toString(),
           msgListProvider: msgListProvider,
           task: Task(ID: 1));*/
-      if (!connectWebSocketInProcess &&
+      /*if (!connectWebSocketInProcess &&
           !isWSConnected &&
           isServerURI &&
           sessionID.isNotEmpty) {
@@ -409,7 +345,7 @@ class _MyHomePageState extends State<MyHomePage> {
         }).onError((error, stackTrace) {
           RestartWidget.restartApp();
         });
-      }
+      }*/
     });
 
     appInitialized = true;

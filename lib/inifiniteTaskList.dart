@@ -165,15 +165,49 @@ class TasksListProvider extends ChangeNotifier {
         currentTask = items[index];
         msgListProvider.taskID = currentTask!.ID;
         msgListProvider.task = currentTask;
-        msgListProvider.requestMessages();
+        final taskListProvider =
+            Provider.of<TasksListProvider>(context, listen: false);
+        msgListProvider.requestMessages(taskListProvider, context);
       } else {
         currentTask = null;
         msgListProvider.taskID = 0;
         msgListProvider.task = null;
       }
       msgListProvider.refresh();
-      notifyListeners();
+      refresh();
     }
+  }
+
+  Future<bool> deleteTask(int taskID, BuildContext context) async {
+    if (sessionID == "") {
+      return false;
+    }
+
+    Response response;
+
+    try {
+      response = await httpClient
+          .delete(setUriProperty(serverURI, path: 'todo/$taskID'));
+
+      if (response.statusCode == 200) {
+        return true;
+      }
+    } catch (e) {
+      reconnect(this, context);
+
+      int count = 0;
+      while (count < 5) {
+        var res = await deleteTask(taskID, context);
+        if (res) {
+          return true;
+        }
+        count += 1;
+
+        return false;
+      }
+    }
+
+    return false;
   }
 
   Future<Task?> createTask(String description, MsgListProvider msgListProvider,
@@ -188,7 +222,17 @@ class TasksListProvider extends ChangeNotifier {
       response = await httpClient.post(setUriProperty(serverURI, path: 'todo'),
           body: jsonEncode(task), headers: {"ProjectID": projectID.toString()});
     } catch (e) {
-      toast(e.toString(), context);
+      //toast(e.toString(), context);
+      reconnect(this, context);
+
+      int count = 0;
+      while (count < 5) {
+        var res = await createTask(description, msgListProvider, context);
+        if (res != null) {
+          return res;
+        }
+        count += 1;
+      }
       return null;
     }
     //request.headers.contentLength = utf8.encode(body).length;
@@ -335,7 +379,10 @@ class TasksListProvider extends ChangeNotifier {
           msgListProvider.taskID = msgListProvider.task?.ID ?? 0;
           msgListProvider.clear();
           if (isDesktopMode) {
-            msgListProvider.requestMessages();
+            final taskListProvider =
+                Provider.of<TasksListProvider>(context, listen: false);
+
+            msgListProvider.requestMessages(taskListProvider, context);
           }
         }
       } else if (items.isEmpty) {
@@ -465,13 +512,11 @@ typedef ItemBuilder = Widget Function(
 class InifiniteTaskList extends StatefulWidget {
   final ItemPositionsListener itemPositionsListener;
   final ItemScrollController scrollController;
-  final OnDeleteFn onDeleteFn;
 
   const InifiniteTaskList(
       {Key? key,
       required this.scrollController,
-      required this.itemPositionsListener,
-      required this.onDeleteFn})
+      required this.itemPositionsListener})
       : super(key: key);
 
   @override
@@ -759,7 +804,8 @@ class _TaskListTileState extends State<TaskListTile> {
               var res = await confirmDimissDlg(
                   "Are you sure you wish to delete this item?", context);
               if (res ?? false) {
-                if (await widget.inifiniteTaskList.onDeleteFn(widget.task.ID)) {
+                if (await taskListProvider.deleteTask(
+                    widget.task.ID, context)) {
                   taskListProvider.deleteItem(widget.task.ID, context);
                 }
               }
@@ -777,7 +823,7 @@ class _TaskListTileState extends State<TaskListTile> {
                   "Are you sure you wish to delete this item?", context);
             },
             onDismissed: (direction) async {
-              if (await widget.inifiniteTaskList.onDeleteFn(widget.task.ID)) {
+              if (await taskListProvider.deleteTask(widget.task.ID, context)) {
                 taskListProvider.deleteItem(widget.task.ID, context);
               }
             },
@@ -899,7 +945,7 @@ class _TaskListTileState extends State<TaskListTile> {
       task.unreadMessages = 0;
       taskListProvider.currentTask = task;
       msgListProvider.isOpen = true;
-      msgListProvider.requestMessages();
+      msgListProvider.requestMessages(taskListProvider, context);
       taskListProvider.refresh();
 
       /*ws!.sink.add(jsonEncode({
@@ -1013,6 +1059,5 @@ void openTask(
     msgListProvider.task = null;
     msgListProvider.taskID = 0;
     msgListProvider.isOpen = false;
-    ;
   }
 }

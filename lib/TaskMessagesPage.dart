@@ -41,7 +41,9 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     msgListProvider.task = widget.task;
     msgListProvider.foundMessageID = widget.task.lastMessageID;
     msgListProvider.scrollController = itemsScrollController;
-    msgListProvider.requestMessages();
+    final taskListProvider =
+        Provider.of<TasksListProvider>(context, listen: false);
+    msgListProvider.requestMessages(taskListProvider, context);
   }
 
   @override
@@ -50,28 +52,30 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
   }
 
   Widget drawBody() {
-    return Column(
+    return /*Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [
+      children: [*/
         Consumer<MsgListProvider>(builder: (context, provider, child) {
-          return NotificationListener<ScrollUpdateNotification>(
-            child: InifiniteMsgList(
-              scrollController: itemsScrollController,
-              itemPositionsListener: itemPositionsListener,
-            ),
-            onNotification: (notification) {
-              if (!provider.loading &&
-                  (itemPositionsListener.itemPositions.value.isEmpty ||
-                      (itemPositionsListener.itemPositions.value.last.index >=
-                          provider.items.length - 10))) {
-                provider.requestMessages();
-              }
-              return true;
-            },
-          );
-        }),
-      ],
-    );
+      return NotificationListener<ScrollUpdateNotification>(
+        child: InifiniteMsgList(
+          scrollController: itemsScrollController,
+          itemPositionsListener: itemPositionsListener,
+        ),
+        onNotification: (notification) {
+          if (!provider.loading &&
+              (itemPositionsListener.itemPositions.value.isEmpty ||
+                  (itemPositionsListener.itemPositions.value.last.index >=
+                      provider.items.length - 10))) {
+            final taskListProvider =
+                Provider.of<TasksListProvider>(context, listen: false);
+            provider.requestMessages(taskListProvider, context);
+          }
+          return true;
+        },
+      );
+    });
+    //],
+    //);
   }
 
   @override

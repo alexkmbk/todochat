@@ -129,7 +129,6 @@ class _TasksPageState extends State<TasksPage> {
       child: InifiniteTaskList(
         scrollController: _scrollController,
         itemPositionsListener: itemPositionsListener,
-        onDeleteFn: deleteTask,
       ),
       onNotification: (notification) {
         /*var scrollDelta = notification.scrollDelta ?? 0;
@@ -228,27 +227,6 @@ class _TasksPageState extends State<TasksPage> {
         child: renderTasks(taskListProvider),
       );
     }
-  }
-
-  Future<bool> deleteTask(int taskID) async {
-    if (sessionID == "") {
-      return false;
-    }
-
-    Response response;
-
-    try {
-      response = await httpClient
-          .delete(setUriProperty(serverURI, path: 'todo/$taskID'));
-    } catch (e) {
-      return false;
-    }
-
-    if (response.statusCode == 200) {
-      return true;
-    }
-
-    return false;
   }
 
   Future<void> searchTasks(String search, BuildContext context) async {
@@ -423,7 +401,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
             if (isDesktopMode) {
               msgListProvider.taskID = taskListProvider.currentTask?.ID ?? 0;
               msgListProvider.task = taskListProvider.currentTask;
-              msgListProvider.requestMessages();
+              msgListProvider.requestMessages(taskListProvider, context);
             }
           } else {
             taskListProvider.searchMode = false;

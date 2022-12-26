@@ -2,9 +2,24 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:todochat/utils.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'todochat.dart';
+import 'LoginPage.dart';
+import 'customWidgets.dart';
+
+import 'inifiniteTaskList.dart';
+import 'utils.dart';
+//import 'TaskMessagesPage.dart';
+import 'MsgList.dart';
+import 'package:provider/provider.dart';
+import 'inifiniteTaskList.dart';
+
+var connectWebSocketInProcess = false;
+var isServerURI = true;
 
 var httpClient = HttpClient();
 WebSocketChannel? ws;
@@ -29,6 +44,20 @@ class HttpClient extends http.BaseClient {
 
     return _httpClient.send(request);
   }
+}
+
+Uri setUriProperty(Uri uri,
+    {String? scheme,
+    String? host,
+    int port = 0,
+    String? path,
+    Map<String, dynamic>? queryParameters}) {
+  return Uri(
+      scheme: scheme ?? uri.scheme,
+      host: host ?? uri.host,
+      port: port == 0 ? uri.port : port,
+      path: path ?? uri.path,
+      queryParameters: queryParameters ?? uri.queryParameters);
 }
 
 class MultipartRequest extends http.MultipartRequest {
@@ -92,6 +121,101 @@ Future<void> connectWebSocketChannel(Uri serverURI) async {
           Uri.parse('ws://' + serverURI.authority + "/initMessagesWS"));*/
 }
 
+StreamSubscription? subscription;
+
+void listenWs(TasksListProvider taskListProvider, BuildContext context) {
+  final msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
+
+  if (sessionID.isNotEmpty && ws != null) {
+    try {
+      subscription = ws!.stream.listen((messageJson) {
+        WSMessage wsMsg = WSMessage.fromJson(messageJson);
+        if (wsMsg.command == "getMessages") {
+          msgListProvider.addItems(wsMsg.data);
+        } else if (wsMsg.command == "createMessage") {
+          var message = Message.fromJson(wsMsg.data);
+          final created = msgListProvider.addItem(message);
+          taskListProvider.updateLastMessage(message.taskID, message, created);
+        } else if (wsMsg.command == "deleteMessage") {
+          var message = Message.fromJson(wsMsg.data);
+          msgListProvider.deleteItem(message.ID);
+        } else if (wsMsg.command == "createTask") {
+          var task = Task.fromJson(wsMsg.data);
+          taskListProvider.addItem(task);
+        } else if (wsMsg.command == "deleteTask") {
+          var taskID = wsMsg.data;
+          taskListProvider.deleteItem(taskID, context);
+        } else if (wsMsg.command == "updateTask") {
+          var task = Task.fromJson(wsMsg.data);
+          taskListProvider.updateItem(task);
+        }
+      }, onDone: () {
+        isWSConnected = false;
+        subscription!.cancel();
+        /*checkLogin().then((value) async {
+            if (value) {
+//              subscription!.cancel();
+              //connectWebSocketChannel(serverURI);
+            } else {
+              login().then((isLogin) async {
+                if (isLogin) {
+//                  subscription!.cancel();
+                  //connectWebSocketChannel(serverURI);
+                } else {
+                  RestartWidget.restartApp();
+                }
+              });
+            }
+          }).onError((error, stackTrace) {
+            RestartWidget.restartApp();
+          });*/
+      }, onError: (error) {
+        if (kDebugMode) {
+          print(error.toString());
+        }
+        RestartWidget.restartApp();
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print(e.toString());
+      }
+      Future.delayed(const Duration(seconds: 2))
+          .then((value) => RestartWidget.restartApp());
+    }
+  }
+}
+
+Future<void> reconnect(
+    TasksListProvider taskListProvider, BuildContext context) async {
+  if (!connectWebSocketInProcess &&
+      !isWSConnected &&
+      isServerURI &&
+      sessionID.isNotEmpty) {
+    connectWebSocketInProcess = true;
+    checkLogin().then((isLogin) {
+      if (isLogin) {
+        connectWebSocketChannel(serverURI).then((value) {
+          connectWebSocketInProcess = false;
+          listenWs(taskListProvider, context);
+        });
+      } else {
+        login().then((isLogin) async {
+          if (isLogin) {
+            connectWebSocketChannel(serverURI).then((value) {
+              connectWebSocketInProcess = false;
+              listenWs(taskListProvider, context);
+            });
+          } else {
+            RestartWidget.restartApp();
+          }
+        });
+      }
+    }).onError((error, stackTrace) {
+      RestartWidget.restartApp();
+    });
+  }
+}
+
 //?param1=one&param2=two
 String toUrlParams(Map<String, String> params) {
   String res = "";
@@ -121,20 +245,6 @@ String toUrlParams(Map<String, String> params) {
   res += toUrlParams(uri.queryParameters);
   return res;
 }*/
-
-Uri setUriProperty(Uri uri,
-    {String? scheme,
-    String? host,
-    int port = 0,
-    String? path,
-    Map<String, dynamic>? queryParameters}) {
-  return Uri(
-      scheme: scheme ?? uri.scheme,
-      host: host ?? uri.host,
-      port: port == 0 ? uri.port : port,
-      path: path ?? uri.path,
-      queryParameters: queryParameters ?? uri.queryParameters);
-}
 
 Uri? parseURL(String URL,
     {String? path, Map<String, String>? queryParameters}) {
