@@ -136,6 +136,18 @@ class MsgListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void selectItem(Message message, [bool multiselect = false]) {
+    if (!multiselect) {
+      int foundIndex =
+          items.indexWhere((element) => element.isSelected == true);
+      if (foundIndex >= 0) {
+        items[foundIndex].isSelected = false;
+      }
+    }
+    message.isSelected = true;
+    refresh();
+  }
+
   bool addItem(Message message) {
     if (message.taskID != taskID || !isOpen) {
       return false;
@@ -314,6 +326,7 @@ class Message {
   //Uint8List? loadingFileData;
   bool loadinInProcess = false;
   String tempID = "";
+  bool isSelected = false;
   MessageAction messageAction = MessageAction.CreateUpdateMessageAction;
   Message(
       {required this.taskID,
@@ -974,6 +987,9 @@ class ChatBubble extends StatelessWidget {
       return DecoratedBox(
         // chat bubble decoration
         decoration: BoxDecoration(
+          border: message.isSelected
+              ? Border.all(color: Colors.blueAccent, width: 3)
+              : Border.all(color: const Color.fromARGB(255, 228, 232, 233)),
           color: const Color.fromARGB(255, 228, 232, 233),
           borderRadius: BorderRadius.circular(8),
         ),
@@ -1005,6 +1021,7 @@ class ChatBubble extends StatelessWidget {
 
       return GestureDetector(
         onSecondaryTapDown: (details) async {
+          msgListProvider.selectItem(message);
           final x = details.globalPosition.dx;
           final y = details.globalPosition.dy;
           final selected = await showMenu(
@@ -1014,6 +1031,7 @@ class ChatBubble extends StatelessWidget {
               PopupMenuItem<String>(
                   child: const Text('Copy'),
                   onTap: () async {
+                    message.isSelected = false;
                     var text = message.isTaskDescriptionItem
                         ? msgListProvider.task?.description ?? ""
                         : message.text;
@@ -1030,6 +1048,7 @@ class ChatBubble extends StatelessWidget {
                 PopupMenuItem<String>(
                     child: const Text('Quote selection'),
                     onTap: () async {
+                      message.isSelected = false;
                       var text = message.isTaskDescriptionItem
                           ? msgListProvider.task?.description ?? ""
                           : message.text;
@@ -1046,6 +1065,7 @@ class ChatBubble extends StatelessWidget {
               PopupMenuItem<String>(
                   child: const Text('Reply'),
                   onTap: () async {
+                    message.isSelected = false;
                     msgListProvider.quotedText = message.isTaskDescriptionItem
                         ? msgListProvider.task?.description ?? ""
                         : message.text;
@@ -1066,6 +1086,7 @@ class ChatBubble extends StatelessWidget {
             ],
           );
           if (selected == "Delete") {
+            message.isSelected = false;
             var res = await confirmDimissDlg(
                 "Are you sure you wish to delete this item?", context);
             if (res ?? false) {
@@ -1076,6 +1097,9 @@ class ChatBubble extends StatelessWidget {
         child: DecoratedBox(
           // chat bubble decoration
           decoration: BoxDecoration(
+            border: message.isSelected
+                ? Border.all(color: Colors.blueAccent, width: 3)
+                : Border.all(color: const Color.fromARGB(255, 228, 232, 233)),
             color: getBubbleColor(),
             borderRadius:
                 BorderRadius.circular(message.isTaskDescriptionItem ? 0 : 8),
@@ -1190,6 +1214,7 @@ class ChatBubble extends StatelessWidget {
                 headers: {"sessionID": sessionID}, onTap: () {
                 onTapOnFileMessage(message, context);
               }, onSecondaryTapDown: (TapDownDetails details) async {
+                msgListProvider.selectItem(message);
                 final x = details.globalPosition.dx;
                 final y = details.globalPosition.dy;
                 final res = await showMenu(
@@ -1273,12 +1298,17 @@ class ChatBubble extends StatelessWidget {
               }
             },
             child: DecoratedBox(
+
                 // attached file
                 decoration: BoxDecoration(
                   color: isCurrentUser
                       ? Colors.blue
                       : const Color.fromARGB(255, 224, 224, 224),
                   borderRadius: BorderRadius.circular(8),
+                  border: message.isSelected
+                      ? Border.all(color: Colors.blueAccent, width: 3)
+                      : Border.all(
+                          color: const Color.fromARGB(255, 228, 232, 233)),
                 ),
                 child: GestureDetector(
                   onTap: () => onTapOnFileMessage(message, context),
@@ -1325,6 +1355,7 @@ class ChatBubble extends StatelessWidget {
   }
 
   void onTapOnFileMessage(Message message, context) async {
+    msgListProvider.selectItem(message);
     if (message.isImage && message.localFileName.isNotEmpty) {
       // var res = await getFile(message.localFileName);
       var res = NetworkImage(
