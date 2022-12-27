@@ -1019,7 +1019,58 @@ class ChatBubble extends StatelessWidget {
             constraints.maxWidth - lastBox.right > Timestamp.size.width + 10.0;
       }*/
 
-      return GestureDetector(
+      return GestureDetectorWithMenu(
+        onCopy: () {
+          message.isSelected = false;
+          var text = message.isTaskDescriptionItem
+              ? msgListProvider.task?.description ?? ""
+              : message.text;
+          if (textWidgetSelection.start != textWidgetSelection.end) {
+            text = text.substring(
+                textWidgetSelection.start, textWidgetSelection.end);
+          }
+          //Pasteboard.writeText(text);
+          Clipboard.setData(ClipboardData(text: text)).then((value) {
+            //toast("Text copied to clipboard", context, 500);
+          });
+        },
+        onReply: () async {
+          message.isSelected = false;
+          msgListProvider.quotedText = message.isTaskDescriptionItem
+              ? msgListProvider.task?.description ?? ""
+              : message.text;
+          msgListProvider.currentParentMessageID = message.ID;
+
+          msgListProvider.refresh();
+          //FocusScope.of(context).unfocus();
+          searchFocusNode.unfocus();
+          //messageTextFieldFocusNode.dispose();
+          messageTextFieldFocusNode.requestFocus();
+          msgListProvider.refresh();
+        },
+        onDelete: () => msgListProvider.deleteMesage(message.ID),
+        addMenuItems: (textWidgetSelection.start != textWidgetSelection.end)
+            ? [
+                PopupMenuItem<String>(
+                    child: const Text('Quote selection'),
+                    onTap: () async {
+                      message.isSelected = false;
+                      var text = message.isTaskDescriptionItem
+                          ? msgListProvider.task?.description ?? ""
+                          : message.text;
+                      text = text.substring(
+                          textWidgetSelection.start, textWidgetSelection.end);
+                      msgListProvider.quotedText = text;
+                      msgListProvider.currentParentMessageID = message.ID;
+                      //FocusScope.of(context).unfocus();
+                      searchFocusNode.unfocus();
+                      //messageTextFieldFocusNode.dispose();
+                      messageTextFieldFocusNode.requestFocus();
+                      msgListProvider.refresh();
+                    })
+              ]
+            : null,
+        /*return GestureDetector(
         onSecondaryTapDown: (details) async {
           msgListProvider.selectItem(message);
           final x = details.globalPosition.dx;
@@ -1092,7 +1143,7 @@ class ChatBubble extends StatelessWidget {
               msgListProvider.deleteMesage(message.ID);
             }
           }
-        },
+        },*/
         child: DecoratedBox(
           // chat bubble decoration
           decoration: BoxDecoration(
@@ -1249,79 +1300,62 @@ class ChatBubble extends StatelessWidget {
                 previewImageData: message.previewSmallImageData);
       } else {
         // File bubble
-        return GestureDetector(
-            onSecondaryTapDown: (details) async {
-              final x = details.globalPosition.dx;
-              final y = details.globalPosition.dy;
-              final selected = await showMenu(
-                  context: context,
-                  position: RelativeRect.fromLTRB(x, y, x, y),
-                  items: [
-                    const PopupMenuItem<String>(
-                      value: 'Delete',
-                      child: Text('Delete'),
-                    ),
-                  ]);
-              if (selected == "Delete") {
-                var res = await confirmDismissDlg(context);
-                if (res ?? false) {
-                  msgListProvider.deleteMesage(message.ID);
-                }
-              }
-            },
+        return GestureDetectorWithMenu(
+            onTap: () => onTapOnFileMessage(message, context),
+            onDelete: () => msgListProvider.deleteMesage(message.ID),
             child: DecoratedBox(
-
-                // attached file
-                decoration: BoxDecoration(
-                  color: isCurrentUser
-                      ? Colors.blue
-                      : const Color.fromARGB(255, 224, 224, 224),
-                  borderRadius: BorderRadius.circular(8),
-                  border: message.isSelected
-                      ? Border.all(color: Colors.blueAccent, width: 3)
-                      : Border.all(
-                          color: const Color.fromARGB(255, 228, 232, 233)),
-                ),
-                child: GestureDetector(
-                  onTap: () => onTapOnFileMessage(message, context),
-                  child: MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Icon(Icons.file_present_rounded,
-                                    color: Colors.white),
-                                const SizedBox(width: 10),
-                                FittedBox(
-                                    fit: BoxFit.fill,
-                                    alignment: Alignment.center,
-                                    child: SelectableText(
-                                      message.fileName,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyText1!
-                                          .copyWith(
-                                              color: isCurrentUser
-                                                  ? Colors.white
-                                                  : Colors.black87),
-                                    )),
-                                if (message.loadinInProcess)
-                                  const Padding(
-                                      padding: EdgeInsets.only(left: 5),
-                                      child: SizedBox(
-                                          width: 15,
-                                          height: 15,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: Colors.white,
-                                            //value: progress,
-                                          )))
-                              ]))),
-                )));
+              // attached file
+              decoration: BoxDecoration(
+                color: isCurrentUser
+                    ? Colors.blue
+                    : const Color.fromARGB(255, 224, 224, 224),
+                borderRadius: BorderRadius.circular(8),
+                border: message.isSelected
+                    ? Border.all(color: Colors.blueAccent, width: 3)
+                    : Border.all(
+                        color: const Color.fromARGB(255, 228, 232, 233)),
+              ),
+              //child: GestureDetector(
+              //onTap: () => onTapOnFileMessage(message, context),
+              child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Icon(Icons.file_present_rounded,
+                                color: Colors.white),
+                            const SizedBox(width: 10),
+                            FittedBox(
+                                fit: BoxFit.fill,
+                                alignment: Alignment.center,
+                                child: SelectableText(
+                                  message.fileName,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText1!
+                                      .copyWith(
+                                          color: isCurrentUser
+                                              ? Colors.white
+                                              : Colors.black87),
+                                )),
+                            if (message.loadinInProcess)
+                              const Padding(
+                                  padding: EdgeInsets.only(left: 5),
+                                  child: SizedBox(
+                                      width: 15,
+                                      height: 15,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                        //value: progress,
+                                      )))
+                          ]))),
+              //),
+            ));
       }
     }
   }

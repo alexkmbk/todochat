@@ -126,7 +126,7 @@ Widget getTextField({
 }*/
 
 Future<bool?> confirmDismissDlg(BuildContext context) {
-  return showDialog<bool>(
+  return showDialog<bool?>(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
@@ -146,6 +146,98 @@ Future<bool?> confirmDismissDlg(BuildContext context) {
   );
 }
 
+/*class GestureDetector(
+            onSecondaryTapDown: (details) async {
+              final x = details.globalPosition.dx;
+              final y = details.globalPosition.dy;
+              final selected = await showMenu(
+                  context: context,
+                  position: RelativeRect.fromLTRB(x, y, x, y),
+                  items: [
+                    const PopupMenuItem<String>(
+                      value: 'Delete',
+                      child: Text('Delete'),
+                    ),
+                  ]);
+              if (selected == "Delete") {
+                var res = await confirmDismissDlg(context);
+                if (res ?? false) {
+                  msgListProvider.deleteMesage(message.ID);
+                }
+              }
+            },*/
+
+class GestureDetectorWithMenu extends StatelessWidget {
+  Widget child;
+  GestureTapCallback? onTap;
+  Function? onCopy;
+  Function? onReply;
+  Function? onDelete;
+  List<PopupMenuEntry>? addMenuItems;
+
+  GestureDetectorWithMenu(
+      {required this.child,
+      this.onCopy,
+      this.onTap,
+      this.onReply,
+      this.onDelete,
+      this.addMenuItems,
+      Key? key})
+      : super(key: key);
+
+  void onSecondaryTapDown(TapDownDetails details, BuildContext context) async {
+    final x = details.globalPosition.dx;
+    final y = details.globalPosition.dy;
+    List<PopupMenuEntry> items = [
+      if (onCopy != null)
+        PopupMenuItem<String>(
+            child: const Text('Copy'),
+            onTap: () async {
+              if (onCopy != null) {
+                onCopy!();
+              }
+            }),
+      if (onReply != null)
+        PopupMenuItem<String>(
+            child: const Text('Reply'),
+            onTap: () async {
+              if (onReply != null) {
+                onReply!();
+              }
+            }),
+      if (onDelete != null)
+        const PopupMenuItem<String>(
+          value: 'Delete',
+          child: Text('Delete'),
+        ),
+    ];
+    if (addMenuItems != null) {
+      items = [...items, ...addMenuItems!];
+    }
+    final res = await showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(x, y, x, y),
+      items: items,
+    );
+    if (res == "Delete") {
+      var res = await confirmDismissDlg(context);
+      if (res ?? false) {
+        if (onDelete != null) {
+          onDelete!();
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+        onTap: onTap,
+        onSecondaryTapDown: (details) => onSecondaryTapDown(details, context),
+        child: child);
+  }
+}
+
 class NetworkImageWithMenu extends StatelessWidget {
   TapDownDetails? _tapDownDetails;
   String src;
@@ -155,8 +247,6 @@ class NetworkImageWithMenu extends StatelessWidget {
   Function? onReply;
   Function? onDelete;
   Function? onCopyOriginal;
-  //GestureTapCallback? onSecondaryTap;
-  //GestureTapDownCallback? onSecondaryTapDown;
   double? width;
   double? height;
   Uint8List? previewImageData;
@@ -165,8 +255,6 @@ class NetworkImageWithMenu extends StatelessWidget {
   NetworkImageWithMenu(this.src,
       {this.headers,
       this.onCopy,
-      //this.onSecondaryTap,
-      // this.onSecondaryTapDown,
       this.onTap,
       this.onReply,
       this.onDelete,
@@ -179,55 +267,43 @@ class NetworkImageWithMenu extends StatelessWidget {
       : super(key: key);
 
   void onSecondaryTapDown(TapDownDetails details, BuildContext context) async {
-    //msgListProvider.selectItem(message);
     final x = details.globalPosition.dx;
     final y = details.globalPosition.dy;
     final res = await showMenu(
       context: context,
       position: RelativeRect.fromLTRB(x, y, x, y),
       items: [
-        PopupMenuItem<String>(
-            child: const Text('Copy'),
-            onTap: () async {
-              if (onCopy != null) {
-                onCopy!();
-              }
-
-              /*final fileData = await msgListProvider.getFile(
-                              message.smallImageName,
-                              context: context);
-                          Pasteboard.writeImage(fileData);*/
-            }),
-        const PopupMenuItem<String>(
-          value: "CopyOriginal",
-          child: Text('Copy original quality picture'),
-        ),
-        PopupMenuItem<String>(
-            child: const Text('Reply'),
-            onTap: () async {
-              /*msgListProvider.parentsmallImageName =
-                              message.smallImageName;
-                          msgListProvider.quotedText = message.text;
-                          msgListProvider.currentParentMessageID = message.ID;
-                          //messageTextFieldFocusNode.dispose();
-
-                          searchFocusNode.unfocus();
-                          messageTextFieldFocusNode.requestFocus();
-                          msgListProvider.refresh();*/
-              if (onReply != null) {
-                onReply!();
-              }
-            }),
-        const PopupMenuItem<String>(
-          value: 'Delete',
-          child: Text('Delete'),
-        ),
+        if (onCopy != null)
+          PopupMenuItem<String>(
+              child: const Text('Copy'),
+              onTap: () async {
+                if (onCopy != null) {
+                  onCopy!();
+                }
+              }),
+        if (onCopyOriginal != null)
+          const PopupMenuItem<String>(
+            value: "CopyOriginal",
+            child: Text('Copy original quality picture'),
+          ),
+        if (onReply != null)
+          PopupMenuItem<String>(
+              child: const Text('Reply'),
+              onTap: () async {
+                if (onReply != null) {
+                  onReply!();
+                }
+              }),
+        if (onDelete != null)
+          const PopupMenuItem<String>(
+            value: 'Delete',
+            child: Text('Delete'),
+          ),
       ],
     );
     if (res == "Delete") {
       var res = await confirmDismissDlg(context);
       if (res ?? false) {
-        //msgListProvider.deleteMesage(message.ID);
         if (onDelete != null) {
           onDelete!();
         }
@@ -236,17 +312,6 @@ class NetworkImageWithMenu extends StatelessWidget {
       if (onCopyOriginal != null) {
         onCopyOriginal!();
       }
-      /*final ProgressDialog pd = ProgressDialog(context: context);
-                  //pr.show();
-                  pd.show(max: 100, msg: 'File Downloading...');
-                  List<int> fileData = []; // = Uint8List(0);
-                  msgListProvider.getFile(message.localFileName,
-                      context: context, onData: (value) {
-                    fileData.addAll(value);
-                  }, onDone: () async {
-                    pd.close();
-                    Pasteboard.writeImage(Uint8List.fromList(fileData));
-                  });*/
     }
   }
 
