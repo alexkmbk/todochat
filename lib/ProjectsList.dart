@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/src/response.dart';
 import 'HttpClient.dart';
+import 'customWidgets.dart';
 import 'utils.dart';
 import 'MainMenu.dart';
 import 'LoginPage.dart';
@@ -185,7 +186,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
           key: UniqueKey(),
           direction: DismissDirection.startToEnd,
           confirmDismiss: (direction) {
-            return confirmDimissDlg(
+            return confirmDismissDlg(
                 "Are you sure you wish to delete this item?", context);
           },
           onDismissed: (direction) async {

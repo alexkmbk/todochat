@@ -1087,7 +1087,7 @@ class ChatBubble extends StatelessWidget {
           );
           if (selected == "Delete") {
             message.isSelected = false;
-            var res = await confirmDimissDlg(
+            var res = await confirmDismissDlg(
                 "Are you sure you wish to delete this item?", context);
             if (res ?? false) {
               msgListProvider.deleteMesage(message.ID);
@@ -1184,6 +1184,7 @@ class ChatBubble extends StatelessWidget {
       );
       //);
     } else {
+      // Image
       if (message.isImage &&
           (message.smallImageName.isNotEmpty || loadingFileData != null)) {
         return loadingFileData != null
@@ -1205,60 +1206,22 @@ class ChatBubble extends StatelessWidget {
                         //value: progress,
                       ))
               ])
-            : networkImage(
+            : NetworkImageWithMenu(
                 serverURI.scheme +
                     '://' +
                     serverURI.authority +
                     "/FileStorage/" +
                     message.smallImageName,
-                headers: {"sessionID": sessionID}, onTap: () {
-                onTapOnFileMessage(message, context);
-              }, onSecondaryTapDown: (TapDownDetails details) async {
-                msgListProvider.selectItem(message);
-                final x = details.globalPosition.dx;
-                final y = details.globalPosition.dy;
-                final res = await showMenu(
-                  context: context,
-                  position: RelativeRect.fromLTRB(x, y, x, y),
-                  items: [
-                    PopupMenuItem<String>(
-                        child: const Text('Copy'),
-                        onTap: () async {
-                          final fileData = await msgListProvider.getFile(
-                              message.smallImageName,
-                              context: context);
-                          Pasteboard.writeImage(fileData);
-                        }),
-                    PopupMenuItem<String>(
-                        value: "CopyOriginal",
-                        child: const Text('Copy original quality picure'),
-                        onTap: () async {}),
-                    PopupMenuItem<String>(
-                        child: const Text('Reply'),
-                        onTap: () async {
-                          msgListProvider.parentsmallImageName =
-                              message.smallImageName;
-                          msgListProvider.quotedText = message.text;
-                          msgListProvider.currentParentMessageID = message.ID;
-                          //messageTextFieldFocusNode.dispose();
-
-                          searchFocusNode.unfocus();
-                          messageTextFieldFocusNode.requestFocus();
-                          msgListProvider.refresh();
-                        }),
-                    const PopupMenuItem<String>(
-                      value: 'Delete',
-                      child: Text('Delete'),
-                    ),
-                  ],
-                );
-                if (res == "Delete") {
-                  var res = await confirmDimissDlg(
-                      "Are you sure you wish to delete this item?", context);
-                  if (res ?? false) {
-                    msgListProvider.deleteMesage(message.ID);
-                  }
-                } else if (res == "CopyOriginal") {
+                headers: {"sessionID": sessionID},
+                onTap: () {
+                  onTapOnFileMessage(message, context);
+                },
+                onCopy: () async {
+                  final fileData = await msgListProvider
+                      .getFile(message.smallImageName, context: context);
+                  Pasteboard.writeImage(fileData);
+                },
+                onCopyOriginal: () {
                   final ProgressDialog pd = ProgressDialog(context: context);
                   //pr.show();
                   pd.show(max: 100, msg: 'File Downloading...');
@@ -1270,12 +1233,23 @@ class ChatBubble extends StatelessWidget {
                     pd.close();
                     Pasteboard.writeImage(Uint8List.fromList(fileData));
                   });
-                }
-              },
+                },
+                onDelete: () => msgListProvider.deleteMesage(message.ID),
+                onReply: () {
+                  msgListProvider.parentsmallImageName = message.smallImageName;
+                  msgListProvider.quotedText = message.text;
+                  msgListProvider.currentParentMessageID = message.ID;
+                  //messageTextFieldFocusNode.dispose();
+
+                  searchFocusNode.unfocus();
+                  messageTextFieldFocusNode.requestFocus();
+                  msgListProvider.refresh();
+                },
                 width: message.smallImageWidth.toDouble(),
                 height: message.smallImageHeight.toDouble(),
                 previewImageData: message.previewSmallImageData);
       } else {
+        // File bubble
         return GestureDetector(
             onSecondaryTapDown: (details) async {
               final x = details.globalPosition.dx;
@@ -1290,7 +1264,7 @@ class ChatBubble extends StatelessWidget {
                     ),
                   ]);
               if (selected == "Delete") {
-                var res = await confirmDimissDlg(
+                var res = await confirmDismissDlg(
                     "Are you sure you wish to delete this item?", context);
                 if (res ?? false) {
                   msgListProvider.deleteMesage(message.ID);
@@ -1691,7 +1665,7 @@ FlutterSelectionControls messageSelectionControl(
         item: const Text('Delete'),
         onItemPressed:
             (String highlightedText, int startIndex, int endIndex) async {
-          var res = await confirmDimissDlg(
+          var res = await confirmDismissDlg(
               "Are you sure you wish to delete this item?", context);
           if (res ?? false) {
             msgListProvider.deleteMesage(messageID);

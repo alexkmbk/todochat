@@ -193,18 +193,8 @@ class TasksListProvider extends ChangeNotifier {
         return true;
       }
     } catch (e) {
-      reconnect(this, context);
-
-      int count = 0;
-      while (count < 5) {
-        var res = await deleteTask(taskID, context);
-        if (res) {
-          return true;
-        }
-        count += 1;
-
-        return false;
-      }
+      await reconnect(this, context);
+      return await deleteTask(taskID, context);
     }
 
     return false;
@@ -223,18 +213,10 @@ class TasksListProvider extends ChangeNotifier {
           body: jsonEncode(task), headers: {"ProjectID": projectID.toString()});
     } catch (e) {
       //toast(e.toString(), context);
-      reconnect(this, context);
-
-      int count = 0;
-      while (count < 5) {
-        var res = await createTask(description, msgListProvider, context);
-        if (res != null) {
-          return res;
-        }
-        count += 1;
-      }
-      return null;
+      await reconnect(this, context);
+      return await createTask(description, msgListProvider, context);
     }
+
     //request.headers.contentLength = utf8.encode(body).length;
 
     if (response.statusCode == 200) {
@@ -592,15 +574,15 @@ class _TaskListTileState extends State<TaskListTile> {
     return buildListRow(context);
   }
 
-  Color? getTileColor(bool selected) {
+  Color? getTileColor(bool selected, Task task) {
     if (isDesktopMode && selected) {
       return Colors.blue[50];
-    } else if (widget.task.cancelled) {
+    } else if (task.cancelled) {
       return const Color.fromARGB(255, 228, 232, 233);
     }
-    return widget.task.closed
+    return task.closed
         ? closedTaskColor
-        : widget.task.read
+        : task.read
             ? uncompletedTaskColor
             : const Color.fromARGB(255, 250, 161, 27);
   }
@@ -608,10 +590,10 @@ class _TaskListTileState extends State<TaskListTile> {
   Widget buildListRow(BuildContext context) {
     final taskListProvider =
         Provider.of<TasksListProvider>(context, listen: false);
-
-    if (widget.task.editMode) {
+    final task = widget.task;
+    if (task.editMode) {
       taskListProvider.textEditingController =
-          TextEditingController(text: widget.task.description);
+          TextEditingController(text: task.description);
       return Card(
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8.0))),
@@ -628,7 +610,7 @@ class _TaskListTileState extends State<TaskListTile> {
                                 taskListProvider.deleteEditorItem();
                               } else {
                                 setState(() {
-                                  widget.task.editMode = false;
+                                  task.editMode = false;
                                 });
                               }
                               FocusScope.of(context).unfocus();
@@ -649,11 +631,11 @@ class _TaskListTileState extends State<TaskListTile> {
                           child: Focus(
                             onFocusChange: (hasFocus) {
                               /*  if (!hasFocus) {
-                              if (widget.task.isNewItem) {
+                              if (task.isNewItem) {
                                 taskListProvider.deleteEditorItem();
                               } else {
                                 setState(() {
-                                  widget.task.editMode = false;
+                                  task.editMode = false;
                                 });
                               }
                             }*/
@@ -677,7 +659,7 @@ class _TaskListTileState extends State<TaskListTile> {
                                           value, context);
                                       taskListProvider.deleteEditorItem();
                                     } else {
-                                      var tempTask = Task.from(widget.task);
+                                      var tempTask = Task.from(task);
                                       tempTask.description = value;
                                       if (tempTask.description.endsWith('\n')) {
                                         tempTask.description =
@@ -689,9 +671,9 @@ class _TaskListTileState extends State<TaskListTile> {
                                       var res = await updateTask(tempTask);
                                       if (res) {
                                         setState(() {
-                                          widget.task.description =
+                                          task.description =
                                               tempTask.description;
-                                          widget.task.editMode = false;
+                                          task.editMode = false;
                                         });
                                       }
                                     }
@@ -699,11 +681,11 @@ class _TaskListTileState extends State<TaskListTile> {
                                 }),
                           )))),
             ]),
-            if (widget.task.fileSize > 0) ...[
+            if (task.fileSize > 0) ...[
               const Expanded(child: Divider()),
-              if (widget.task.previewSmallImageData != null)
-                Image.memory(widget.task.previewSmallImageData as Uint8List)
-              else if (widget.task.fileName.isNotEmpty)
+              if (task.previewSmallImageData != null)
+                Image.memory(task.previewSmallImageData as Uint8List)
+              else if (task.fileName.isNotEmpty)
                 DecoratedBox(
                     // chat bubble decoration
                     decoration: BoxDecoration(
@@ -711,7 +693,7 @@ class _TaskListTileState extends State<TaskListTile> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: GestureDetector(
-                      //onTap: () => onTapOnFileMessage(widget.task, context),
+                      //onTap: () => onTapOnFileMessage(task, context),
                       child: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Row(
@@ -726,7 +708,7 @@ class _TaskListTileState extends State<TaskListTile> {
                                     fit: BoxFit.fill,
                                     alignment: Alignment.center,
                                     child: SelectableText(
-                                      widget.task.fileName,
+                                      task.fileName,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyText1!
@@ -770,7 +752,7 @@ class _TaskListTileState extends State<TaskListTile> {
                       taskListProvider.deleteEditorItem();
                     } else {
                       setState(() {
-                        widget.task.editMode = false;
+                        task.editMode = false;
                       });
                     }
                   },
@@ -801,64 +783,64 @@ class _TaskListTileState extends State<TaskListTile> {
               ],
             );
             if (res == "Delete") {
-              var res = await confirmDimissDlg(
+              var res = await confirmDismissDlg(
                   "Are you sure you wish to delete this item?", context);
               if (res ?? false) {
-                if (await taskListProvider.deleteTask(
-                    widget.task.ID, context)) {
-                  taskListProvider.deleteItem(widget.task.ID, context);
+                if (await taskListProvider.deleteTask(task.ID, context)) {
+                  taskListProvider.deleteItem(task.ID, context);
                 }
               }
             } else if (res == "Copy") {
-              Pasteboard.writeText(widget.task.description);
+              Pasteboard.writeText(task.description);
             } else if (res == "CopyTaskLink") {
-              Pasteboard.writeText("todochat://" + widget.task.ID.toString());
+              Pasteboard.writeText("todochat://" + task.ID.toString());
             }
           },
           child: Dismissible(
             key: UniqueKey(),
             direction: DismissDirection.startToEnd,
             confirmDismiss: (direction) {
-              return confirmDimissDlg(
+              return confirmDismissDlg(
                   "Are you sure you wish to delete this item?", context);
             },
             onDismissed: (direction) async {
-              if (await taskListProvider.deleteTask(widget.task.ID, context)) {
-                taskListProvider.deleteItem(widget.task.ID, context);
+              if (await taskListProvider.deleteTask(task.ID, context)) {
+                taskListProvider.deleteItem(task.ID, context);
               }
             },
             child: /*Card(
           color: getTileColor(taskListProvider.currentTask != null &&
-              taskListProvider.currentTask!.ID == widget.task.ID),
+              taskListProvider.currentTask!.ID == task.ID),
           shape: const BeveledRectangleBorder(),
           /* shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8.0))),*/
           child:*/
                 ListTile(
-              tileColor: getTileColor(taskListProvider.currentTask != null &&
-                  taskListProvider.currentTask!.ID == widget.task.ID),
-              onTap: () => onTap(widget.task),
-              onLongPress: () => onLongPress(widget.task),
+              tileColor: getTileColor(
+                  taskListProvider.currentTask != null &&
+                      taskListProvider.currentTask!.ID == task.ID,
+                  task),
+              onTap: () => onTap(task),
+              onLongPress: () => onLongPress(task),
               leading: Checkbox(
-                  checkColor: widget.task.cancelled ? Colors.grey : null,
+                  checkColor: task.cancelled ? Colors.grey : null,
                   shape: const CircleBorder(),
                   fillColor: MaterialStateProperty.all(
-                      widget.task.cancelled ? Colors.grey : Colors.green),
-                  value: widget.task.closed,
-                  onChanged: (value) =>
-                      taskClosedOnChanged(value, widget.task)),
+                      task.cancelled ? Colors.grey : Colors.green),
+                  value: task.closed,
+                  onChanged: (value) => taskClosedOnChanged(value, task)),
               title: taskListProvider.searchMode
                   ? HighlightText(
                       highlightColor: Colors.red,
-                      text: widget.task.description,
+                      text: task.description,
                       words: taskListProvider.searchHighlightedWords,
                       maxLines: 5,
                     )
                   : Text(
-                      widget.task.description,
+                      task.description,
                       overflow: TextOverflow.ellipsis,
                       maxLines: 5,
-                      style: widget.task.cancelled
+                      style: task.cancelled
                           ? const TextStyle(
                               decoration: TextDecoration.lineThrough,
                               fontStyle: FontStyle.italic)
@@ -866,18 +848,16 @@ class _TaskListTileState extends State<TaskListTile> {
                     ),
               subtitle: Column(
                 children: [
-                  if (widget.task.lastMessage.isNotEmpty ||
-                      widget.task.unreadMessages > 0)
+                  if (task.lastMessage.isNotEmpty || task.unreadMessages > 0)
                     taskListProvider.searchMode
                         ? HighlightText(
-                            leading: widget.task.lastMessageUserName.isNotEmpty
+                            leading: task.lastMessageUserName.isNotEmpty
                                 ? TextSpan(
-                                    text:
-                                        "${widget.task.lastMessageUserName}: ",
+                                    text: "${task.lastMessageUserName}: ",
                                     style: const TextStyle(color: Colors.blue))
                                 : null,
                             highlightColor: Colors.red,
-                            text: widget.task.lastMessage,
+                            text: task.lastMessage,
                             words: taskListProvider.searchHighlightedWords,
                           )
                         : Row(
@@ -889,28 +869,26 @@ class _TaskListTileState extends State<TaskListTile> {
                                     if (widget
                                         .task.lastMessageUserName.isNotEmpty)
                                       TextSpan(
-                                          text:
-                                              "${widget.task.lastMessageUserName}: ",
+                                          text: "${task.lastMessageUserName}: ",
                                           style: const TextStyle(
                                               color: Colors.blue)),
-                                    TextSpan(text: widget.task.lastMessage)
+                                    TextSpan(text: task.lastMessage)
                                   ]),
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
                                 )),
-                                if (widget.task.unreadMessages > 0)
-                                  NumberInStadium(
-                                      number: widget.task.unreadMessages),
+                                if (task.unreadMessages > 0)
+                                  NumberInStadium(number: task.unreadMessages),
                               ]),
                   Row(
                     children: [
                       const Spacer(),
-                      if (widget.task.completed)
+                      if (task.completed)
                         const Label(
                           text: "Done",
                           backgroundColor: Colors.green,
                         ),
-                      if (widget.task.cancelled)
+                      if (task.cancelled)
                         const Label(
                           text: "Cancelled",
                           backgroundColor: Colors.grey,

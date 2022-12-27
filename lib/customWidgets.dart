@@ -125,21 +125,212 @@ Widget getTextField({
   
 }*/
 
+Future<bool?> confirmDismissDlg(String queryText, BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text("Confirm"),
+        content: const Text("Are you sure you wish to delete this item?"),
+        actions: <Widget>[
+          ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("DELETE")),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text("CANCEL"),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+class NetworkImageWithMenu extends StatelessWidget {
+  TapDownDetails? _tapDownDetails;
+  String src;
+  Map<String, String>? headers;
+  GestureTapCallback? onTap;
+  Function? onCopy;
+  Function? onReply;
+  Function? onDelete;
+  Function? onCopyOriginal;
+  //GestureTapCallback? onSecondaryTap;
+  //GestureTapDownCallback? onSecondaryTapDown;
+  double? width;
+  double? height;
+  Uint8List? previewImageData;
+  List<PopupMenuEntry>? addMenuItems;
+
+  NetworkImageWithMenu(this.src,
+      {this.headers,
+      this.onCopy,
+      //this.onSecondaryTap,
+      // this.onSecondaryTapDown,
+      this.onTap,
+      this.onReply,
+      this.onDelete,
+      this.onCopyOriginal,
+      this.width,
+      this.height,
+      this.previewImageData,
+      this.addMenuItems,
+      Key? key})
+      : super(key: key);
+
+  void onSecondaryTapDown(TapDownDetails details, BuildContext context) async {
+    //msgListProvider.selectItem(message);
+    final x = details.globalPosition.dx;
+    final y = details.globalPosition.dy;
+    final res = await showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(x, y, x, y),
+      items: [
+        PopupMenuItem<String>(
+            child: const Text('Copy'),
+            onTap: () async {
+              if (onCopy != null) {
+                onCopy!();
+              }
+
+              /*final fileData = await msgListProvider.getFile(
+                              message.smallImageName,
+                              context: context);
+                          Pasteboard.writeImage(fileData);*/
+            }),
+        const PopupMenuItem<String>(
+          value: "CopyOriginal",
+          child: Text('Copy original quality picture'),
+        ),
+        PopupMenuItem<String>(
+            child: const Text('Reply'),
+            onTap: () async {
+              /*msgListProvider.parentsmallImageName =
+                              message.smallImageName;
+                          msgListProvider.quotedText = message.text;
+                          msgListProvider.currentParentMessageID = message.ID;
+                          //messageTextFieldFocusNode.dispose();
+
+                          searchFocusNode.unfocus();
+                          messageTextFieldFocusNode.requestFocus();
+                          msgListProvider.refresh();*/
+              if (onReply != null) {
+                onReply!();
+              }
+            }),
+        const PopupMenuItem<String>(
+          value: 'Delete',
+          child: Text('Delete'),
+        ),
+      ],
+    );
+    if (res == "Delete") {
+      var res = await confirmDismissDlg(
+          "Are you sure you wish to delete this item?", context);
+      if (res ?? false) {
+        //msgListProvider.deleteMesage(message.ID);
+        if (onDelete != null) {
+          onDelete!();
+        }
+      }
+    } else if (res == "CopyOriginal") {
+      if (onCopyOriginal != null) {
+        onCopyOriginal!();
+      }
+      /*final ProgressDialog pd = ProgressDialog(context: context);
+                  //pr.show();
+                  pd.show(max: 100, msg: 'File Downloading...');
+                  List<int> fileData = []; // = Uint8List(0);
+                  msgListProvider.getFile(message.localFileName,
+                      context: context, onData: (value) {
+                    fileData.addAll(value);
+                  }, onDone: () async {
+                    pd.close();
+                    Pasteboard.writeImage(Uint8List.fromList(fileData));
+                  });*/
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    try {
+      return GestureDetector(
+          onTap: onTap,
+          onTapDown: (details) {
+            _tapDownDetails = details;
+          },
+          onSecondaryTapDown: (details) => onSecondaryTapDown(details, context),
+          onLongPress: () => _tapDownDetails != null
+              ? onSecondaryTapDown!(_tapDownDetails!, context)
+              : null,
+          child: ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: Image.network(
+                src,
+                height: height,
+                headers: headers,
+                errorBuilder: (BuildContext context, Object exception,
+                    StackTrace? stackTrace) {
+                  return Image.asset(
+                    'assets/images/image_error.png',
+                    height: height ?? 200,
+                    width: width,
+                  );
+                },
+                loadingBuilder: (BuildContext context, Widget child,
+                    ImageChunkEvent? loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return SizedBox(
+                      width: width,
+                      height: height,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8.0),
+                        child: previewImageData != null
+                            ? Image.memory(
+                                previewImageData!,
+                                width: width,
+                                height: height,
+                                fit: BoxFit.fill,
+                              )
+                            : null,
+                      )); /*CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                        : null,
+                  ),*/
+                },
+              )));
+    } catch (e) {
+      return Image.asset(
+        'assets/images/image_error.png',
+        height: height ?? 200,
+        width: width,
+      );
+    }
+  }
+}
+
 Widget networkImage(String src,
     {Map<String, String>? headers,
     GestureTapCallback? onTap,
-    GestureTapDownCallback? onTapDown,
     GestureTapCallback? onSecondaryTap,
     GestureTapDownCallback? onSecondaryTapDown,
     double? width,
     double? height,
     Uint8List? previewImageData}) {
+  TapDownDetails? _tapDownDetails;
   try {
     return GestureDetector(
         onTap: onTap,
-        onTapDown: onTapDown,
+        onTapDown: (details) {
+          _tapDownDetails = details;
+        },
         onSecondaryTap: onSecondaryTap,
         onSecondaryTapDown: onSecondaryTapDown,
+        onLongPress: () => onSecondaryTapDown != null && _tapDownDetails != null
+            ? onSecondaryTapDown(_tapDownDetails!)
+            : null,
         child: ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
             child: Image.network(
