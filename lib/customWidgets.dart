@@ -260,7 +260,7 @@ class NetworkImageWithMenu extends StatelessWidget {
           },
           onSecondaryTapDown: (details) => onSecondaryTapDown(details, context),
           onLongPress: () => _tapDownDetails != null
-              ? onSecondaryTapDown!(_tapDownDetails!, context)
+              ? onSecondaryTapDown(_tapDownDetails!, context)
               : null,
           child: ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
