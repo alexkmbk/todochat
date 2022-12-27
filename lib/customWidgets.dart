@@ -125,7 +125,7 @@ Widget getTextField({
   
 }*/
 
-Future<bool?> confirmDismissDlg(String queryText, BuildContext context) {
+Future<bool?> confirmDismissDlg(BuildContext context) {
   return showDialog<bool>(
     context: context,
     builder: (BuildContext context) {
@@ -225,8 +225,7 @@ class NetworkImageWithMenu extends StatelessWidget {
       ],
     );
     if (res == "Delete") {
-      var res = await confirmDismissDlg(
-          "Are you sure you wish to delete this item?", context);
+      var res = await confirmDismissDlg(context);
       if (res ?? false) {
         //msgListProvider.deleteMesage(message.ID);
         if (onDelete != null) {

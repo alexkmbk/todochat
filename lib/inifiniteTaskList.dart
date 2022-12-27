@@ -783,8 +783,7 @@ class _TaskListTileState extends State<TaskListTile> {
               ],
             );
             if (res == "Delete") {
-              var res = await confirmDismissDlg(
-                  "Are you sure you wish to delete this item?", context);
+              var res = await confirmDismissDlg(context);
               if (res ?? false) {
                 if (await taskListProvider.deleteTask(task.ID, context)) {
                   taskListProvider.deleteItem(task.ID, context);
@@ -800,8 +799,7 @@ class _TaskListTileState extends State<TaskListTile> {
             key: UniqueKey(),
             direction: DismissDirection.startToEnd,
             confirmDismiss: (direction) {
-              return confirmDismissDlg(
-                  "Are you sure you wish to delete this item?", context);
+              return confirmDismissDlg(context);
             },
             onDismissed: (direction) async {
               if (await taskListProvider.deleteTask(task.ID, context)) {

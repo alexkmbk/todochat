@@ -186,8 +186,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
           key: UniqueKey(),
           direction: DismissDirection.startToEnd,
           confirmDismiss: (direction) {
-            return confirmDismissDlg(
-                "Are you sure you wish to delete this item?", context);
+            return confirmDismissDlg(context);
           },
           onDismissed: (direction) async {
             await deleteProject(project.ID);

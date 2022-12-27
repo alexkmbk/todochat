@@ -1087,8 +1087,7 @@ class ChatBubble extends StatelessWidget {
           );
           if (selected == "Delete") {
             message.isSelected = false;
-            var res = await confirmDismissDlg(
-                "Are you sure you wish to delete this item?", context);
+            var res = await confirmDismissDlg(context);
             if (res ?? false) {
               msgListProvider.deleteMesage(message.ID);
             }
@@ -1264,8 +1263,7 @@ class ChatBubble extends StatelessWidget {
                     ),
                   ]);
               if (selected == "Delete") {
-                var res = await confirmDismissDlg(
-                    "Are you sure you wish to delete this item?", context);
+                var res = await confirmDismissDlg(context);
                 if (res ?? false) {
                   msgListProvider.deleteMesage(message.ID);
                 }
@@ -1665,8 +1663,7 @@ FlutterSelectionControls messageSelectionControl(
         item: const Text('Delete'),
         onItemPressed:
             (String highlightedText, int startIndex, int endIndex) async {
-          var res = await confirmDismissDlg(
-              "Are you sure you wish to delete this item?", context);
+          var res = await confirmDismissDlg(context);
           if (res ?? false) {
             msgListProvider.deleteMesage(messageID);
           }
