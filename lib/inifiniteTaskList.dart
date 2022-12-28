@@ -530,7 +530,7 @@ class InifiniteTaskListState extends State<InifiniteTaskList> {
         padding: EdgeInsets.zero,
         itemScrollController: widget.scrollController,
         itemPositionsListener: widget.itemPositionsListener,
-        extraScrollSpeed: 40,
+        extraScrollSpeed: Platform().isAndroid || Platform().isIOS ? 0 : 40,
         //controller: widget.scrollController,
         itemBuilder: (context, index) {
           return TaskListTile(

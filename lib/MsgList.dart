@@ -83,6 +83,7 @@ class MsgListProvider extends ChangeNotifier {
     //taskID = 0;
     loading = false;
     quotedText = "";
+    parentsmallImageName = "";
     currentParentMessageID = 0;
     if (refresh) {
       this.refresh();
@@ -574,6 +575,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                 //return const Center(child: Text('End of list'));
                 // },
                 )),
+        // Edit message box
         Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Container(
@@ -598,19 +600,21 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                             serverURI.authority +
                             "/FileStorage/" +
                             msgListProvider.parentsmallImageName,
-                        height: 60),
+                        height: Platform().isAndroid ? 30 : 60),
                   Expanded(
                       child: Text(
                     msgListProvider.quotedText,
                     style: const TextStyle(color: Colors.grey),
                   )),
-                  IconButton(
-                      onPressed: () {
-                        msgListProvider.quotedText = "";
-                        msgListProvider.parentsmallImageName = "";
-                        msgListProvider.refresh();
-                      },
-                      icon: const Icon(Icons.close))
+                  SizedBox(
+                      width: 20,
+                      child: IconButton(
+                          onPressed: () {
+                            msgListProvider.quotedText = "";
+                            msgListProvider.parentsmallImageName = "";
+                            msgListProvider.refresh();
+                          },
+                          icon: const Icon(Icons.close)))
                 ]),
               if (msgListProvider.quotedText.isNotEmpty) const Divider(),
               Row(
