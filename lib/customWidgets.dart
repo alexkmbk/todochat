@@ -166,6 +166,9 @@ Future<bool?> confirmDismissDlg(BuildContext context) {
                 }
               }
             },*/
+class BoolRef {
+  bool value = false;
+}
 
 class GestureDetectorWithMenu extends StatelessWidget {
   Widget child;
@@ -173,7 +176,9 @@ class GestureDetectorWithMenu extends StatelessWidget {
   Function? onCopy;
   Function? onReply;
   Function? onDelete;
+  Function? onQuoteSelection;
   List<PopupMenuEntry>? addMenuItems;
+  BoolRef? isQuoteSelected;
 
   GestureDetectorWithMenu(
       {required this.child,
@@ -181,7 +186,9 @@ class GestureDetectorWithMenu extends StatelessWidget {
       this.onTap,
       this.onReply,
       this.onDelete,
+      this.onQuoteSelection,
       this.addMenuItems,
+      this.isQuoteSelected,
       Key? key})
       : super(key: key);
 
@@ -210,6 +217,28 @@ class GestureDetectorWithMenu extends StatelessWidget {
           value: 'Delete',
           child: Text('Delete'),
         ),
+      if (isQuoteSelected != null && isQuoteSelected!.value)
+        PopupMenuItem<String>(
+            child: const Text('Quote selection'),
+            onTap: () async {
+              if (onQuoteSelection != null) {
+                onQuoteSelection!();
+              }
+
+              /*message.isSelected = false;
+              var text = message.isTaskDescriptionItem
+                  ? msgListProvider.task?.description ?? ""
+                  : message.text;
+              text = text.substring(
+                  textWidgetSelection.start, textWidgetSelection.end);
+              msgListProvider.quotedText = text;
+              msgListProvider.currentParentMessageID = message.ID;
+              //FocusScope.of(context).unfocus();
+              searchFocusNode.unfocus();
+              //messageTextFieldFocusNode.dispose();
+              messageTextFieldFocusNode.requestFocus();
+              msgListProvider.refresh();*/
+            }),
     ];
     if (addMenuItems != null) {
       items = [...items, ...addMenuItems!];

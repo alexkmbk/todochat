@@ -1002,6 +1002,7 @@ class ChatBubble extends StatelessWidget {
           ? msgListProvider.task?.description
           : message.text;
       final textSpan = TextSpan(text: text);
+      BoolRef isQuoteSelected = BoolRef();
       TextSelection textWidgetSelection =
           const TextSelection(baseOffset: 0, extentOffset: 0);
       final textWidget = SelectableText.rich(textSpan,
@@ -1010,6 +1011,8 @@ class ChatBubble extends StatelessWidget {
           onSelectionChanged:
               (TextSelection selection, SelectionChangedCause? cause) {
         textWidgetSelection = selection;
+        isQuoteSelected.value =
+            textWidgetSelection.start != textWidgetSelection.end;
       });
       /*final TextBox? lastBox =
           calcLastLineEnd(message.text, textSpan, context, constraints);
@@ -1049,27 +1052,22 @@ class ChatBubble extends StatelessWidget {
           msgListProvider.refresh();
         },
         onDelete: () => msgListProvider.deleteMesage(message.ID),
-        addMenuItems: (textWidgetSelection.start != textWidgetSelection.end)
-            ? [
-                PopupMenuItem<String>(
-                    child: const Text('Quote selection'),
-                    onTap: () async {
-                      message.isSelected = false;
-                      var text = message.isTaskDescriptionItem
-                          ? msgListProvider.task?.description ?? ""
-                          : message.text;
-                      text = text.substring(
-                          textWidgetSelection.start, textWidgetSelection.end);
-                      msgListProvider.quotedText = text;
-                      msgListProvider.currentParentMessageID = message.ID;
-                      //FocusScope.of(context).unfocus();
-                      searchFocusNode.unfocus();
-                      //messageTextFieldFocusNode.dispose();
-                      messageTextFieldFocusNode.requestFocus();
-                      msgListProvider.refresh();
-                    })
-              ]
-            : null,
+        isQuoteSelected: isQuoteSelected,
+        onQuoteSelection: () async {
+          message.isSelected = false;
+          var text = message.isTaskDescriptionItem
+              ? msgListProvider.task?.description ?? ""
+              : message.text;
+          text = text.substring(
+              textWidgetSelection.start, textWidgetSelection.end);
+          msgListProvider.quotedText = text;
+          msgListProvider.currentParentMessageID = message.ID;
+          //FocusScope.of(context).unfocus();
+          searchFocusNode.unfocus();
+          //messageTextFieldFocusNode.dispose();
+          messageTextFieldFocusNode.requestFocus();
+          msgListProvider.refresh();
+        },
         /*return GestureDetector(
         onSecondaryTapDown: (details) async {
           msgListProvider.selectItem(message);
