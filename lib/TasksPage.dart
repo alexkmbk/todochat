@@ -389,6 +389,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
           taskListProvider.requestTasks(context);
         },
         onFieldSubmitted: (value) async {
+          taskListProvider.search = value;
           if (value.isNotEmpty) {
             msgListProvider.clear();
             taskListProvider.searchMode = true;
@@ -462,7 +463,12 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
               taskListProvider.showCompleted = !taskListProvider.showCompleted;
               settings.setBool("showCompleted", taskListProvider.showCompleted);
               taskListProvider.clear();
-              taskListProvider.requestTasks(context, true);
+              if (taskListProvider.search.isNotEmpty) {
+                widget.tasksPageState
+                    .searchTasks(taskListProvider.search, context);
+              } else {
+                taskListProvider.requestTasks(context, true);
+              }
             },
           ),
         ],

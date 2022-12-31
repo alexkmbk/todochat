@@ -33,6 +33,7 @@ class TasksListProvider extends ChangeNotifier {
   bool isNewItem = false;
   bool showCompleted = true;
   List<String> searchHighlightedWords = [];
+  String search = "";
   Task? currentTask;
   TextEditingController textEditingController = TextEditingController(text: "");
 
