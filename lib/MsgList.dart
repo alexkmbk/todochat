@@ -62,7 +62,9 @@ class MsgListProvider extends ChangeNotifier {
     if (messageID == 0) return;
     var index = items.indexWhere((element) => element.ID == messageID);
     if (index >= 0 && scrollController != null) {
-      scrollController!.jumpTo(index: index);
+      try {
+        scrollController!.jumpTo(index: index);
+      } catch (e) {}
     }
   }
 
@@ -135,6 +137,15 @@ class MsgListProvider extends ChangeNotifier {
       tempID: message.tempID,
     );
     notifyListeners();
+  }
+
+  void unselectItems() {
+    for (var element in items) {
+      if (element.isSelected) {
+        element.isSelected = false;
+      }
+    }
+    refresh();
   }
 
   void selectItem(Message message, [bool multiselect = false]) {
@@ -212,21 +223,11 @@ class MsgListProvider extends ChangeNotifier {
       return false;
     }
 
-    loading = true;
-    /*if (ws == null) {
+    if (ws == null) {
       await Future.delayed(const Duration(seconds: 2));
     }
-    if (ws != null) {
-      ws!.sink.add(jsonEncode({
-        "sessionID": sessionID,
-        "command": "getMessages",
-        "lastID": lastID.toString(),
-        "messageIDPosition": task?.lastMessageID.toString() ?? "0",
-        "limit": "30",
-        "taskID": taskID.toString(),
-      }));
-    }*/
-    // }
+
+    loading = true;
 
     if (sessionID == "") {
       return false;
@@ -240,20 +241,36 @@ class MsgListProvider extends ChangeNotifier {
     };
     Response response;
 
+    bool doReconnect = false;
     try {
       response = await HTTPClient.httpClient.get(
           HTTPClient.setUriProperty(serverURI, path: "messages"),
           headers: headers);
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        loading = false;
+        addItems(data);
+      } else if (response.statusCode == 401) {
+        doReconnect = true;
+      }
     } catch (e) {
-      reconnect(taskListProvider, context);
-      return await requestMessages(taskListProvider, context);
+      doReconnect = true;
     }
 
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      addItems(data);
+    if (doReconnect) {
+      await reconnect(taskListProvider, context, true);
+      if (ws != null) {
+        ws!.sink.add(jsonEncode({
+          "sessionID": sessionID,
+          "command": "getMessages",
+          "lastID": lastID.toString(),
+          "messageIDPosition": task?.lastMessageID.toString() ?? "0",
+          "limit": "30",
+          "taskID": taskID.toString(),
+        }));
+      }
     }
-
     loading = false;
 
     return true;
@@ -528,6 +545,8 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
       }
       return Column(children: <Widget>[
         Expanded(
+          child: GestureDetector(
+            onTap: () => msgListProvider.unselectItems(),
             child: ScrollablePositionedList.builder(
                 reverse: true,
                 itemScrollController: widget.scrollController,
@@ -574,7 +593,9 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
           }*/
                 //return const Center(child: Text('End of list'));
                 // },
-                )),
+                ),
+          ),
+        ),
         // Edit message box
         Padding(
           padding: const EdgeInsets.only(bottom: 10),
@@ -1027,6 +1048,9 @@ class ChatBubble extends StatelessWidget {
       }*/
 
       return GestureDetectorWithMenu(
+        onSecondaryTapDown: (details) {
+          msgListProvider.selectItem(message);
+        },
         onCopy: () {
           message.isSelected = false;
           var text = message.isTaskDescriptionItem
@@ -1304,7 +1328,38 @@ class ChatBubble extends StatelessWidget {
         // File bubble
         return GestureDetectorWithMenu(
             onTap: () => onTapOnFileMessage(message, context),
+            onSecondaryTapDown: (details) {
+              msgListProvider.selectItem(message);
+            },
             onDelete: () => msgListProvider.deleteMesage(message.ID),
+            addMenuItems: [
+              if (Platform().isWindows)
+                PopupMenuItem<String>(
+                    child: const Text('Save as...'),
+                    onTap: () async {
+                      String? fileName = await FilePicker.platform
+                          .saveFile(fileName: message.fileName);
+
+                      if (fileName == null || fileName.isEmpty) {
+                        return;
+                      }
+
+                      final ProgressDialog pd =
+                          ProgressDialog(context: context);
+                      //pr.show();
+                      pd.show(max: 100, msg: 'File Downloading...');
+                      List<int> fileData = []; // = Uint8List(0);
+                      msgListProvider.getFile(message.localFileName,
+                          context: context, onData: (value) {
+                        fileData.addAll(value);
+                      }, onDone: () async {
+                        pd.close();
+                        if (fileData.isNotEmpty) {
+                          saveFile(fileData, fileName);
+                        }
+                      });
+                    }),
+            ],
             child: DecoratedBox(
               // attached file
               decoration: BoxDecoration(

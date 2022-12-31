@@ -185,10 +185,10 @@ void listenWs(TasksListProvider taskListProvider, BuildContext context) {
   }
 }
 
-Future<void> reconnect(
-    TasksListProvider taskListProvider, BuildContext context) async {
+Future<void> reconnect(TasksListProvider taskListProvider, BuildContext context,
+    [force = false]) async {
   if (!connectWebSocketInProcess &&
-      !isWSConnected &&
+      (!isWSConnected || force) &&
       isServerURI &&
       sessionID.isNotEmpty) {
     connectWebSocketInProcess = true;

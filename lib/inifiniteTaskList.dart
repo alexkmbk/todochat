@@ -193,8 +193,7 @@ class TasksListProvider extends ChangeNotifier {
         return true;
       }
     } catch (e) {
-      await reconnect(this, context);
-      return await deleteTask(taskID, context);
+      reconnect(this, context, true);
     }
 
     return false;
@@ -212,9 +211,9 @@ class TasksListProvider extends ChangeNotifier {
       response = await httpClient.post(setUriProperty(serverURI, path: 'todo'),
           body: jsonEncode(task), headers: {"ProjectID": projectID.toString()});
     } catch (e) {
-      //toast(e.toString(), context);
-      await reconnect(this, context);
-      return await createTask(description, msgListProvider, context);
+      toast(e.toString(), context);
+      reconnect(this, context, true);
+      return null;
     }
 
     //request.headers.contentLength = utf8.encode(body).length;

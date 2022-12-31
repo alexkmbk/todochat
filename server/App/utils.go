@@ -10,13 +10,24 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
-	//"github.com/h2non/bimg"
+	_ "image/gif"
 	"image/jpeg"
+	"image/png"
 	_ "image/png"
+
+	_ "golang.org/x/image/bmp"
+
+	_ "golang.org/x/image/webp"
+
+	//"github.com/google/uuid"
+	//"github.com/h2non/bimg"
 
 	"github.com/nfnt/resize"
 	_ "golang.org/x/image/bmp"
+	//"github.com/kolesa-team/go-webp/webp"
+	//"github.com/tidbyt/go-libwebp/webp"
 )
 
 func FromBase64(base64Text string) ([]byte, error) {
@@ -80,6 +91,44 @@ func ResizeImageByHeight(data []byte, height uint) ([]byte, error, int, int) {
 		return newImage, error()
 	}*/
 	return newImage, nil, resultHeight, resultWidth
+}
+
+// Guess image format from gif/jpeg/png/webp
+func GuessImageFormat(data []byte) (format string, err error) {
+	reader := bytes.NewReader(data)
+	_, format, err = image.DecodeConfig(reader)
+	return
+}
+
+func OptimizeImageSize(data []byte, ext string) ([]byte, string) {
+
+	var newImage []byte
+
+	reader := bytes.NewReader(data)
+
+	_, format, err := image.DecodeConfig(reader)
+
+	if err != nil {
+		return data, ext
+	}
+
+	if strings.ToLower(format) != "bmp" {
+		return data, ext
+	}
+	reader.Seek(0, 0)
+	imageData, _, err := image.Decode(reader)
+	if err != nil {
+		return data, ext
+	}
+	buf := new(bytes.Buffer)
+	err = png.Encode(buf, imageData)
+	if err != nil {
+		return data, ext
+	}
+	newImage = buf.Bytes()
+	//err = os.WriteFile(filepath.Join(FileStoragePath, filename), newImage, 0644)
+
+	return newImage, ".png"
 }
 
 /*
@@ -150,4 +199,47 @@ func FromJson(r io.Reader) (interface{}, error) {
 		pw.Flush() // Important step read my note following this code snippet
 	}
 
+}*/
+
+// The mime type of the image is changed, it is compressed and then saved in the specified folder.
+/*func ConvertImagetoWebP(data []byte, quality int, dirname string) (string, error) {
+/*filename := strings.Replace(uuid.New().String(), "-", "", -1) + ".webp"
+
+converted, err := bimg.NewImage(buffer).Convert(bimg.WEBP)
+if err != nil {
+	return filename, err
+}
+
+processed, err := bimg.NewImage(converted).Process(bimg.Options{Quality: quality})
+if err != nil {
+	return filename, err
+}
+
+writeError := bimg.Write(fmt.Sprintf("./"+dirname+"/%s", filename), processed)
+if writeError != nil {
+	return filename, writeError
+}
+
+return filename, nil*/
+
+/*filename := strings.Replace(uuid.New().String(), "-", "", -1) + ".webp"
+
+	var newImage []byte
+
+	reader := bytes.NewReader(data)
+	imageData, _, err := image.Decode(reader)
+	if err != nil {
+		return "", err
+	}
+
+	buf := new(bytes.Buffer)
+	err = webp.EncodeRGBA(buf, imageData, nil)
+	newImage = buf.Bytes()
+
+	err = os.WriteFile(filepath.Join(FileStoragePath, filename), newImage, 0644)
+	if err != nil {
+		return "", err
+	}
+
+	return filename, nil
 }*/

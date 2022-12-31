@@ -173,6 +173,7 @@ class BoolRef {
 class GestureDetectorWithMenu extends StatelessWidget {
   Widget child;
   GestureTapCallback? onTap;
+  GestureTapDownCallback? onSecondaryTapDown;
   Function? onCopy;
   Function? onReply;
   Function? onDelete;
@@ -182,6 +183,7 @@ class GestureDetectorWithMenu extends StatelessWidget {
 
   GestureDetectorWithMenu(
       {required this.child,
+      this.onSecondaryTapDown,
       this.onCopy,
       this.onTap,
       this.onReply,
@@ -192,7 +194,10 @@ class GestureDetectorWithMenu extends StatelessWidget {
       Key? key})
       : super(key: key);
 
-  void onSecondaryTapDown(TapDownDetails details, BuildContext context) async {
+  void _onSecondaryTapDown(TapDownDetails details, BuildContext context) async {
+    if (onSecondaryTapDown != null) {
+      onSecondaryTapDown!(details);
+    }
     final x = details.globalPosition.dx;
     final y = details.globalPosition.dy;
     List<PopupMenuEntry> items = [
@@ -262,7 +267,7 @@ class GestureDetectorWithMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: onTap,
-        onSecondaryTapDown: (details) => onSecondaryTapDown(details, context),
+        onSecondaryTapDown: (details) => _onSecondaryTapDown(details, context),
         child: child);
   }
 }

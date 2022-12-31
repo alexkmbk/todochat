@@ -12,6 +12,7 @@ import 'package:file_saver/file_saver.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart';
 import 'package:intl/intl.dart';
+import 'package:cross_file/cross_file.dart';
 
 class WSMessage {
   String command = "";
@@ -113,6 +114,13 @@ Future<Uint8List> readFile(String? path) async {
     io.File file = io.File(path);
     return await file.readAsBytes();
   }
+}
+
+Future<io.File> saveFile(List<int> data, String fullFileName) async {
+  //final file = XFile(fullFileName);
+  //return file.saveTo(fullFileName);
+
+  return io.File(fullFileName).writeAsBytes(data);
 }
 
 Future<String> saveInDownloads(Uint8List data, String FileName) async {

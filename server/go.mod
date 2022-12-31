@@ -40,8 +40,11 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.5.0
+	github.com/h2non/bimg v1.1.9
 	github.com/kardianos/service v1.2.1
+	github.com/kolesa-team/go-webp v1.0.2
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+	github.com/tidbyt/go-libwebp v0.0.0-20220802221933-1fabc3b46601
 	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
 	gopkg.in/ini.v1 v1.66.6
 	gorm.io/driver/postgres v1.3.7
