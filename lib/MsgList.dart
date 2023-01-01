@@ -1022,6 +1022,7 @@ class ChatBubble extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             child: getMessageActionDescription(message)),
       );
+      // Text bubble
     } else if (message.fileName.isEmpty) {
       final text = message.isTaskDescriptionItem
           ? msgListProvider.task?.description
@@ -1224,12 +1225,18 @@ class ChatBubble extends StatelessWidget {
                 ),
               //Stack(children: [
               if (message.isTaskDescriptionItem)
-                Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Created by ${msgListProvider.task!.authorName} at ${dateFormat(msgListProvider.task!.creation_date)}",
-                      style: const TextStyle(color: Colors.grey),
-                    )),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Created by ${msgListProvider.task!.authorName} at ${dateFormat(msgListProvider.task!.creation_date)}",
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                      SelectableText(
+                        msgListProvider.task!.ID.toString().padLeft(6, '0'),
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ]),
               if (message.isTaskDescriptionItem) const SizedBox(height: 5),
               /*if (lastBox != null)
                       SizedBox.fromSize(
@@ -1260,7 +1267,7 @@ class ChatBubble extends StatelessWidget {
       );
       //);
     } else {
-      // Image
+      // Image bubble
       if (message.isImage &&
           (message.smallImageName.isNotEmpty || loadingFileData != null)) {
         return loadingFileData != null
