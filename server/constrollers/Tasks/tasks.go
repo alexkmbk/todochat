@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -253,7 +254,19 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 	tasks.Last_Message_User_Name
 	FROM tasks_fts(@search)
 	inner join tasks as tasks on tasks.ID = tasks_fts.rowid
-	left join messages as messages on tasks.last_message_id = messages.ID where tasks.project_id = @projectID AND (NOT Completed OR @showCompleted) AND (messages.project_id = @projectID OR messages.project_id IS NULL)`
+	left join messages as messages on tasks.last_message_id = messages.ID where tasks.project_id = @projectID AND (NOT Completed OR @showCompleted) AND (messages.project_id = @projectID OR messages.project_id IS NULL)
+	UNION
+	SELECT ifnull(tasks.last_message_id, 0),
+	ifnull(tasks.last_message, 0),
+	ifnull(messages.created_at, CURRENT_TIMESTAMP),
+	tasks.id,
+	tasks.description,
+	tasks.creation_date,
+	tasks.author_id,
+	tasks.author_name,
+	tasks.Last_Message_User_Name
+	FROM tasks 
+	left join messages as messages on tasks.last_message_id = messages.ID where tasks.id = @taskID AND tasks.project_id = @projectID AND (NOT Completed OR @showCompleted) AND (messages.project_id = @projectID OR messages.project_id IS NULL)`
 
 	} else {
 		search = "%" + search + "%"
@@ -281,11 +294,11 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 		found_tasks.author_id,
 		found_tasks.author_name,
 		found_tasks.Last_Message_User_Name
-		FROM (SELECT * from tasks WHERE tasks.project_id = @projectID AND (NOT tasks.Completed OR @showCompleted) AND tasks.Description Like @search) as found_tasks
+		FROM (SELECT * from tasks WHERE tasks.project_id = @projectID AND (NOT tasks.Completed OR @showCompleted) AND (tasks.Description Like @search OR tasks.ID = @taskID)) as found_tasks
 		left join messages as messages on found_tasks.last_message_id = messages.ID where (messages.project_id = @projectID OR messages.project_id IS NULL)`
 	}
 
-	rows, err := DB.Raw(queryStr, sql.Named("search", search), sql.Named("showCompleted", showCompleted), sql.Named("projectID", projectID)).Order("created_at desc").Rows()
+	rows, err := DB.Raw(queryStr, sql.Named("search", search), sql.Named("showCompleted", showCompleted), sql.Named("projectID", projectID), sql.Named("taskID", strings.TrimLeft(search, "0"))).Order("created_at desc").Rows()
 
 	defer func() {
 		if rows != nil {

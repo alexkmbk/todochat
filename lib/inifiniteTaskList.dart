@@ -762,23 +762,20 @@ class _TaskListTileState extends State<TaskListTile> {
     } else {
       return GestureDetectorWithMenu(
         onDelete: () async {
-          var res = await confirmDismissDlg(context);
-          if (res ?? false) {
-            if (await taskListProvider.deleteTask(task.ID, context)) {
-              taskListProvider.deleteItem(task.ID, context);
-            }
+          if (await taskListProvider.deleteTask(task.ID, context)) {
+            taskListProvider.deleteItem(task.ID, context);
           }
         },
         onCopy: () {
           Pasteboard.writeText(task.description);
         },
+        onEdit: () => onLongPress(task),
         child: ListTile(
           tileColor: getTileColor(
               taskListProvider.currentTask != null &&
                   taskListProvider.currentTask!.ID == task.ID,
               task),
           onTap: () => onTap(task),
-          onLongPress: () => onLongPress(task),
           leading: Checkbox(
               checkColor: task.cancelled ? Colors.grey : null,
               shape: const CircleBorder(),

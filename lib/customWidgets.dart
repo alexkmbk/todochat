@@ -175,6 +175,7 @@ class GestureDetectorWithMenu extends StatelessWidget {
   GestureTapCallback? onTap;
   GestureTapDownCallback? onSecondaryTapDown;
   Function? onCopy;
+  Function? onEdit;
   Function? onReply;
   Function? onDelete;
   Function? onQuoteSelection;
@@ -185,6 +186,7 @@ class GestureDetectorWithMenu extends StatelessWidget {
       {required this.child,
       this.onSecondaryTapDown,
       this.onCopy,
+      this.onEdit,
       this.onTap,
       this.onReply,
       this.onDelete,
@@ -207,6 +209,14 @@ class GestureDetectorWithMenu extends StatelessWidget {
             onTap: () async {
               if (onCopy != null) {
                 onCopy!();
+              }
+            }),
+      if (onEdit != null)
+        PopupMenuItem<String>(
+            child: const Text('Edit'),
+            onTap: () async {
+              if (onEdit != null) {
+                onEdit!();
               }
             }),
       if (onReply != null)
