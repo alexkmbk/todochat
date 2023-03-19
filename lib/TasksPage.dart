@@ -190,10 +190,6 @@ class _TasksPageState extends State<TasksPage> {
                 color: Colors.blueGrey.shade100,
               )),
           child: MultiSplitView(
-            onSizeChange: (childIndex1, childIndex2) {
-              /*print(
-                  'Index of children whose size has changed: $childIndex1 and $childIndex2');*/
-            },
             initialAreas: [Area(weight: 0.3)],
             /*key: UniqueKey(),
         separatorColor: Colors.blueGrey.shade100,

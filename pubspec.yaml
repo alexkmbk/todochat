@@ -58,13 +58,14 @@ dependencies:
   cached_network_image: ^3.2.0
   badges: ^2.0.2
   resizable_widget: ^1.0.5
-  multi_split_view: ^2.0.1
+  multi_split_view: ^2.4.0
   universal_html: ^2.0.8
   flutter_improved_scrolling: ^0.0.3
   text_selection_controls: ^0.0.2
   progress_dialog: ^1.2.4
   sn_progress_dialog: ^1.0.8
   cross_file: ^0.3.3+2
+  google_fonts: ^3.0.1
   
 
 dependency_overrides:
@@ -73,6 +74,7 @@ dependency_overrides:
       url: https://github.com/bluefireteam/photo_view
       ref: master
 dev_dependencies:
+  flutter_launcher_icons: "^0.9.2"
   flutter_test:
     sdk: flutter
 
@@ -97,6 +99,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/image_error.png
+    - assets/images/todochat.ico
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

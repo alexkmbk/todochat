@@ -8,6 +8,8 @@ import 'package:flutter/rendering.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:universal_html/html.dart' as html;
 
+import 'utils.dart';
+
 Widget getTextField({
   TextEditingController? controller,
   String? hintText,
@@ -171,6 +173,7 @@ class BoolRef {
 }
 
 class GestureDetectorWithMenu extends StatelessWidget {
+  TapDownDetails? _tapDownDetails;
   Widget child;
   GestureTapCallback? onTap;
   GestureTapDownCallback? onSecondaryTapDown;
@@ -277,7 +280,15 @@ class GestureDetectorWithMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: onTap,
+        onTapDown: (details) {
+          _tapDownDetails = details;
+        },
         onSecondaryTapDown: (details) => _onSecondaryTapDown(details, context),
+        onLongPress: () {
+          if (_tapDownDetails != null && Platform().isAndroid) {
+            _onSecondaryTapDown(_tapDownDetails!, context);
+          }
+        },
         child: child);
   }
 }

@@ -1,7 +1,6 @@
 #include <flutter/dart_project.h>
 #include <flutter/flutter_view_controller.h>
 #include <windows.h>
-//#include <string>
 
 #include "flutter_window.h"
 #include "utils.h"
@@ -13,22 +12,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   if (!::AttachConsole(ATTACH_PARENT_PROCESS) && ::IsDebuggerPresent()) {
     CreateAndAttachConsole();
   }
-
-  /*LPWSTR *szArgList;
-  int argCount;
-
-  szArgList = CommandLineToArgvW(GetCommandLine(), &argCount);
-  
-  if (argCount > 1) {
-	  std::wstring link = szArgList[argCount - 1];
-	  if (link.substr(0, 8) == L"todochat") {
-		  MessageBox(NULL, link.c_str(), L"Arglist contents", MB_OK);
-	  }
-	  //MessageBox(NULL, szArgList[argCount - 1], L"Arglist contents", MB_OK);
-  }
-
-  LocalFree(szArgList);*/
-
 
   // Initialize COM, so that it is available for use in the library and/or
   // plugins.
@@ -44,7 +27,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 720);
-  if (!window.CreateAndShow(L"todochat", origin, size)) {
+  if (!window.Create(L"testproject", origin, size)) {
     return EXIT_FAILURE;
   }
   window.SetQuitOnClose(true);

@@ -114,9 +114,9 @@ class MsgListProvider extends ChangeNotifier {
     if (data.length > 0) {
       lastID = data[data.length - 1]["ID"];
     }
-    if (notify) {
-      notifyListeners();
-    }
+    //if (notify) {
+    notifyListeners();
+    // }
   }
 
   void addUploadingItem(Message message, Uint8List loadingFileData) {
