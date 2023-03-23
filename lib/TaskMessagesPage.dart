@@ -3,14 +3,16 @@
 import 'package:flutter/material.dart';
 //import 'package:http/http.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:todochat/tasklist_provider.dart';
 //import 'HttpClient.dart' as HTTPClient;
 import 'main_menu.dart';
 //import 'utils.dart';
 import 'package:provider/provider.dart';
-import 'MsgList.dart';
+import 'msglist.dart';
+import 'msglist_provider.dart';
 import 'todochat.dart';
 //import 'dart:io';
-import 'inifiniteTaskList.dart';
+import 'tasklist.dart';
 //import 'package:progress_dialog/progress_dialog.dart';
 
 //import 'package:web_socket_channel/web_socket_channel.dart';
@@ -42,7 +44,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     msgListProvider.foundMessageID = widget.task.lastMessageID;
     msgListProvider.scrollController = itemsScrollController;
     final taskListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);
+        Provider.of<TaskListProvider>(context, listen: false);
     msgListProvider.requestMessages(taskListProvider, context);
   }
 
@@ -67,7 +69,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
                   (itemPositionsListener.itemPositions.value.last.index >=
                       provider.items.length - 10))) {
             final taskListProvider =
-                Provider.of<TasksListProvider>(context, listen: false);
+                Provider.of<TaskListProvider>(context, listen: false);
             provider.requestMessages(taskListProvider, context);
           }
           return true;

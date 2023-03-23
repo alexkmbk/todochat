@@ -70,6 +70,7 @@ dependencies:
   cross_file: ^0.3.3+2
   google_fonts: ^4.0.3
   open_file_plus: ^3.4.0
+  flutter_list_view: ^1.1.21
   
 
 dependency_overrides:

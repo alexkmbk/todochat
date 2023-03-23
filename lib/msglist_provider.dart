@@ -1,0 +1,478 @@
+//import 'dart:ffi';
+
+import 'dart:convert';
+//import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart';
+import 'package:pasteboard/pasteboard.dart';
+import 'package:sn_progress_dialog/sn_progress_dialog.dart';
+
+import 'package:provider/provider.dart';
+//import 'package:http/http.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:todochat/tasklist_provider.dart';
+import 'HttpClient.dart' as HTTPClient;
+
+import 'package:http/http.dart' as http;
+import 'HttpClient.dart';
+import 'customWidgets.dart';
+import 'msglist.dart';
+import 'tasklist.dart';
+import 'utils.dart';
+import 'package:path/path.dart' as path;
+import 'package:collection/collection.dart';
+//import 'package:text_selection_controls/text_selection_controls.dart';
+import 'text_selection_controls.dart';
+import 'todochat.dart';
+
+class UploadingFilesStruct {
+  late HTTPClient.MultipartRequest? multipartRequest;
+  late Uint8List loadingFileData;
+  UploadingFilesStruct({this.multipartRequest, required this.loadingFileData});
+}
+
+Map<String, UploadingFilesStruct> uploadingFiles = {};
+
+enum MessageAction {
+  CreateUpdateMessageAction,
+  CompleteTaskAction,
+  ReopenTaskAction,
+  CloseTaskAction,
+  CancelTaskAction,
+  RemoveCompletedLabelAction,
+}
+
+class MsgListProvider extends ChangeNotifier {
+  List<Message> items = [];
+  num offset = 0;
+  int lastID = 0;
+  bool loading = false;
+  int taskID = 0;
+  Task? task;
+  int foundMessageID = 0;
+  ItemScrollController? scrollController;
+  bool isOpen = isDesktopMode;
+  String quotedText = "";
+  String parentsmallImageName = "";
+  int currentParentMessageID = 0;
+
+  void jumpTo(int messageID) {
+    if (messageID == 0) return;
+    var index = items.indexWhere((element) => element.ID == messageID);
+    if (index >= 0 && scrollController != null) {
+      try {
+        scrollController!.jumpTo(index: index);
+      } catch (e) {}
+    }
+  }
+
+  void refresh() {
+    notifyListeners();
+  }
+
+  void clear([bool refresh = false]) {
+    for (var item in items) {
+      if (!item.loadinInProcess) {
+        uploadingFiles.removeWhere((key, value) => key == item.tempID);
+      }
+    }
+
+    items.clear();
+    offset = 0;
+    lastID = 0;
+    //taskID = 0;
+    loading = false;
+    quotedText = "";
+    parentsmallImageName = "";
+    currentParentMessageID = 0;
+    if (refresh) {
+      this.refresh();
+    }
+  }
+
+  void addItems(dynamic data) {
+    bool notify = false;
+    for (var item in data) {
+      var message = Message.fromJson(item);
+      if (message.taskID == taskID) {
+        /*if (message.tempID.isNotEmpty) {
+          final res = uploadingFiles[message.tempID];
+          if (res != null && res.loadingFileData.isNotEmpty) {
+            message.loadingFileData = res.loadingFileData;
+          }
+        }*/
+        if (items.firstWhereOrNull((element) => element.ID == message.ID) ==
+            null) {
+          items.add(message);
+          notify = true;
+        }
+      }
+    }
+    loading = false;
+    if (data.length > 0) {
+      lastID = data[data.length - 1]["ID"];
+    }
+    //if (notify) {
+    notifyListeners();
+    // }
+  }
+
+  void addUploadingItem(Message message, Uint8List loadingFileData) {
+    if (message.taskID != taskID) {
+      return;
+    }
+    message.tempID = UniqueKey().toString();
+    message.loadinInProcess = true;
+    items.insert(0, message);
+    uploadingFiles[message.tempID] =
+        UploadingFilesStruct(loadingFileData: loadingFileData);
+
+    createMessageWithFile(
+      text: message.text,
+      fileData: loadingFileData,
+      fileName: message.fileName,
+      msgListProvider: this,
+      tempID: message.tempID,
+    );
+    notifyListeners();
+  }
+
+  void unselectItems() {
+    for (var element in items) {
+      if (element.isSelected) {
+        element.isSelected = false;
+      }
+    }
+    refresh();
+  }
+
+  void selectItem(Message message, [bool multiselect = false]) {
+    if (!multiselect) {
+      int foundIndex =
+          items.indexWhere((element) => element.isSelected == true);
+      if (foundIndex >= 0) {
+        items[foundIndex].isSelected = false;
+      }
+    }
+    message.isSelected = true;
+    refresh();
+  }
+
+  bool addItem(Message message) {
+    if (message.taskID != taskID || !isOpen) {
+      return false;
+    }
+    bool created = false;
+    if (message.tempID.isNotEmpty) {
+      int foundIndex =
+          items.indexWhere((element) => element.tempID == message.tempID);
+      if (foundIndex >= 0) {
+        items[foundIndex] = message;
+      } else if (!message.loadinInProcess ||
+          uploadingFiles.containsKey(message.tempID)) {
+        items.insert(0, message);
+        created = true;
+        notifyListeners();
+      }
+    } else {
+      final foundItem =
+          items.firstWhereOrNull((element) => element.ID == message.ID);
+      if (foundItem == null && !message.loadinInProcess) {
+        items.insert(0, message);
+        created = true;
+        notifyListeners();
+      }
+    }
+    return created;
+  }
+
+  void deleteItem(int messageID) async {
+    items.removeWhere((item) => item.ID == messageID);
+    notifyListeners();
+  }
+
+  Future<bool> deleteMesage(int messageID) async {
+    if (sessionID == "") {
+      return false;
+    }
+
+    Map<String, String> headers = {"sessionID": sessionID};
+    Response response;
+
+    try {
+      response = await HTTPClient.httpClient.delete(
+          HTTPClient.setUriProperty(serverURI,
+              path: 'deleteMessage/$messageID'),
+          headers: headers);
+    } catch (e) {
+      return false;
+    }
+
+    if (response.statusCode == 200) {
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<bool> requestMessages(
+      TaskListProvider taskListProvider, BuildContext context) async {
+    if (sessionID == "") {
+      return false;
+    }
+
+    if (ws == null) {
+      await Future.delayed(const Duration(seconds: 2));
+    }
+
+    loading = true;
+
+    if (sessionID == "") {
+      return false;
+    }
+
+    Map<String, String> headers = {
+      "sessionID": sessionID,
+      "taskID": taskID.toString(),
+      "lastID": lastID.toString(),
+      "limit": "30"
+    };
+    Response response;
+
+    bool doReconnect = false;
+    try {
+      response = await HTTPClient.httpClient.get(
+          HTTPClient.setUriProperty(serverURI, path: "messages"),
+          headers: headers);
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        loading = false;
+        addItems(data);
+      } else if (response.statusCode == 401) {
+        doReconnect = true;
+      }
+    } catch (e) {
+      doReconnect = true;
+    }
+
+    if (doReconnect) {
+      await reconnect(taskListProvider, context, true);
+      if (ws != null) {
+        ws!.sink.add(jsonEncode({
+          "sessionID": sessionID,
+          "command": "getMessages",
+          "lastID": lastID.toString(),
+          "messageIDPosition": task?.lastMessageID.toString() ?? "0",
+          "limit": "30",
+          "taskID": taskID.toString(),
+        }));
+      }
+    }
+    loading = false;
+
+    return true;
+  }
+
+  Future<Uint8List> getFile(String localFileName,
+      {required BuildContext context,
+      Function(List<int> value)? onData,
+      Function? onError,
+      void Function()? onDone,
+      bool? cancelOnError}) async {
+    Uint8List res = Uint8List(0);
+    if (sessionID == "") {
+      return res;
+    }
+
+    http.MultipartRequest request = http.MultipartRequest(
+        'GET',
+        HTTPClient.setUriProperty(serverURI,
+            path: 'getFile',
+            queryParameters: {"localFileName": localFileName}));
+
+    request.headers["sessionID"] = sessionID;
+    request.headers["content-type"] = "application/json; charset=utf-8";
+
+    var streamedResponse = await request.send();
+    if (streamedResponse.statusCode == 200) {
+      try {
+        if (onData != null || onDone != null || cancelOnError != null) {
+          streamedResponse.stream.listen(onData,
+              onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+        } else {
+          Response response = await Response.fromStream(streamedResponse);
+          res = response.bodyBytes;
+        }
+      } catch (e) {
+        toast(e.toString(), context);
+        return res;
+      }
+      /*var data = jsonDecode(response.body) as Map<String, dynamic>;
+      message.ID = data["ID"];
+      message.userID = data["UserID"];*/
+      //return true;
+    }
+    return res;
+  }
+}
+
+class Message {
+  int ID = 0;
+  int taskID = 0;
+  int projectID = 0;
+  Task? task;
+  DateTime? created_at;
+  String text = "";
+  String? quotedText = "";
+  int parentMessageID = 0;
+  int userID = 0;
+  String userName = "";
+  String fileName = "";
+  int fileSize = 0;
+  String localFileName = "";
+  String parentsmallImageName = "";
+  String smallImageName = "";
+  bool isImage = false;
+  Uint8List? previewSmallImageData;
+  int smallImageWidth = 0;
+  int smallImageHeight = 0;
+  bool isTaskDescriptionItem = false;
+  bool loadingFile = false;
+  //Uint8List? loadingFileData;
+  bool loadinInProcess = false;
+  String tempID = "";
+  bool isSelected = false;
+  MessageAction messageAction = MessageAction.CreateUpdateMessageAction;
+  Message(
+      {required this.taskID,
+      this.text = "",
+      this.quotedText = "",
+      this.parentMessageID = 0,
+      this.parentsmallImageName = "",
+      this.created_at,
+      this.ID = 0,
+      this.userID = 0,
+      this.smallImageName = "",
+      this.localFileName = "",
+      this.fileName = "",
+      this.isImage = false,
+      this.isTaskDescriptionItem = false,
+      this.loadingFile = false,
+      //this.loadingFileData,
+      this.tempID = "",
+      this.loadinInProcess = false,
+      this.messageAction = MessageAction.CreateUpdateMessageAction});
+
+  Map<String, dynamic> toJson() {
+    int messageActionInt = 0;
+    switch (messageAction) {
+      case MessageAction.CreateUpdateMessageAction:
+        messageActionInt = 0;
+        break;
+
+      case MessageAction.CompleteTaskAction:
+        messageActionInt = 1;
+        break;
+
+      case MessageAction.ReopenTaskAction:
+        messageActionInt = 2;
+        break;
+
+      case MessageAction.CloseTaskAction:
+        messageActionInt = 3;
+        break;
+
+      case MessageAction.CancelTaskAction:
+        messageActionInt = 4;
+        break;
+      case MessageAction.RemoveCompletedLabelAction:
+        messageActionInt = 5;
+        break;
+
+      default:
+    }
+    return {
+      'ID': ID,
+      'taskID': taskID == 0 ? task?.ID : taskID,
+      'projectID': projectID,
+      'created_at': created_at,
+      'text': text,
+      'quotedText': quotedText,
+      'parentMessageID': parentMessageID,
+      'parentsmallImageName': parentsmallImageName,
+      'userID': userID,
+      'userName': userName,
+      'fileName': fileName,
+      'fileSize': fileSize,
+      'isImage': isImage,
+      'smallImageName': smallImageName,
+      'localFileName': localFileName,
+      'previewSmallImageBase64': toBase64(previewSmallImageData),
+      'smallImageWidth': smallImageWidth,
+      'smallImageHeight': smallImageHeight,
+      'isTaskDescriptionItem': isTaskDescriptionItem,
+      'TempID': tempID,
+      'LoadinInProcess': loadinInProcess,
+      'MessageAction': messageActionInt,
+    };
+  }
+
+  Message.fromJson(Map<String, dynamic> json) {
+    ID = json['ID'];
+    created_at = DateTime.tryParse(json['Created_at']);
+    text = json['Text'];
+    quotedText = json['QuotedText'];
+    var value = json['ParentMessageID'];
+    parentMessageID = value ?? 0;
+    parentsmallImageName = json['ParentsmallImageName'] ?? "";
+    taskID = json['TaskID'];
+    projectID = json['ProjectID'];
+    userID = json['UserID'];
+    userName = json['UserName'];
+    isImage = json['IsImage'];
+    fileName = json['FileName'];
+    fileSize = json['FileSize'];
+    smallImageName = json['SmallImageName'];
+    localFileName = json['LocalFileName'];
+    smallImageWidth = json['SmallImageWidth'];
+    smallImageHeight = json['SmallImageHeight'];
+    var previewSmallImageBase64 = json['PreviewSmallImageBase64'];
+    if (previewSmallImageBase64 != null && previewSmallImageBase64 != "") {
+      previewSmallImageData = fromBase64(previewSmallImageBase64);
+    }
+    value = json['IsTaskDescriptionItem'];
+    isTaskDescriptionItem = value ?? false;
+    tempID = json["TempID"];
+    loadinInProcess = json["LoadinInProcess"];
+    int? messageActionIntValue = json["MessageAction"];
+
+    switch (messageActionIntValue) {
+      case 0:
+        messageAction = MessageAction.CreateUpdateMessageAction;
+        break;
+      case 1:
+        messageAction = MessageAction.CompleteTaskAction;
+        break;
+      case 2:
+        messageAction = MessageAction.ReopenTaskAction;
+        break;
+      case 3:
+        messageAction = MessageAction.CloseTaskAction;
+        break;
+      case 4:
+        messageAction = MessageAction.CancelTaskAction;
+        break;
+
+      case 5:
+        messageAction = MessageAction.RemoveCompletedLabelAction;
+        break;
+
+      default:
+        messageAction = MessageAction.CreateUpdateMessageAction;
+    }
+  }
+}

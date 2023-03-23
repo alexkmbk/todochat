@@ -4,15 +4,17 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:todochat/tasklist_provider.dart';
 import 'package:todochat/utils.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'msglist_provider.dart';
 import 'todochat.dart';
 import 'LoginPage.dart';
 import 'customWidgets.dart';
 
-import 'inifiniteTaskList.dart';
+import 'tasklist.dart';
 //import 'TaskMessagesPage.dart';
-import 'MsgList.dart';
+import 'msglist.dart';
 import 'package:provider/provider.dart';
 
 var connectWebSocketInProcess = false;
@@ -120,7 +122,7 @@ Future<void> connectWebSocketChannel(Uri serverURI) async {
 
 StreamSubscription? subscription;
 
-void listenWs(TasksListProvider taskListProvider, BuildContext context) {
+void listenWs(TaskListProvider taskListProvider, BuildContext context) {
   final msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
 
   if (sessionID.isNotEmpty && ws != null) {
@@ -182,7 +184,7 @@ void listenWs(TasksListProvider taskListProvider, BuildContext context) {
   }
 }
 
-Future<void> reconnect(TasksListProvider taskListProvider, BuildContext context,
+Future<void> reconnect(TaskListProvider taskListProvider, BuildContext context,
     [force = false]) async {
   if (!connectWebSocketInProcess &&
       (!isWSConnected || force) &&

@@ -1,16 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:todochat/tasklist_provider.dart';
 import 'HttpClient.dart';
 import 'LoginPage.dart';
 import 'ProjectsList.dart';
 import 'SettingsPage.dart';
 import 'customWidgets.dart';
-import 'inifiniteTaskList.dart';
+import 'msglist_provider.dart';
+import 'tasklist.dart';
 import 'TasksPage.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'MsgList.dart';
+import 'msglist.dart';
 import 'todochat.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -64,7 +66,7 @@ class MyApp extends StatelessWidget {
           value: MsgListProvider(),
         ),
         ChangeNotifierProvider.value(
-          value: TasksListProvider(),
+          value: TaskListProvider(),
         ),
       ],
       child: MaterialApp(
@@ -89,22 +91,22 @@ class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
   final String title;
   //MsgListProvider msgListProvider;
-  //TasksListProvider tasksListProvider;
+  //TaskListProvider TaskListProvider;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  //late TasksListProvider _tasksListProvider;
+  //late TaskListProvider _TaskListProvider;
 
   @override
   void initState() {
     super.initState();
     //msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
-    //_tasksListProvider = Provider.of<TasksListProvider>(context, listen: false);
+    //_TaskListProvider = Provider.of<TaskListProvider>(context, listen: false);
 
-    //Login(_tasksListProvider);
+    //Login(_TaskListProvider);
   }
 
   @override
@@ -271,7 +273,7 @@ class _MyHomePageState extends State<MyHomePage> {
     /* final msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);*/
     final taskListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);
+        Provider.of<TaskListProvider>(context, listen: false);
 
     settings = await SharedPreferences.getInstance();
 

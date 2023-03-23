@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 //import 'package:flutter/services.dart';
 import 'package:http/http.dart';
+import 'package:todochat/tasklist_provider.dart';
 import 'HttpClient.dart';
-import 'MsgList.dart';
+import 'msglist.dart';
 import 'customWidgets.dart';
-import 'inifiniteTaskList.dart';
+import 'msglist_provider.dart';
+import 'tasklist.dart';
 import 'package:provider/provider.dart';
 import 'main_menu.dart';
 import 'TaskMessagesPage.dart';
@@ -19,7 +21,7 @@ import 'highlight_text.dart';
 //import 'package:resizable_widget/resizable_widget.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
-//late TasksListProvider taskListProvider;
+//late TaskListProvider taskListProvider;
 
 class TasksPage extends StatefulWidget {
   const TasksPage({Key? key}) : super(key: key);
@@ -41,7 +43,7 @@ class _TasksPageState extends State<TasksPage> {
     super.initState();
 
     /*final taskListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);*/
+        Provider.of<TaskListProvider>(context, listen: false);*/
     //msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
 
     //  taskListProvider.projectID = settings.getInt("projectID");
@@ -60,7 +62,7 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Future<bool> initBeforeBuild(
-      BuildContext context, TasksListProvider taskListProvider) async {
+      BuildContext context, TaskListProvider taskListProvider) async {
 /*    if (taskListProvider.projectID == null || taskListProvider.projectID == 0) {
       taskListProvider.project = await requestFirstItem();
       if (taskListProvider.project != null) {
@@ -84,7 +86,7 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Widget floatingActionButtonToSave(
-      TasksListProvider provider, BuildContext context) {
+      TaskListProvider provider, BuildContext context) {
     return SizedBox(
         width: 100,
         child: FloatingActionButton(
@@ -98,7 +100,7 @@ class _TasksPageState extends State<TasksPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TasksListProvider>(builder: (context, provider, child) {
+    return Consumer<TaskListProvider>(builder: (context, provider, child) {
       return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Expanded(
             child: Scaffold(
@@ -123,9 +125,9 @@ class _TasksPageState extends State<TasksPage> {
     });
   }
 
-  Widget renderTasks(TasksListProvider taskListProvider) {
+  Widget renderTasks(TaskListProvider taskListProvider) {
     return NotificationListener<ScrollUpdateNotification>(
-      child: InifiniteTaskList(
+      child: TaskList(
         scrollController: _scrollController,
         itemPositionsListener: itemPositionsListener,
       ),
@@ -144,14 +146,14 @@ class _TasksPageState extends State<TasksPage> {
             (itemPositionsListener.itemPositions.value.isEmpty ||
                 (itemPositionsListener.itemPositions.value.last.index >=
                     taskListProvider.items.length - 10))) {
-          taskListProvider.requestTasks(context);
+          //taskListProvider.requestTasks(context);
         }
         return true;
       },
     );
   }
 
-  Widget renderMessages(TasksListProvider taskListProvider) {
+  Widget renderMessages(TaskListProvider taskListProvider) {
     final msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);
 
@@ -178,7 +180,7 @@ class _TasksPageState extends State<TasksPage> {
             : const Center(child: Text("No any task was selected")));*/
   }
 
-  Widget renderBody(TasksListProvider taskListProvider) {
+  Widget renderBody(TaskListProvider taskListProvider) {
     if (isDesktopMode) {
       return MultiSplitViewTheme(
           data: MultiSplitViewThemeData(
@@ -226,7 +228,7 @@ class _TasksPageState extends State<TasksPage> {
 
   Future<void> searchTasks(String search, BuildContext context) async {
     final taskListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);
+        Provider.of<TaskListProvider>(context, listen: false);
     final msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);
 
@@ -326,7 +328,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
 
   Widget getProjectField() {
     final taskListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);
+        Provider.of<TaskListProvider>(context, listen: false);
     return Align(
         alignment: Alignment.topLeft,
         child: TextButton.icon(
@@ -362,7 +364,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
 
   Widget getSearchField() {
     final taskListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);
+        Provider.of<TaskListProvider>(context, listen: false);
     final msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);
     return getTextField(
@@ -429,7 +431,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
   @override
   Widget build(BuildContext context) {
     final taskListProvider =
-        Provider.of<TasksListProvider>(context, listen: false);
+        Provider.of<TaskListProvider>(context, listen: false);
     return AppBar(
       backgroundColor: const Color.fromARGB(240, 255, 255, 255),
       //title: Text("ToDo Chat"),

@@ -8,12 +8,14 @@ import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
+import 'package:todochat/tasklist_provider.dart';
 
 import 'HttpClient.dart';
-import 'MsgList.dart';
+import 'msglist.dart';
 import 'SettingsPage.dart';
 import 'customWidgets.dart';
-import 'inifiniteTaskList.dart';
+import 'msglist_provider.dart';
+import 'tasklist.dart';
 import 'todochat.dart';
 import 'utils.dart';
 
@@ -114,7 +116,7 @@ class _LoginPageState extends State<LoginPage> {
           Provider.of<MsgListProvider>(context, listen: false);
 
       final taskListProvider =
-          Provider.of<TasksListProvider>(context, listen: false);
+          Provider.of<TaskListProvider>(context, listen: false);
       taskListProvider.clear();
       await taskListProvider.requestTasks(context);
       msgListProvider.refresh();
@@ -387,7 +389,7 @@ Future<bool> login(
           Provider.of<MsgListProvider>(context, listen: false);
 
       final taskListProvider =
-          Provider.of<TasksListProvider>(context, listen: false);
+          Provider.of<TaskListProvider>(context, listen: false);
       taskListProvider.clear();
       taskListProvider.requestTasks(context);
       if (isDesktopMode) {
