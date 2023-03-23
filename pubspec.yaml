@@ -27,6 +27,8 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  path: any
+  collection: any
   flutter:
     sdk: flutter
 
@@ -47,7 +49,7 @@ dependencies:
   mime: ^1.0.1
   photo_view: ^0.13.0
   #open_file: ^3.2.1
-  downloads_path_provider: ^0.1.0
+  #downloads_path_provider: ^0.1.0
   url_launcher: ^6.0.20
   file_saver: ^0.1.0
   #pasteboard: ^0.2.0

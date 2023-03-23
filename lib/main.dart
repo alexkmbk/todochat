@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var instance = WidgetsBinding.instance;
-    var mediaQueryData = MediaQueryData.fromWindow(instance!.window);
+    var mediaQueryData = MediaQueryData.fromWindow(instance.window);
     var physicalPixelWidth = mediaQueryData.size.width;
     if (physicalPixelWidth > 1000) {
       isDesktopMode = true;
@@ -78,7 +78,7 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.blue,
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
-          home: MyHomePage(
+          home: const MyHomePage(
             title: "ToDo Chat",
           )),
     );
@@ -86,7 +86,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
   final String title;
   //MsgListProvider msgListProvider;
   //TasksListProvider tasksListProvider;
@@ -250,35 +250,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     }
-
-    /*Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body:
-          const TasksPage(), /*Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Consumer<MsgListProvider>(builder: (context, provider, child) {
-              return Expanded(
-                  child: InifiniteList(
-                      onRequest: requestItems,
-                      itemBuilder: (context, item, index) {
-                        return ChatBubble(
-                          isCurrentUser: true,
-                          text: item.text,
-                        );
-                      }));
-            }),
-          ],
-        ),
-      ),*/
-    );*/
-  }
-
-  Future<void> _refresh() async {
-    setState(() {});
   }
 
   Future<bool> initApp(BuildContext context) async {
@@ -349,43 +320,8 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     }
 
-    // int counter = 0;
-    //var connectWebSocketInProcess = false;
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       reconnect(taskListProvider, context);
-
-      /* counter++;
-      createMessage(
-          text: counter.toString(),
-          msgListProvider: msgListProvider,
-          task: Task(ID: 1));*/
-      /*if (!connectWebSocketInProcess &&
-          !isWSConnected &&
-          isServerURI &&
-          sessionID.isNotEmpty) {
-        connectWebSocketInProcess = true;
-        checkLogin().then((value) {
-          if (value) {
-            connectWebSocketChannel(serverURI).then((value) {
-              connectWebSocketInProcess = false;
-              listenWs(taskListProvider);
-            });
-          } else {
-            login().then((isLogin) async {
-              if (isLogin) {
-                connectWebSocketChannel(serverURI).then((value) {
-                  connectWebSocketInProcess = false;
-                  listenWs(taskListProvider);
-                });
-              } else {
-                RestartWidget.restartApp();
-              }
-            });
-          }
-        }).onError((error, stackTrace) {
-          RestartWidget.restartApp();
-        });
-      }*/
     });
 
     appInitialized = true;
@@ -393,77 +329,3 @@ class _MyHomePageState extends State<MyHomePage> {
     return true;
   }
 }
-
-
-
-/*void _incomingLinkHandler() {
-  // 1
-  if (!kIsWeb) {
-    // 2
-    _streamSubscription = uriLinkStream.listen((Uri? uri) {
-      if (!mounted) {
-        return;
-      }
-      debugPrint('Received URI: $uri');
-      setState(() {
-        _currentURI = uri;
-        _err = null;
-      });
-      // 3
-    }, onError: (Object err) {
-      if (!mounted) {
-        return;
-      }
-      debugPrint('Error occurred: $err');
-      setState(() {
-        _currentURI = null;
-        if (err is FormatException) {
-          _err = err;
-        } else {
-          _err = null;
-        }
-      });
-    });
-  }
-}*/
-
-/*Future<void> _initURIHandler() async {
-  // 1
-  /*if (!_initialURILinkHandled) {
-    _initialURILinkHandled = true;
-    // 2
-    Fluttertoast.showToast(
-        msg: "Invoked _initURIHandler",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.green,
-        textColor: Colors.white);*/
-    try {
-      // 3
-      final initialURI = await getInitialUri();
-      // 4
-      if (initialURI != null) {
-        debugPrint("Initial URI received $initialURI");
-        if (!mounted) {
-          return;
-        }
-        setState(() {
-          _initialURI = initialURI;
-        });
-      } else {
-        debugPrint("Null Initial URI received");
-      }
-    } on PlatformException {
-      // 5
-      debugPrint("Failed to receive initial uri");
-    } on FormatException catch (err) {
-      // 6
-      if (!mounted) {
-        return;
-      }
-      debugPrint('Malformed Initial URI received');
-      setState(() => _err = err);
-    }
- // }
-}*/

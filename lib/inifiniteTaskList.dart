@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -625,7 +624,6 @@ class _TaskListTileState extends State<TaskListTile> {
                             const SingleActivator(LogicalKeyboardKey.enter,
                                 control: false): () {
                               taskListProvider.saveEditingItem(context);
-                              ;
                             },
                           },
                           child: Focus(
@@ -711,7 +709,7 @@ class _TaskListTileState extends State<TaskListTile> {
                                       task.fileName,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .bodyText1!
+                                          .bodyLarge!
                                           .copyWith(color: Colors.white),
                                     )),
                               ])),

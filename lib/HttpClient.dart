@@ -1,6 +1,5 @@
 // ignore: file_names
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -12,11 +11,9 @@ import 'LoginPage.dart';
 import 'customWidgets.dart';
 
 import 'inifiniteTaskList.dart';
-import 'utils.dart';
 //import 'TaskMessagesPage.dart';
 import 'MsgList.dart';
 import 'package:provider/provider.dart';
-import 'inifiniteTaskList.dart';
 
 var connectWebSocketInProcess = false;
 var isServerURI = true;

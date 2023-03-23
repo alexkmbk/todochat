@@ -1,12 +1,9 @@
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:photo_view/photo_view.dart';
-import 'package:universal_html/html.dart' as html;
 
 import 'utils.dart';
 
@@ -75,58 +72,6 @@ Widget getTextField({
   );
 }
 
-/*class CustomAppBar extends PreferredSizeWidget{
-  @override
-  Element createElement() {
-    // TODO: implement createElement
-    throw UnimplementedError();
-  }
-
-  @override
-  List<DiagnosticsNode> debugDescribeChildren() {
-    // TODO: implement debugDescribeChildren
-    throw UnimplementedError();
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    // TODO: implement debugFillProperties
-  }
-
-  @override
-  // TODO: implement key
-  Key? get key => throw UnimplementedError();
-
-  @override
-  // TODO: implement preferredSize
-  Size get preferredSize => throw UnimplementedError();
-
-  @override
-  DiagnosticsNode toDiagnosticsNode({String? name, DiagnosticsTreeStyle? style}) {
-    // TODO: implement toDiagnosticsNode
-    throw UnimplementedError();
-  }
-
-  @override
-  String toStringDeep({String prefixLineOne = '', String? prefixOtherLines, DiagnosticLevel minLevel = DiagnosticLevel.debug}) {
-    // TODO: implement toStringDeep
-    throw UnimplementedError();
-  }
-
-  @override
-  String toStringShallow({String joiner = ', ', DiagnosticLevel minLevel = DiagnosticLevel.debug}) {
-    // TODO: implement toStringShallow
-    throw UnimplementedError();
-  }
-
-  @override
-  String toStringShort() {
-    // TODO: implement toStringShort
-    throw UnimplementedError();
-  }
-  
-}*/
-
 Future<bool?> confirmDismissDlg(BuildContext context) {
   return showDialog<bool?>(
     context: context,
@@ -148,26 +93,6 @@ Future<bool?> confirmDismissDlg(BuildContext context) {
   );
 }
 
-/*class GestureDetector(
-            onSecondaryTapDown: (details) async {
-              final x = details.globalPosition.dx;
-              final y = details.globalPosition.dy;
-              final selected = await showMenu(
-                  context: context,
-                  position: RelativeRect.fromLTRB(x, y, x, y),
-                  items: [
-                    const PopupMenuItem<String>(
-                      value: 'Delete',
-                      child: Text('Delete'),
-                    ),
-                  ]);
-              if (selected == "Delete") {
-                var res = await confirmDismissDlg(context);
-                if (res ?? false) {
-                  msgListProvider.deleteMesage(message.ID);
-                }
-              }
-            },*/
 class BoolRef {
   bool value = false;
 }
@@ -438,17 +363,17 @@ Widget networkImage(String src,
     double? width,
     double? height,
     Uint8List? previewImageData}) {
-  TapDownDetails? _tapDownDetails;
+  TapDownDetails? tapDownDetails;
   try {
     return GestureDetector(
         onTap: onTap,
         onTapDown: (details) {
-          _tapDownDetails = details;
+          tapDownDetails = details;
         },
         onSecondaryTap: onSecondaryTap,
         onSecondaryTapDown: onSecondaryTapDown,
-        onLongPress: () => onSecondaryTapDown != null && _tapDownDetails != null
-            ? onSecondaryTapDown(_tapDownDetails!)
+        onLongPress: () => onSecondaryTapDown != null && tapDownDetails != null
+            ? onSecondaryTapDown(tapDownDetails!)
             : null,
         child: ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
@@ -577,7 +502,7 @@ class ImageDialog extends StatelessWidget {
 }
 
 class Timestamp extends StatelessWidget {
-  const Timestamp(this.timestamp);
+  const Timestamp(this.timestamp, {Key? key}) : super(key: key);
 
   final DateTime timestamp;
 
@@ -690,10 +615,6 @@ class NumberInStadium extends StatelessWidget {
     return Align(
         alignment: Alignment.topCenter,
         child: Container(
-            child: Text(
-              number.toString(),
-              style: const TextStyle(color: Colors.white),
-            ),
             padding: const EdgeInsets.only(left: 5, right: 5, bottom: 3),
             decoration: BoxDecoration(
                 color: Colors.lightBlue,
@@ -705,7 +626,11 @@ class NumberInStadium extends StatelessWidget {
                         bottomLeft: Radius.circular(10),
                         topRight: Radius.circular(10),
                         bottomRight: Radius.circular(10),
-                      ))));
+                      )),
+            child: Text(
+              number.toString(),
+              style: const TextStyle(color: Colors.white),
+            )));
   }
 }
 
@@ -755,47 +680,6 @@ class Label extends StatelessWidget {
     }
   }
 }
-
-/*
-class Label extends StatelessWidget {
-  final String text;
-  final Color? backgroundColor;
-  final VoidCallback? onPressed;
-  final bool clickableCursor;
-
-  const Label(
-      {Key? key,
-      required this.text,
-      this.backgroundColor,
-      this.onPressed,
-      this.clickableCursor = false})
-      : super(key: key);
-
-  Widget chip() {
-    return Chip(
-        visualDensity: const VisualDensity(horizontal: 0.0, vertical: -4),
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(5))),
-        backgroundColor: backgroundColor,
-        label: Text(
-          text,
-        ));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (onPressed != null || clickableCursor) {
-      return InkWell(
-        child: chip(),
-        onTap: onPressed,
-        mouseCursor: SystemMouseCursors.click,
-      );
-    } else {
-      return chip();
-    }
-  }
-}*/
 
 class AdjustableScrollController extends ScrollController {
   AdjustableScrollController([int extraScrollSpeed = 40]) {

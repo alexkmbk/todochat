@@ -438,7 +438,6 @@ Future<bool> checkLogin() async {
         await httpClient.get(setUriProperty(serverURI, path: "checkLogin"));
   } catch (e) {
     return Future.error(e.toString());
-    ;
   }
 
   if (response.statusCode == 200) {

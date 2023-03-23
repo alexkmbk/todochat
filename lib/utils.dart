@@ -1,7 +1,6 @@
 import 'dart:convert';
 //import 'dart:html';
 import 'dart:io' as io;
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -11,9 +10,8 @@ import 'package:mime/mime.dart';
 import 'package:file_saver/file_saver.dart';
 //import 'package:open_file/open_file.dart';
 import 'package:open_file_plus/open_file_plus.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as path;
 import 'package:intl/intl.dart';
-import 'package:cross_file/cross_file.dart';
 
 class WSMessage {
   String command = "";
@@ -124,8 +122,9 @@ Future<io.File> saveFile(List<int> data, String fullFileName) async {
   return io.File(fullFileName).writeAsBytes(data);
 }
 
-Future<String> saveInDownloads(Uint8List data, String FileName) async {
-  return await FileSaver.instance.saveFile(FileName, data, extension(FileName));
+Future<String> saveInDownloads(Uint8List data, String fileName) async {
+  return await FileSaver.instance
+      .saveFile(fileName, data, path.extension(fileName));
 
   /*try {
     var downloadsDirectory = await DownloadsPathProvider.downloadsDirectory;

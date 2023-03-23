@@ -2,7 +2,6 @@
 
 import 'dart:convert';
 //import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -526,7 +525,7 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
     if (msgListProvider.task == null || msgListProvider.task?.ID == 0) {
       return const Center(child: Text("No any task was selected"));
     } else {
-      WidgetsBinding.instance!.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         if (msgListProvider.foundMessageID > 0 &&
             msgListProvider.items.length > 1) {
           msgListProvider.jumpTo(msgListProvider.foundMessageID);
@@ -1400,7 +1399,7 @@ class ChatBubble extends StatelessWidget {
                                   message.fileName,
                                   style: Theme.of(context)
                                       .textTheme
-                                      .bodyText1!
+                                      .bodyLarge!
                                       .copyWith(
                                           color: isCurrentUser
                                               ? Colors.white
