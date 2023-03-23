@@ -318,6 +318,136 @@ class MsgListProvider extends ChangeNotifier {
     }
     return res;
   }
+
+  Future<bool> createMessage(
+      {required String text,
+      bool isTaskDescriptionItem = false,
+      bool isImage = false,
+      String fileName = "",
+      String tempID = "",
+      bool loadinInProcess = false,
+      MessageAction messageAction =
+          MessageAction.CreateUpdateMessageAction}) async {
+    if (sessionID == "" || task == null) {
+      return false;
+    }
+
+    Message message = Message(
+      taskID: task.ID,
+      text: text,
+      fileName: path.basename(fileName),
+      isImage: isImage,
+      isTaskDescriptionItem: isTaskDescriptionItem,
+      tempID: tempID,
+      loadinInProcess: loadinInProcess,
+      messageAction: messageAction,
+      quotedText: quotedText,
+      parentsmallImageName: parentsmallImageName,
+      parentMessageID: currentParentMessageID,
+    );
+
+    Response response;
+    try {
+      response = await HTTPClient.httpClient.post(
+          setUriProperty(serverURI, path: 'createMessage'),
+          body: jsonEncode(message));
+    } catch (e) {
+      final context = NavigationService.navigatorKey.currentContext;
+      if (context != null) {
+        toast(e.toString(), context);
+      }
+
+      return false;
+    }
+    //request.headers.contentLength = utf8.encode(body).length;
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      Message message = Message.fromJson(data);
+      // final tempID = msgListProvider.taskID;
+      //msgListProvider.taskID = task.ID;
+      addItem(message);
+      //msgListProvider.taskID = tempID;
+      quotedText = "";
+      parentsmallImageName = "";
+      currentParentMessageID = 0;
+
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<bool> createMessageWithFile(
+      {required String text,
+      required MsgListProvider msgListProvider,
+      Uint8List? fileData,
+      String fileName = "",
+      bool isTaskDescriptionItem = false,
+      required String tempID}) async {
+    if (sessionID == "" || fileData == null) {
+      return false;
+    }
+
+    final foundUploadingFile = uploadingFiles[tempID];
+    if (foundUploadingFile == null) {
+      return false;
+    }
+
+    bool isImage = isImageFile(fileName);
+
+    final res = await createMessage(
+        text: text,
+        task: msgListProvider.task,
+        tempID: tempID,
+        fileName: fileName,
+        isImage: isImage,
+        loadinInProcess: true);
+    if (!res) {
+      return false;
+    }
+
+    final request = HTTPClient.MultipartRequest(
+      'POST',
+      setUriProperty(serverURI, path: 'createMessageWithFile'),
+    );
+
+    foundUploadingFile.multipartRequest = request;
+
+    request.headers["sessionID"] = sessionID;
+    request.headers["content-type"] = "application/json; charset=utf-8";
+
+    Message message = Message(
+        taskID: msgListProvider.taskID,
+        text: text,
+        fileName: path.basename(fileName),
+        isImage: isImage,
+        isTaskDescriptionItem: isTaskDescriptionItem,
+        tempID: tempID);
+
+    request.fields["Message"] = jsonEncode(message);
+    request.files.add(
+        http.MultipartFile.fromBytes("File", fileData, filename: fileName));
+
+    StreamedResponse streamedResponse;
+    try {
+      streamedResponse = await request.send();
+    } catch (e) {
+      uploadingFiles.remove(tempID);
+      msgListProvider.refresh();
+      return false;
+    }
+
+    //uploadingFiles.remove(tempID);
+    if (streamedResponse.statusCode == 200) {
+      msgListProvider.refresh();
+      return true;
+    }
+    uploadingFiles.remove(tempID);
+    msgListProvider.refresh();
+    return false;
+  }
 }
 
 class Message {
