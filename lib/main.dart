@@ -136,11 +136,13 @@ class _MyHomePageState extends State<MyHomePage> {
                     gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [
-                          Color.fromARGB(255, 50, 74, 228), //Color(0xFF3366FF),
+                        colors: [Colors.white, Colors.white],
+                        /*colors: [
                           Color.fromARGB(
-                              255, 144, 184, 240), //Color(0xFF00CCFF),
-                        ],
+                              255, 87, 108, 245), //Color(0xFF3366FF),
+                          Color.fromARGB(
+                              255, 109, 164, 246), //Color(0xFF00CCFF),
+                        ],*/
                         stops: [0.0, 1.0],
                         tileMode: TileMode.clamp),
                   ),
@@ -152,18 +154,18 @@ class _MyHomePageState extends State<MyHomePage> {
                           const SizedBox(
                             height: 50,
                           ),
-                          RichText(
+                          /*RichText(
                               text: TextSpan(children: [
                             TextSpan(
                               text: "ToDo\n",
-                              style: GoogleFonts.comingSoon(
-                                  fontSize: 48, color: Colors.green),
+                              style: GoogleFonts.righteous(
+                                  fontSize: 56, color: Colors.green),
                             ),
                             TextSpan(
                               text: "Chat",
-                              style: GoogleFonts.comingSoon(
+                              style: GoogleFonts.righteous(
                                   height: 1.0,
-                                  fontSize: 48,
+                                  fontSize: 56,
                                   color: Colors.orangeAccent),
                               //00116d
                               //1a6ce3
@@ -173,22 +175,23 @@ class _MyHomePageState extends State<MyHomePage> {
                                 fontSize: 50,
                                 fontWeight: FontWeight.bold)*/
                             ),
-                          ])),
-                          /*TextInCircle(
-                            width: 150,
+                          ])),*/
+                          TextInCircle(
+                            width: 200,
                             color: Colors.white,
+                            borderColor: Colors.green,
                             textWidget: TextSpan(
                               children: [
                                 TextSpan(
                                   text: "ToDo\n",
-                                  style: GoogleFonts.pacifico(
-                                      fontSize: 48, color: closedTaskColor),
+                                  style: GoogleFonts.righteous(
+                                      fontSize: 56, color: Colors.green),
                                 ),
                                 TextSpan(
                                   text: "Chat",
-                                  style: GoogleFonts.pacifico(
+                                  style: GoogleFonts.righteous(
                                       height: 1.0,
-                                      fontSize: 48,
+                                      fontSize: 56,
                                       color: Colors.orangeAccent),
                                   //00116d
                                   //1a6ce3
@@ -197,10 +200,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                 color: Colors.orangeAccent,
                                 fontSize: 50,
                                 fontWeight: FontWeight.bold)*/
-                                )
+                                ),
                               ],
                             ),
-                          ),*/
+                          ),
                           const Spacer(),
                           if (snapshot.hasError)
                             IconButton(
@@ -209,22 +212,28 @@ class _MyHomePageState extends State<MyHomePage> {
                                 onPressed: () => setState(() {}),
                                 icon: const Icon(
                                   Icons.refresh,
-                                  color: Colors.white,
+                                  color: Color.fromARGB(255, 203, 202, 202),
                                 )),
                           if (snapshot.connectionState ==
                               ConnectionState.waiting)
                             const Text('Connecting...',
-                                style: TextStyle(color: Colors.white),
+                                style: TextStyle(
+                                    color: Color.fromARGB(255, 203, 202, 202)),
                                 textDirection: TextDirection.ltr),
                           const Spacer(),
                           SizedBox(
                               width: 200,
                               height: 50,
-                              child: ElevatedButton(
-                                  style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all(
-                                              Colors.orangeAccent)),
+                              child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(
+                                        width: 2.0,
+                                        color:
+                                            Color.fromARGB(255, 203, 202, 202)),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(15)),
+                                  ),
                                   onPressed: () async {
                                     await Navigator.push(
                                       context,
@@ -238,7 +247,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                   },
                                   child: const Text(
                                     "Settings",
-                                    style: TextStyle(fontSize: 16),
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        color:
+                                            Color.fromARGB(255, 203, 202, 202)),
                                   ))),
                           const SizedBox(
                             height: 30,

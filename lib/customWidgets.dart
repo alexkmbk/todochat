@@ -584,8 +584,15 @@ class TextInCircle extends StatelessWidget {
   final TextSpan textWidget;
   final double? width;
   final Color? color;
+  final Color? borderColor;
+  final double borderWidth;
   const TextInCircle(
-      {Key? key, required this.textWidget, this.width, this.color})
+      {Key? key,
+      required this.textWidget,
+      this.width,
+      this.color,
+      this.borderColor,
+      this.borderWidth = 5})
       : super(key: key);
   @override
   Widget build(BuildContext context) {
@@ -596,6 +603,8 @@ class TextInCircle extends StatelessWidget {
         //border: Border.all(width: 2),
         shape: BoxShape.circle,
         color: color,
+        border: Border.all(
+            color: borderColor ?? Colors.blueAccent, width: borderWidth),
       ),
       child: Center(
           child: Text.rich(
