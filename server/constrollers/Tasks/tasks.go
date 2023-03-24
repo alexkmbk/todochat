@@ -125,10 +125,7 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	//"2023-03-23 20:04:11.988297"
 	lastCreation_Date, _ := time.Parse(time.RFC3339, query.Get("lastCreation_date"))
-
-	Log("last Creation_date (received):" + lastCreation_Date.String())
 
 	limit, err := strconv.Atoi(query.Get("limit"))
 	if err != nil {
@@ -187,28 +184,6 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 	m["tasks"] = tasks
 	json.NewEncoder(w).Encode(m)
 
-	if len(tasks) > 0 {
-		Log("first Creation_date:" + tasks[0].Creation_date.String())
-		Log("last Creation_date:" + tasks[len(tasks)-1].Creation_date.String())
-	}
-	//lastItem := r.Header.Get("lastItem")
-
-	//DB.Where("completed = ?", false)
-
-	//orderby := strings.Split(string(r.Header.Get("orderby")), ",")
-
-	//filter := r.Header.Get("filter")
-
-	//fmt.Sprintf()
-	/*rows, err := DB.Raw("select TodoItem.Description from TodoItem where TodoItem.Description > &Description", sql.Named("Description", lastItem)).Rows()
-
-	if err == nil {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		json.NewEncoder(w).Encode(rows)
-	}*/
-
-	//var todos []TodoItem
-	//DB.Where("completed = ?", false).Find(&todos)
 }
 
 func SearchItems(w http.ResponseWriter, r *http.Request) {
