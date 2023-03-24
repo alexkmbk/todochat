@@ -10,16 +10,113 @@ import 'HttpClient.dart';
 import 'LoginPage.dart';
 import 'ProjectsList.dart';
 import 'package:collection/collection.dart';
-import 'msglist.dart';
 import 'todochat.dart';
 import 'msglist_provider.dart';
+
+class Task {
+  int ID = 0;
+  int projectID = 0;
+  int authorID = 0;
+  String authorName = "";
+  bool completed = false;
+  bool cancelled = false;
+  bool closed = false;
+
+  String description = "";
+  String lastMessage = "";
+  int lastMessageID = 0;
+  bool editMode = false;
+  DateTime creation_date = DateTime.utc(0);
+  bool read = false;
+  int unreadMessages = 0;
+  String lastMessageUserName = "";
+  String fileName = "";
+  int fileSize = 0;
+  String localFileName = "";
+  Uint8List? previewSmallImageData;
+
+  Task(
+      {this.ID = 0,
+      this.description = "",
+      this.completed = false,
+      this.editMode = false});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'ID': ID,
+      'Completed': completed,
+      'Cancelled': cancelled,
+      'Closed': closed,
+      'Description': description,
+      'LastMessage': lastMessage,
+      'LastMessageID': lastMessageID,
+      'ProjectID': projectID,
+      'AuthorID': authorID,
+      'Creation_date': creation_date.toIso8601String(),
+      'AuthorName': authorName,
+      'Read': read,
+      'UnreadMessages': unreadMessages,
+      'LastMessageUserName': lastMessageUserName,
+      'FileName': fileName,
+      'FileSize': fileSize,
+      'LocalFileName': localFileName,
+      'previewSmallImageBase64': toBase64(previewSmallImageData),
+    };
+  }
+
+  Task.fromJson(Map<String, dynamic> json) {
+    ID = json['ID'];
+    creation_date = formJsonToDate(json['Creation_date']);
+    completed = json['Completed'];
+    cancelled = json['Cancelled'];
+    closed = json['Closed'];
+    description = json['Description'];
+    lastMessage = json['LastMessage'];
+    lastMessageID = json['LastMessageID'];
+    projectID = json['ProjectID'];
+    authorID = json['AuthorID'];
+    authorName = json['AuthorName'];
+    read = json['Read'];
+    unreadMessages = json['UnreadMessages'];
+    lastMessageUserName = json['LastMessageUserName'];
+    /*fileName = json['FileName'];
+    fileSize = json['FileSize'];
+    localFileName = json['LocalFileName'];
+
+    var previewSmallImageBase64 = json['PreviewSmallImageBase64'];
+    if (previewSmallImageBase64 != null && previewSmallImageBase64 != "") {
+      previewSmallImageData = fromBase64(previewSmallImageBase64);
+    }*/
+  }
+
+  Task.from(Task task) {
+    ID = task.ID;
+    description = task.description;
+    creation_date = task.creation_date;
+    completed = task.completed;
+    cancelled = task.cancelled;
+    closed = task.closed;
+    lastMessage = task.lastMessage;
+    lastMessageID = task.lastMessageID;
+    projectID = task.projectID;
+    authorID = task.authorID;
+    authorName = task.authorName;
+    read = task.read;
+    unreadMessages = task.unreadMessages;
+    lastMessageUserName = task.lastMessageUserName;
+    fileName = task.fileName;
+    fileSize = task.fileSize;
+    localFileName = task.localFileName;
+    previewSmallImageData = task.previewSmallImageData;
+  }
+}
 
 class TaskListProvider extends ChangeNotifier {
   Project? project;
   int? projectID;
   List<Task> items = [];
   int lastID = 0;
-  DateTime? lastCreation_date;
+  String? lastCreation_date;
   bool loading = false;
   bool uploading = false;
   bool searchMode = false;
@@ -226,11 +323,8 @@ class TaskListProvider extends ChangeNotifier {
       addItem(task);
       msgListProvider.task = task;
       msgListProvider.taskID = task.ID;
-      createMessage(
-          text: "",
-          task: task,
-          msgListProvider: msgListProvider,
-          isTaskDescriptionItem: true);
+      msgListProvider.createMessage(
+          text: "", task: task, isTaskDescriptionItem: true);
 
       return task;
     }
@@ -307,18 +401,25 @@ class TaskListProvider extends ChangeNotifier {
       [bool forceRefresh = false]) async {
     List<Task> res = [];
 
-    if (sessionID == "") {
+    if (sessionID == "" || loading || !context.mounted) {
       return;
     }
 
-    final msgListProvider =
-        Provider.of<MsgListProvider>(context, listen: false);
     loading = true;
+    // var s5 = formJsonToDate("2023-03-23T20:04:11.9882971Z");
+    // var s1 = formJsonToDate(lastCreation_date).toUtc().toIso8601String();
+    // var s2 = formJsonToDate(lastCreation_date).toIso8601String();
+    // if (lastCreation_date != null) {
+    //   var s3 = DateTime.tryParse(lastCreation_date!)!.toIso8601String();
+    //   var s4 = DateTime.tryParse(lastCreation_date!)!.toUtc().toIso8601String();
+    // }
 
     var url = setUriProperty(serverURI, path: 'tasks', queryParameters: {
       "ProjectID": projectID.toString(),
       "lastID": lastID.toString(),
-      "lastCreation_date": lastCreation_date.toString(),
+      "lastCreation_date": lastCreation_date == null
+          ? null
+          : formDateToJsonUtc(formJsonToDate(lastCreation_date)),
       "limit": "25",
       "showCompleted": showCompleted.toString(),
     });
@@ -328,6 +429,7 @@ class TaskListProvider extends ChangeNotifier {
       //response = await httpClient.get(url, headers: {"sessionID": sessionID});
       response = await httpClient.get(url);
     } catch (e) {
+      loading = false;
       return;
     }
 
@@ -338,10 +440,13 @@ class TaskListProvider extends ChangeNotifier {
 
       if (tasks == null) return;
 
+      final msgListProvider =
+          Provider.of<MsgListProvider>(context, listen: false);
+
       if (tasks.length > 0) {
         var lastItem = tasks[tasks.length - 1];
         lastID = lastItem["ID"];
-        lastCreation_date = DateTime.tryParse(lastItem["Creation_date"]);
+        lastCreation_date = lastItem["Creation_date"];
 
         for (var item in tasks) {
           res.add(Task.fromJson(item));
@@ -371,110 +476,10 @@ class TaskListProvider extends ChangeNotifier {
         MaterialPageRoute(builder: (context) => const LoginPage()),
       );
     }
-
     loading = false;
-
     if (res.isNotEmpty || forceRefresh) {
       items = [...items, ...res];
       refresh();
     }
-  }
-}
-
-class Task {
-  int ID = 0;
-  int projectID = 0;
-  int authorID = 0;
-  String authorName = "";
-  bool completed = false;
-  bool cancelled = false;
-  bool closed = false;
-
-  String description = "";
-  String lastMessage = "";
-  int lastMessageID = 0;
-  bool editMode = false;
-  DateTime creation_date = DateTime.utc(0);
-  bool read = false;
-  int unreadMessages = 0;
-  String lastMessageUserName = "";
-  String fileName = "";
-  int fileSize = 0;
-  String localFileName = "";
-  Uint8List? previewSmallImageData;
-
-  Task(
-      {this.ID = 0,
-      this.description = "",
-      this.completed = false,
-      this.editMode = false});
-
-  Map<String, dynamic> toJson() {
-    return {
-      'ID': ID,
-      'Completed': completed,
-      'Cancelled': cancelled,
-      'Closed': closed,
-      'Description': description,
-      'LastMessage': lastMessage,
-      'LastMessageID': lastMessageID,
-      'ProjectID': projectID,
-      'AuthorID': authorID,
-      'Creation_date': creation_date.toIso8601String(),
-      'AuthorName': authorName,
-      'Read': read,
-      'UnreadMessages': unreadMessages,
-      'LastMessageUserName': lastMessageUserName,
-      'FileName': fileName,
-      'FileSize': fileSize,
-      'LocalFileName': localFileName,
-      'previewSmallImageBase64': toBase64(previewSmallImageData),
-    };
-  }
-
-  Task.fromJson(Map<String, dynamic> json) {
-    ID = json['ID'];
-    creation_date = DateTime.tryParse(json['Creation_date']) ?? DateTime.utc(0);
-    completed = json['Completed'];
-    cancelled = json['Cancelled'];
-    closed = json['Closed'];
-    description = json['Description'];
-    lastMessage = json['LastMessage'];
-    lastMessageID = json['LastMessageID'];
-    projectID = json['ProjectID'];
-    authorID = json['AuthorID'];
-    authorName = json['AuthorName'];
-    read = json['Read'];
-    unreadMessages = json['UnreadMessages'];
-    lastMessageUserName = json['LastMessageUserName'];
-    /*fileName = json['FileName'];
-    fileSize = json['FileSize'];
-    localFileName = json['LocalFileName'];
-
-    var previewSmallImageBase64 = json['PreviewSmallImageBase64'];
-    if (previewSmallImageBase64 != null && previewSmallImageBase64 != "") {
-      previewSmallImageData = fromBase64(previewSmallImageBase64);
-    }*/
-  }
-
-  Task.from(Task task) {
-    ID = task.ID;
-    description = task.description;
-    creation_date = task.creation_date;
-    completed = task.completed;
-    cancelled = task.cancelled;
-    closed = task.closed;
-    lastMessage = task.lastMessage;
-    lastMessageID = task.lastMessageID;
-    projectID = task.projectID;
-    authorID = task.authorID;
-    authorName = task.authorName;
-    read = task.read;
-    unreadMessages = task.unreadMessages;
-    lastMessageUserName = task.lastMessageUserName;
-    fileName = task.fileName;
-    fileSize = task.fileSize;
-    localFileName = task.localFileName;
-    previewSmallImageData = task.previewSmallImageData;
   }
 }

@@ -31,9 +31,9 @@ class TasksPage extends StatefulWidget {
 }
 
 class _TasksPageState extends State<TasksPage> {
-  final ItemScrollController _scrollController = ItemScrollController();
-  final ItemPositionsListener itemPositionsListener =
-      ItemPositionsListener.create();
+  // final ItemScrollController _scrollController = ItemScrollController();
+  // final ItemPositionsListener itemPositionsListener =
+  //     ItemPositionsListener.create();
   bool showSearch = isDesktopMode;
 
   late FloatingActionButton floatingActionButton;
@@ -126,31 +126,7 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Widget renderTasks(TaskListProvider taskListProvider) {
-    return NotificationListener<ScrollUpdateNotification>(
-      child: TaskList(
-        scrollController: _scrollController,
-        itemPositionsListener: itemPositionsListener,
-      ),
-      onNotification: (notification) {
-        /*var scrollDelta = notification.scrollDelta ?? 0;
-        if (taskListProvider.items.length >
-            itemPositionsListener.itemPositions.value.last.index + 5) {
-          final double? sign = scrollDelta.sign;
-          final index = itemPositionsListener.itemPositions.value.last.index +
-              (5 * (sign ?? 1)).toInt();
-          _scrollController.jumpTo(index: index);
-        }*/
-
-        if (!taskListProvider.loading &&
-            !taskListProvider.searchMode &&
-            (itemPositionsListener.itemPositions.value.isEmpty ||
-                (itemPositionsListener.itemPositions.value.last.index >=
-                    taskListProvider.items.length - 10))) {
-          //taskListProvider.requestTasks(context);
-        }
-        return true;
-      },
-    );
+    return TaskList();
   }
 
   Widget renderMessages(TaskListProvider taskListProvider) {

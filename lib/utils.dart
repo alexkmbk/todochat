@@ -187,3 +187,21 @@ String dateFormat(DateTime datetime, [String format = 'yyyy-MM-dd HH:mm']) {
 
   return res;
 }*/
+
+DateTime formJsonToDate(String? jsonDateStr) {
+  if (jsonDateStr == null) return DateTime.utc(0);
+
+  DateTime res = DateTime.tryParse(jsonDateStr) ?? DateTime.utc(0);
+  res = res.toLocal();
+  return res;
+}
+
+String formDateToJsonUtc(DateTime? date) {
+  DateTime utcDate;
+  if (date == null) {
+    utcDate = DateTime.utc(0);
+  } else {
+    utcDate = date.toUtc();
+  }
+  return utcDate.add(DateTime.now().timeZoneOffset).toIso8601String();
+}

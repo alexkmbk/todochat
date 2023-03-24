@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
-
+	. "todochat_server/App"
 	. "todochat_server/DB"
+
+	"github.com/gorilla/mux"
 )
 
 func CreateItem(w http.ResponseWriter, r *http.Request) {
@@ -20,8 +20,7 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Json decode error", http.StatusInternalServerError)
 	} else {
-		description := item.Description
-		log.WithFields(log.Fields{"description": description}).Info("Add new TodoItem. Saving to database.")
+		Log("Add new TodoItem. Saving to database.")
 		DB.Create(&item)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		json.NewEncoder(w).Encode(item)
@@ -86,7 +85,7 @@ func getItemByID(ID int) *Project {
 	item := &Project{}
 	result := DB.First(&item, ID)
 	if result.Error != nil {
-		log.Warn("Project not found in database")
+		Log_warn("Project not found in database")
 		return nil
 	}
 	return item
@@ -110,7 +109,7 @@ func GetItem(w http.ResponseWriter, r *http.Request) {
 
 func GetItems(w http.ResponseWriter, r *http.Request) {
 
-	log.Info("Get projects")
+	Log("Get projects")
 
 	limit, err := strconv.Atoi(r.Header.Get("limit"))
 	if err != nil {

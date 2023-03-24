@@ -21,8 +21,6 @@ import (
 
 	//"github.com/gorilla/mux"
 
-	log "github.com/sirupsen/logrus"
-
 	. "todochat_server/App"
 
 	. "todochat_server/DB"
@@ -58,7 +56,7 @@ func GetMessages__(w http.ResponseWriter, r *http.Request) {
 
 	start := time.Now()
 
-	log.Info("Get Messages")
+	Log("Get Messages")
 
 	lastID, err := strconv.Atoi(r.Header.Get("lastID"))
 	if err != nil {
@@ -137,13 +135,13 @@ func GetMessages__(w http.ResponseWriter, r *http.Request) {
 	//json.NewEncoder(w).Encode(messages)
 	//log.Info("Get Messages - finish")
 	elapsed := time.Since(start)
-	log.Printf("Get messages took %s", elapsed)
+	Log(fmt.Sprintf("Get messages took %s", elapsed))
 }
 
 func GetMessages(w http.ResponseWriter, r *http.Request) {
 
 	start := time.Now()
-	log.Info("Get Messages")
+	Log("Get Messages")
 
 	lastID, err := strconv.Atoi(r.Header.Get("lastID"))
 	if err != nil {
@@ -184,7 +182,7 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pw := bufio.NewWriterSize(w, 100000) // Bigger writer of 10kb
-	fmt.Println("Buffer size", pw.Size())
+	Log(fmt.Sprintln("Buffer size", pw.Size()))
 
 	res, _ := json.Marshal(messages)
 	pw.Write(res)
@@ -195,7 +193,7 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if pw.Buffered() > 0 {
-		fmt.Println("Bufferred", pw.Buffered())
+		Log(fmt.Sprintln("Bufferred", pw.Buffered()))
 		pw.Flush() // Important step read my note following this code snippet
 	}
 
@@ -206,7 +204,7 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 	//json.NewEncoder(w).Encode(messages)
 	//log.Info("Get Messages - finish")
 	elapsed := time.Since(start)
-	log.Printf("Get messages took %s", elapsed.Seconds())
+	Log(fmt.Sprintf("Get messages took %s", elapsed.Seconds()))
 
 }
 
@@ -332,10 +330,10 @@ func CreateMessageWithFile(w http.ResponseWriter, r *http.Request) {
 				}
 				smallImageFileName = uuid.New().String() + ".jpg"
 				err = os.WriteFile(filepath.Join(FileStoragePath, smallImageFileName), smallImageData, 0644)
-				log.Info("File Saved: " + filepath.Join(FileStoragePath, smallImageFileName))
+				Log("File Saved: " + filepath.Join(FileStoragePath, smallImageFileName))
 				if err != nil {
 					smallImageFileName = ""
-					log.Info("Resize image error: " + err.Error())
+					Log("Resize image error: " + err.Error())
 				}
 
 				previewSmallImageData, err, _, _ := ResizeImageByHeight(smallImageData, 30)
@@ -397,7 +395,7 @@ func getItemByID(ID int64) (*Message, bool) {
 	message := &Message{}
 	result := DB.First(&message, ID)
 	if result.Error != nil {
-		log.Warn("Message not found in database")
+		Log_warn("Message not found in database")
 		return message, false
 	}
 	return message, true
@@ -415,14 +413,14 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		io.WriteString(w, `{"deleted": false, "error": "Record Not Found"}`)
 	} else {
-		log.WithFields(log.Fields{"ID": id}).Info("Deleting TodoItem")
+		Log("Deleting TodoItem")
 
 		DB.First(&message, id)
 
 		if message.SmallImageName != "" {
 			err := os.Remove(filepath.Join(FileStoragePath, message.SmallImageName))
 			if err != nil {
-				log.Info(err)
+				Log(err)
 			}
 		}
 		DB.Delete(&message)

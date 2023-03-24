@@ -17,6 +17,9 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.11.0 // indirect
 	github.com/jackc/pgx/v4 v4.16.1 // indirect
+	github.com/mattn/go-colorable v0.1.11 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/fasttemplate v1.2.1 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	modernc.org/libc v1.16.7 // indirect
@@ -43,6 +46,7 @@ require (
 	github.com/h2non/bimg v1.1.9
 	github.com/kardianos/service v1.2.1
 	github.com/kolesa-team/go-webp v1.0.2
+	github.com/labstack/gommon v0.4.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/tidbyt/go-libwebp v0.0.0-20220802221933-1fabc3b46601
 	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect

@@ -3,17 +3,19 @@ package DB
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
+
+	. "todochat_server/App"
 
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
 
 	//"gorm.io/driver/sqlite"
 
 	"gorm.io/gorm"
 )
 
-//+var db, _ = gorm.Open("mysql", "root:root@/todolist?charset=utf8&parseTime=True&loc=Local")
-//var dsn = "host=localhost user=postgres password=123 dbname=todolist port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+// +var db, _ = gorm.Open("mysql", "root:root@/todolist?charset=utf8&parseTime=True&loc=Local")
+// var dsn = "host=localhost user=postgres password=123 dbname=todolist port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 var DB *gorm.DB
 var DBMS string
 
@@ -64,7 +66,7 @@ func InitDB(DBMS string, DBUserName string, DBPassword string, DBName string, DB
 			return
 		}
 	} else {
-		log.Println("DBMS \"" + DBMS + "\" is not supported.")
+		Log(fmt.Sprintf("DBMS \"" + DBMS + "\" is not supported."))
 		return
 	}
 
@@ -103,7 +105,7 @@ func InitDB(DBMS string, DBUserName string, DBPassword string, DBName string, DB
 func GetMessagesDB(SessionID uuid.UUID, lastID int64, limit int64, taskID int64, filter string, messageIDPosition int64) []*Message {
 
 	//	start := time.Now()
-	log.Info("Get Messages")
+	Log("Get Messages")
 
 	var messages []*Message
 	//DB.Where("task_id = ?", taskID).Order("created_at desc").Offset(offset).Limit(limit).Find(&messages)

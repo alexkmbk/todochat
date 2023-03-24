@@ -4,8 +4,6 @@ import (
 	"os"
 	"path/filepath"
 
-	log "github.com/sirupsen/logrus"
-
 	. "todochat_server/App"
 
 	//"gorm.io/driver/sqlite"
@@ -41,7 +39,7 @@ func InitDB_SQLite() bool {
 	DBPAth := filepath.Join(currentDir, "gorm.db")
 	DB, err = gorm.Open(sqlite.Open("file:///"+DBPAth+"?cache=shared&_pragma=journal_mode(MEMORY)&_pragma=busy_timeout(20000)"), &gorm.Config{})
 	if err != nil {
-		log.Println(err)
+		Log(err)
 		return false
 	}
 	return true

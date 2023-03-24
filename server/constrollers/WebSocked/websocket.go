@@ -2,6 +2,8 @@ package WS
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -10,8 +12,6 @@ import (
 
 	. "todochat_server/App"
 	. "todochat_server/DB"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type WSMessage struct {
@@ -122,7 +122,7 @@ func (c *Client) readPump() {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v", err)
+				Log(fmt.Sprintf("error: %v", err))
 			}
 			break
 		}
@@ -139,7 +139,7 @@ func (c *Client) readPump() {
 		err = json.Unmarshal(message, &query)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v", err)
+				Log(fmt.Sprintf("error: %v", err))
 			}
 			break
 		}
@@ -153,14 +153,14 @@ func (c *Client) readPump() {
 		if query["command"] == "init" {
 			sessionID, err = uuid.Parse(query["sessionID"])
 			if sessionID == uuid.Nil || !SessionIDExists(sessionID) {
-				println("CLOSE WS CONNECTION ON init!")
+				Log("CLOSE WS CONNECTION ON init!")
 				break
 			}
 			c.sessionID = sessionID
 		} else if query["command"] == "getMessages" {
 			sessionID, err = uuid.Parse(query["sessionID"])
 			if sessionID == uuid.Nil || !SessionIDExists(sessionID) {
-				println("CLOSE WS CONNECTION ON getMessages!")
+				Log("CLOSE WS CONNECTION ON getMessages!")
 				break
 			}
 

@@ -198,7 +198,9 @@ class _SettingsPageState extends State<SettingsPage> {
     }
 
     bool res = await checkConnection(serverURItemp);
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
     return res;
   }
 

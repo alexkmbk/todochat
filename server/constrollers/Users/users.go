@@ -6,10 +6,9 @@ import (
 	"net/http"
 	"strconv"
 
+	. "todochat_server/App"
 	. "todochat_server/DB"
-
 	//"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +79,7 @@ func GetItemByID(ID int64) (*User, bool) {
 	user := &User{}
 	result := DB.First(&user, ID)
 	if result.Error != nil {
-		log.Warn("User not found in database")
+		Log_warn("User not found in database")
 		return user, false
 	}
 	return user, true
@@ -96,7 +95,7 @@ func RegisterNewUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Json parsing error", http.StatusBadRequest)
 	} else {
-		log.WithFields(log.Fields{"User": data["Name"]}).Info("Add new User. Saving to database.")
+		Log("Add new User. Saving to database.")
 		user.Name = data["Name"]
 		user.PasswordHash = data["passwordHash"]
 

@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
 
 	. "todochat_server/App"
 	. "todochat_server/DB"
@@ -37,7 +36,7 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "JSON parse error", http.StatusInternalServerError)
 	} else {
 		description := task.Description
-		log.WithFields(log.Fields{"description": description}).Info("Add new TodoItem. Saving to database.")
+		Log("Add new TodoItem. Saving to database.")
 		task := &Task{Description: description,
 			Completed:     false,
 			Creation_date: time.Now(),
@@ -93,7 +92,7 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 	if err == false {
 		http.Error(w, "Record Not Found", http.StatusNotFound)
 	} else {
-		log.WithFields(log.Fields{"ID": id}).Info("Deleting TodoItem")
+		Log("Deleting TodoItem")
 		var messages []*Message
 		DB.Where("Task_ID = ?", item.ID).Find(&messages)
 		tx := DB.Begin()
@@ -111,7 +110,7 @@ func GetItemByID(ID int64) (*Task, bool) {
 	task := &Task{}
 	result := DB.First(&task, ID)
 	if result.Error != nil {
-		log.Warn("TodoItem not found in database")
+		Log_warn("TodoItem not found in database")
 		return task, false
 	}
 	return task, true
@@ -119,15 +118,17 @@ func GetItemByID(ID int64) (*Task, bool) {
 
 func GetItems(w http.ResponseWriter, r *http.Request) {
 
-	log.Info("Get Tasks")
+	Log_warn("Get Tasks")
 
 	query := r.URL.Query()
 	lastID, err := strconv.Atoi(query.Get("lastID"))
 	if err != nil {
 		return
 	}
+	//"2023-03-23 20:04:11.988297"
+	lastCreation_Date, _ := time.Parse(time.RFC3339, query.Get("lastCreation_date"))
 
-	lastCreation_Date, _ := time.Parse("2006-01-02 15:04:05.999999Z", query.Get("lastCreation_date"))
+	Log("last Creation_date (received):" + lastCreation_Date.String())
 
 	limit, err := strconv.Atoi(query.Get("limit"))
 	if err != nil {
@@ -150,7 +151,7 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 	if lastID == 0 {
 		DB.Order("Creation_date desc, ID desc").Where("project_ID = @projectID AND (NOT Completed OR @showCompleted)", sql.Named("projectID", projectID), sql.Named("showCompleted", showCompleted)).Limit(limit).Find(&tasks)
 	} else {
-		DB.Order("Creation_date desc, ID desc").Where("project_ID = @projectID AND (NOT Completed OR @showCompleted) AND (Creation_date < @Creation_date OR (Creation_date = @Creation_date AND ID < @ID))", sql.Named("projectID", projectID), sql.Named("showCompleted", showCompleted), sql.Named("Creation_date", lastCreation_Date), sql.Named("ID", lastID)).Limit(limit).Find(&tasks)
+		DB.Order("Creation_date desc, ID desc").Where("project_ID = @projectID AND (NOT Completed OR @showCompleted) AND ((Creation_date <= @Creation_date AND ID < @ID))", sql.Named("projectID", projectID), sql.Named("showCompleted", showCompleted), sql.Named("Creation_date", lastCreation_Date), sql.Named("ID", lastID)).Limit(limit).Find(&tasks)
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -186,6 +187,10 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 	m["tasks"] = tasks
 	json.NewEncoder(w).Encode(m)
 
+	if len(tasks) > 0 {
+		Log("first Creation_date:" + tasks[0].Creation_date.String())
+		Log("last Creation_date:" + tasks[len(tasks)-1].Creation_date.String())
+	}
 	//lastItem := r.Header.Get("lastItem")
 
 	//DB.Where("completed = ?", false)
@@ -208,7 +213,7 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 
 func SearchItems(w http.ResponseWriter, r *http.Request) {
 
-	log.Info("Search for Tasks")
+	Log("Search for Tasks")
 
 	query := r.URL.Query()
 	search := query.Get("search")

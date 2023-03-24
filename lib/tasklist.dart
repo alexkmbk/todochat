@@ -31,14 +31,9 @@ typedef ItemBuilder = Widget Function(
     BuildContext context, Task item, int index);
 
 class TaskList extends StatefulWidget {
-  final ItemPositionsListener itemPositionsListener;
-  final ItemScrollController scrollController;
-
-  const TaskList(
-      {Key? key,
-      required this.scrollController,
-      required this.itemPositionsListener})
-      : super(key: key);
+  const TaskList({
+    Key? key,
+  }) : super(key: key);
 
   @override
   TaskListState createState() {
@@ -62,7 +57,7 @@ class TaskListState extends State<TaskList> {
           Provider.of<TaskListProvider>(context, listen: false);
       // height is widget's height
       // positions is the items which render in viewports
-      if (positions.last.index >= taskListProvider.items.length - 12) {
+      if (positions.last.index >= taskListProvider.items.length - 5) {
         taskListProvider.requestTasks(context);
       }
       // for (var pos in positions) {
@@ -77,8 +72,6 @@ class TaskListState extends State<TaskList> {
     //_taskListProvider = Provider.of<TaskListProvider>(context, listen: false);
     //_msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
   }
-
-// This is what you're looking for!
 
   @override
   Widget build(BuildContext context) {

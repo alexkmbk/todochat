@@ -26,9 +26,13 @@ import (
 
 	"github.com/nfnt/resize"
 	_ "golang.org/x/image/bmp"
+
 	//"github.com/kolesa-team/go-webp/webp"
 	//"github.com/tidbyt/go-libwebp/webp"
+	log "github.com/labstack/gommon/log"
 )
+
+var DoLogs = false
 
 func FromBase64(base64Text string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(base64Text)
@@ -132,32 +136,32 @@ func OptimizeImageSize(data []byte, ext string) ([]byte, string) {
 }
 
 /*
-func ResizeImageByHeight__(data []byte, height int) ([]byte, error) {
-	var newImage []byte
+	func ResizeImageByHeight__(data []byte, height int) ([]byte, error) {
+		var newImage []byte
 
-	reader := bytes.NewReader(data)
+		reader := bytes.NewReader(data)
 
-	imageInfo, _, err := image.DecodeConfig(reader)
-	if err != nil {
-		return newImage, err
+		imageInfo, _, err := image.DecodeConfig(reader)
+		if err != nil {
+			return newImage, err
+		}
+
+		image, _, err := image.Decode(reader)
+		if err != nil {
+			return newImage, err
+		}
+
+		scale := height / imageInfo.Height
+		inverted := effect.Invert(image)
+
+		resized := transform.Resize(inverted, height, imageInfo.Width*scale, transform.Linear)
+
+		buf := new(bytes.Buffer)
+		err = jpeg.Encode(buf, resized, nil)
+		newImage = buf.Bytes()
+
+		return newImage, nil
 	}
-
-	image, _, err := image.Decode(reader)
-	if err != nil {
-		return newImage, err
-	}
-
-	scale := height / imageInfo.Height
-	inverted := effect.Invert(image)
-
-	resized := transform.Resize(inverted, height, imageInfo.Width*scale, transform.Linear)
-
-	buf := new(bytes.Buffer)
-	err = jpeg.Encode(buf, resized, nil)
-	newImage = buf.Bytes()
-
-	return newImage, nil
-}
 */
 func ToInt64(str string) int64 {
 	res, err := strconv.ParseInt(str, 10, 64)
@@ -180,6 +184,24 @@ func FromJson(r io.Reader) (interface{}, error) {
 	decoder := json.NewDecoder(r)
 	error := decoder.Decode(res)
 	return res, error
+}
+
+func Log(str interface{}) {
+	if DoLogs {
+		log.Info(str)
+	}
+}
+
+func Log_fatal(err interface{}) {
+	if DoLogs {
+		log.Fatal(err)
+	}
+}
+
+func Log_warn(err interface{}) {
+	if DoLogs {
+		log.Warn(err)
+	}
 }
 
 /*func Write(){

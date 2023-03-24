@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/kardianos/service"
-	log "github.com/sirupsen/logrus"
+
 	"gopkg.in/ini.v1"
 
 	//"gorm.io/driver/postgres"
@@ -36,6 +36,7 @@ func runMain() {
 	DBHost_ := flag.String("DBHost", "", "DBHost")
 	DBPort_ := flag.String("DBPort", "", "DBPort")
 	DBTimeZone_ := flag.String("DBTimeZone", "", "DBTimeZone")
+	logs_ := flag.Bool("logs", false, "logs")
 
 	flag.Parse()
 
@@ -47,6 +48,7 @@ func runMain() {
 	DBHost := *DBHost_
 	DBPort := *DBPort_
 	DBTimeZone := *DBTimeZone_
+	DoLogs = *logs_
 	var err error
 
 	FileStoragePath = filepath.Join(GetCurrentDir(), "FileStorage")
@@ -57,7 +59,7 @@ func runMain() {
 
 	//log.Info("FileStoragePath:" + FileStoragePath)
 
-	log.Info("Starting Todolist API server")
+	Log("Starting Todolist API server")
 
 	DB.InitDB(DB.DBMS, DBUserName, DBPassword, DBName, DBHost, DBPort, DBTimeZone)
 
@@ -132,11 +134,11 @@ func main() {
 		prg := &program{}
 		s, err := service.New(prg, svcConfig)
 		if err != nil {
-			log.Fatal(err)
+			Log_fatal(err)
 		}
 		logger, err = s.Logger(nil)
 		if err != nil {
-			log.Fatal(err)
+			Log_fatal(err)
 		}
 		err = s.Run()
 		if err != nil {
