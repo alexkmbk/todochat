@@ -3,8 +3,7 @@ package DB
 import (
 	"fmt"
 	"time"
-
-	log "github.com/sirupsen/logrus"
+	. "todochat_server/App"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -49,7 +48,7 @@ func InitDB_Postges(DBMS string, DBUserName string, DBPassword string, DBName st
 
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Println(err.Error())
+		Log(err.Error())
 		return false
 	}
 
