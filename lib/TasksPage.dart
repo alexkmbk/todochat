@@ -126,7 +126,7 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Widget renderTasks(TaskListProvider taskListProvider) {
-    return TaskList();
+    return TaskList(taskListProvider: taskListProvider);
   }
 
   Widget renderMessages(TaskListProvider taskListProvider) {
