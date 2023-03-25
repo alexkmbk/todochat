@@ -178,34 +178,38 @@ class _MyHomePageState extends State<MyHomePage> {
                                 fontWeight: FontWeight.bold)*/
                             ),
                           ])),*/
-                          TextInCircle(
+                          Image.asset(
+                            "assets/images/todochat_logo.png",
                             width: 200,
-                            color: Colors.white,
-                            borderColor: Colors.green,
-                            textWidget: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: "ToDo\n",
-                                  style: GoogleFonts.righteous(
-                                      fontSize: 56, color: Colors.green),
-                                ),
-                                TextSpan(
-                                  text: "Chat",
-                                  style: GoogleFonts.righteous(
-                                      height: 1.0,
-                                      fontSize: 56,
-                                      color: Colors.orangeAccent),
-                                  //00116d
-                                  //1a6ce3
-                                  /*TextStyle(
-                                height: 1.0,
-                                color: Colors.orangeAccent,
-                                fontSize: 50,
-                                fontWeight: FontWeight.bold)*/
-                                ),
-                              ],
-                            ),
                           ),
+                          // TextInCircle(
+                          //   width: 200,
+                          //   color: Colors.white,
+                          //   borderColor: Colors.green,
+                          //   textWidget: TextSpan(
+                          //     children: [
+                          //       TextSpan(
+                          //         text: "ToDo\n",
+                          //         style: GoogleFonts.righteous(
+                          //             fontSize: 56, color: Colors.green),
+                          //       ),
+                          //       TextSpan(
+                          //         text: "Chat",
+                          //         style: GoogleFonts.righteous(
+                          //             height: 1.0,
+                          //             fontSize: 56,
+                          //             color: Colors.orangeAccent),
+                          //         //00116d
+                          //         //1a6ce3
+                          //         /*TextStyle(
+                          //       height: 1.0,
+                          //       color: Colors.orangeAccent,
+                          //       fontSize: 50,
+                          //       fontWeight: FontWeight.bold)*/
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
                           const Spacer(),
                           if (snapshot.hasError)
                             IconButton(
@@ -226,12 +230,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           SizedBox(
                               width: 200,
                               height: 50,
-                              child: OutlinedButton(
+                              child: ElevatedButton(
                                   style: OutlinedButton.styleFrom(
-                                    side: const BorderSide(
-                                        width: 2.0,
-                                        color:
-                                            Color.fromARGB(255, 203, 202, 202)),
+                                    backgroundColor:
+                                        const Color.fromARGB(255, 20, 125, 199),
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
                                             BorderRadius.circular(15)),
@@ -250,9 +252,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   child: const Text(
                                     "Settings",
                                     style: TextStyle(
-                                        fontSize: 16,
-                                        color:
-                                            Color.fromARGB(255, 203, 202, 202)),
+                                        fontSize: 16, color: Colors.white),
                                   ))),
                           const SizedBox(
                             height: 30,
@@ -270,19 +270,16 @@ class _MyHomePageState extends State<MyHomePage> {
     if (appInitialized) return true;
     bool res;
 
-    /* final msgListProvider =
-        Provider.of<MsgListProvider>(context, listen: false);*/
-    final taskListProvider =
-        Provider.of<TaskListProvider>(context, listen: false);
+    final tasklist = Provider.of<TaskListProvider>(context, listen: false);
 
     settings = await SharedPreferences.getInstance();
 
     var httpScheme = settings.getString("httpScheme");
     var host = settings.getString("host");
     var port = settings.getInt("port");
-    taskListProvider.projectID = settings.getInt("projectID");
+    tasklist.projectID = settings.getInt("projectID");
 
-    taskListProvider.showCompleted = settings.getBool("showCompleted") ?? true;
+    tasklist.showCompleted = settings.getBool("showCompleted") ?? true;
 
     if (port == null || port == 0) {
       port = null;
@@ -310,32 +307,30 @@ class _MyHomePageState extends State<MyHomePage> {
       await openLoginPage(context);
     }
     if (isServerURI && sessionID.isNotEmpty) {
-      if (taskListProvider.projectID == null ||
-          taskListProvider.projectID == 0) {
-        taskListProvider.project = await requestFirstItem();
-        if (taskListProvider.project != null) {
-          taskListProvider.projectID = taskListProvider.project!.ID;
-          await taskListProvider.requestTasks(context);
+      if (tasklist.projectID == null || tasklist.projectID == 0) {
+        tasklist.project = await requestFirstItem();
+        if (tasklist.project != null) {
+          tasklist.projectID = tasklist.project!.ID;
+          await tasklist.requestTasks(context);
         }
       }
 
-      if (taskListProvider.projectID != null &&
-          taskListProvider.project == null) {
-        taskListProvider.project = await getProject(taskListProvider.projectID);
-        taskListProvider.project ??= await requestFirstItem();
+      if (tasklist.projectID != null && tasklist.project == null) {
+        tasklist.project = await getProject(tasklist.projectID);
+        tasklist.project ??= await requestFirstItem();
       }
-      if (taskListProvider.project != null) {
-        taskListProvider.projectID = taskListProvider.project!.ID;
-        await taskListProvider.requestTasks(context);
+      if (tasklist.project != null) {
+        tasklist.projectID = tasklist.project!.ID;
+        await tasklist.requestTasks(context);
       }
 
       connectWebSocketChannel(serverURI).then((value) {
-        listenWs(taskListProvider, context);
+        listenWs(tasklist, context);
       });
     }
 
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      reconnect(taskListProvider, context);
+      reconnect(tasklist, context);
     });
 
     appInitialized = true;

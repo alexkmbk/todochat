@@ -163,6 +163,7 @@ class _TasksPageState extends State<TasksPage> {
       var tasks = data["tasks"];
 
       if (tasks == null) {
+        taskListProvider.loading = false;
         taskListProvider.currentTask = null;
         taskListProvider.refresh();
         msgListProvider.clear(true);

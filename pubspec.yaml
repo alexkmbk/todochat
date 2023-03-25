@@ -79,10 +79,27 @@ dependency_overrides:
       url: https://github.com/bluefireteam/photo_view
       ref: master
 dev_dependencies:
-  #flutter_launcher_icons: ^0.12.0
+  flutter_launcher_icons: ^0.12.0
   flutter_test:
     sdk: flutter
-
+    
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/todochat.ico"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/images/todochat.ico"
+    background_color: "#hexcode"
+    theme_color: "#hexcode"
+  windows:
+    generate: true
+    image_path: "assets/images/todochat.ico"
+    icon_size: 48 # min:48, max:256, default: 48
+  macos:
+    generate: true
+    image_path: "assets/images/todochat.ico"
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
@@ -105,6 +122,7 @@ flutter:
   assets:
     - assets/images/image_error.png
     - assets/images/todochat.ico
+    - assets/images/todochat_logo.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
