@@ -65,15 +65,6 @@ class MsgListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foundStruct = uploadingFiles[message.tempID];
-    /*if (foundStruct != null && foundStruct.multipartRequest == null) {
-      createMessageWithFile(
-        text: message.text,
-        fileData: foundStruct.loadingFileData,
-        fileName: message.fileName,
-        msgListProvider: msgListProvider,
-        tempID: message.tempID,
-      );
-    }*/
     return LayoutBuilder(builder: (context, constraints) {
       return Padding(
         // asymmetric padding
@@ -97,7 +88,6 @@ class MsgListTile extends StatelessWidget {
             child:
                 drawBubble(context, constraints, foundStruct?.loadingFileData)),
       );
-      //}
     });
   }
 
@@ -106,7 +96,6 @@ class MsgListTile extends StatelessWidget {
       case MessageAction.ReopenTaskAction:
         return Text.rich(TextSpan(text: "The task was ", children: <InlineSpan>[
           const WidgetSpan(
-            //baseline: TextBaseline.ideographic,
             alignment: PlaceholderAlignment.middle,
             child: Label(
               text: "Reopened",
@@ -285,80 +274,6 @@ class MsgListTile extends StatelessWidget {
           messageTextFieldFocusNode.requestFocus();
           msgListProvider.refresh();
         },
-        /*return GestureDetector(
-        onSecondaryTapDown: (details) async {
-          msgListProvider.selectItem(message);
-          final x = details.globalPosition.dx;
-          final y = details.globalPosition.dy;
-          final selected = await showMenu(
-            context: context,
-            position: RelativeRect.fromLTRB(x, y, x, y),
-            items: [
-              PopupMenuItem<String>(
-                  child: const Text('Copy'),
-                  onTap: () async {
-                    message.isSelected = false;
-                    var text = message.isTaskDescriptionItem
-                        ? msgListProvider.task?.description ?? ""
-                        : message.text;
-                    if (textWidgetSelection.start != textWidgetSelection.end) {
-                      text = text.substring(
-                          textWidgetSelection.start, textWidgetSelection.end);
-                    }
-                    //Pasteboard.writeText(text);
-                    Clipboard.setData(ClipboardData(text: text)).then((value) {
-                      //toast("Text copied to clipboard", context, 500);
-                    });
-                  }),
-              if (textWidgetSelection.start != textWidgetSelection.end)
-                PopupMenuItem<String>(
-                    child: const Text('Quote selection'),
-                    onTap: () async {
-                      message.isSelected = false;
-                      var text = message.isTaskDescriptionItem
-                          ? msgListProvider.task?.description ?? ""
-                          : message.text;
-                      text = text.substring(
-                          textWidgetSelection.start, textWidgetSelection.end);
-                      msgListProvider.quotedText = text;
-                      msgListProvider.currentParentMessageID = message.ID;
-                      //FocusScope.of(context).unfocus();
-                      searchFocusNode.unfocus();
-                      //messageTextFieldFocusNode.dispose();
-                      messageTextFieldFocusNode.requestFocus();
-                      msgListProvider.refresh();
-                    }),
-              PopupMenuItem<String>(
-                  child: const Text('Reply'),
-                  onTap: () async {
-                    message.isSelected = false;
-                    msgListProvider.quotedText = message.isTaskDescriptionItem
-                        ? msgListProvider.task?.description ?? ""
-                        : message.text;
-                    msgListProvider.currentParentMessageID = message.ID;
-
-                    msgListProvider.refresh();
-                    //FocusScope.of(context).unfocus();
-                    searchFocusNode.unfocus();
-                    //messageTextFieldFocusNode.dispose();
-                    messageTextFieldFocusNode.requestFocus();
-                    msgListProvider.refresh();
-                  }),
-              if (!message.isTaskDescriptionItem)
-                const PopupMenuItem<String>(
-                  value: 'Delete',
-                  child: Text('Delete'),
-                ),
-            ],
-          );
-          if (selected == "Delete") {
-            message.isSelected = false;
-            var res = await confirmDismissDlg(context);
-            if (res ?? false) {
-              msgListProvider.deleteMesage(message.ID);
-            }
-          }
-        },*/
         child: DecoratedBox(
           // chat bubble decoration
           decoration: BoxDecoration(
@@ -478,11 +393,7 @@ class MsgListTile extends StatelessWidget {
                       ))
               ])
             : NetworkImageWithMenu(
-                serverURI.scheme +
-                    '://' +
-                    serverURI.authority +
-                    "/FileStorage/" +
-                    message.smallImageName,
+                '${serverURI.scheme}://${serverURI.authority}/FileStorage/${message.smallImageName}',
                 headers: {"sessionID": sessionID},
                 onTap: () {
                   onTapOnFileMessage(message, context);

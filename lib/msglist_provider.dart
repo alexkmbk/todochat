@@ -6,13 +6,14 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:http/http.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:sn_progress_dialog/sn_progress_dialog.dart';
 
 import 'package:provider/provider.dart';
 //import 'package:http/http.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+//import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:todochat/tasklist_provider.dart';
 import 'HttpClient.dart' as HTTPClient;
 
@@ -210,7 +211,7 @@ class MsgListProvider extends ChangeNotifier {
   int taskID = 0;
   Task? task;
   int foundMessageID = 0;
-  ItemScrollController? scrollController;
+  FlutterListViewController? scrollController;
   bool isOpen = isDesktopMode;
   String quotedText = "";
   String parentsmallImageName = "";
@@ -221,7 +222,7 @@ class MsgListProvider extends ChangeNotifier {
     var index = items.indexWhere((element) => element.ID == messageID);
     if (index >= 0 && scrollController != null) {
       try {
-        scrollController!.jumpTo(index: index);
+        scrollController!.sliverController.jumpToIndex(index);
       } catch (e) {}
     }
   }

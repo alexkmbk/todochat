@@ -24,9 +24,6 @@ class TaskList extends StatefulWidget {
 
 class TaskListState extends State<TaskList> {
   bool loading = false;
-  FlutterSliverListController flutterSliverListController =
-      FlutterSliverListController();
-
   FlutterListViewController flutterListViewController =
       FlutterListViewController();
   @override

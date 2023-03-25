@@ -1,84 +1,68 @@
-import 'dart:convert';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:http/http.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:provider/provider.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:todochat/tasklist_provider.dart';
-//import 'package:todochat/text_selection_controls.dart';
+
 import 'package:todochat/todochat.dart';
-import 'HttpClient.dart' as HTTPClient;
-import 'package:http/http.dart' as http;
-import 'HttpClient.dart';
 import 'customWidgets.dart';
 import 'msglist_provider.dart';
 import 'msglist_tile.dart';
 import 'utils.dart';
 import 'package:path/path.dart' as path;
 
-typedef OnDeleteFn = Future<bool> Function(int messageID);
+class MsgList extends StatefulWidget {
+  final MsgListProvider msglist;
+  final FlutterListViewController flutterListViewController;
 
-class InifiniteMsgList extends StatefulWidget {
-  final ItemPositionsListener itemPositionsListener;
-  final ItemScrollController scrollController;
-
-  //final Future<bool> Function(int messageID) onDelete;
-  /*final Future<Uint8List> Function(String localFileName,
-      {Function(List<int> value)? onData,
-      Function? onError,
-      void Function()? onDone,
-      bool? cancelOnError}) getFile;*/
-
-  //final ItemBuilder itemBuilder;
-  //final Task task;
-  const InifiniteMsgList({
-    Key? key,
-    required this.scrollController,
-    required this.itemPositionsListener,
-  }) : super(key: key);
+  const MsgList(
+      {Key? key,
+      required this.msglist,
+      required this.flutterListViewController})
+      : super(key: key);
 
   @override
-  InifiniteMsgListState createState() {
-    return InifiniteMsgListState();
+  MsgListState createState() {
+    return MsgListState();
   }
 }
 
-class InifiniteMsgListState extends State<InifiniteMsgList> {
-  //late MsgListProvider _msgListProvider;
-
+class MsgListState extends State<MsgList> {
   final _messageInputController = TextEditingController();
-  final ScrollController scrollController = ScrollController();
-  final ItemScrollController itemsScrollController = ItemScrollController();
-  final ItemPositionsListener itemPositionsListener =
-      ItemPositionsListener.create();
   final messageTextFieldFocusNode = FocusNode();
 
   @override
   void initState() {
+    widget.flutterListViewController.sliverController
+        .onPaintItemPositionsCallback = (height, positions) {
+      // height is widget's height
+      // positions is the items which render in viewports
+      if (positions.last.index >= widget.msglist.items.length - 5) {
+        final tasklist = Provider.of<TaskListProvider>(context, listen: false);
+
+        widget.msglist.requestMessages(tasklist, context);
+      }
+    };
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final msgListProvider =
-        Provider.of<MsgListProvider>(context, listen: false);
-
-    if (msgListProvider.task == null || msgListProvider.task?.ID == 0) {
+    final msglist = widget.msglist;
+    if (msglist.task == null || msglist.task?.ID == 0) {
       return const Center(child: Text("No any task was selected"));
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (msgListProvider.foundMessageID > 0 &&
-            msgListProvider.items.length > 1) {
-          msgListProvider.jumpTo(msgListProvider.foundMessageID);
-          msgListProvider.foundMessageID = 0;
+        if (msglist.foundMessageID > 0 && msglist.items.length > 1) {
+          msglist.jumpTo(msglist.foundMessageID);
+          msglist.foundMessageID = 0;
         }
       });
 
-      if (msgListProvider.loading) {
+      if (msglist.loading) {
         return const Align(
             alignment: Alignment.center,
             child: SizedBox(
@@ -90,55 +74,31 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
       return Column(children: <Widget>[
         Expanded(
           child: GestureDetector(
-            onTap: () => msgListProvider.unselectItems(),
-            child: ScrollablePositionedList.builder(
-                reverse: true,
-                itemScrollController: widget.scrollController,
-                itemPositionsListener: widget.itemPositionsListener,
-                itemCount: msgListProvider.items.length,
-                extraScrollSpeed:
-                    Platform().isAndroid || Platform().isIOS ? 0 : 40,
-                itemBuilder: (context, index) {
-                  if (msgListProvider.items.isEmpty) {
-                    return const Text("");
-                  }
-                  var item = msgListProvider.items[index];
-                  /*if (item.tempID.isNotEmpty && item.loadinInProcess) {
-              return LoadingFileBubble(
-                index: index,
-                isCurrentUser: item.userID == currentUserID,
-                message: item,
-                msgListProvider: msgListProvider,
-                getFile: widget.getFile,
-              );
-            } else {*/
-                  return MsgListTile(
-                    index: index,
-                    isCurrentUser: item.userID == currentUserID,
-                    message: item,
-                    msgListProvider: msgListProvider,
-                    messageTextFieldFocusNode: messageTextFieldFocusNode,
-                    onDismissed: (direction) async {
-                      if (await msgListProvider.deleteMesage(item.ID)) {
-                        msgListProvider.deleteItem(item.ID);
+              onTap: () => msglist.unselectItems(),
+              child: FlutterListView(
+                  reverse: true,
+                  controller: widget.flutterListViewController,
+                  delegate: FlutterListViewDelegate(
+                    (BuildContext context, int index) {
+                      if (msglist.items.isEmpty) {
+                        return const Text("No any task was selected");
                       }
+                      var item = msglist.items[index];
+                      return MsgListTile(
+                        index: index,
+                        isCurrentUser: item.userID == currentUserID,
+                        message: item,
+                        msgListProvider: msglist,
+                        messageTextFieldFocusNode: messageTextFieldFocusNode,
+                        onDismissed: (direction) async {
+                          if (await msglist.deleteMesage(item.ID)) {
+                            msglist.deleteItem(item.ID);
+                          }
+                        },
+                      );
                     },
-                  );
-                }
-                /*} else if (index == items.length && end) {
-            return const Center(child: Text('End of list'));*/
-                //}
-                /*else {
-            _getMoreItems();
-            return const SizedBox(
-              height: 80,
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }*/
-                //return const Center(child: Text('End of list'));
-                // },
-                ),
-          ),
+                    childCount: widget.msglist.items.length,
+                  ))),
         ),
         // Edit message box
         Padding(
@@ -148,45 +108,36 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
             decoration: BoxDecoration(
               color: Colors.grey[200],
               borderRadius: BorderRadius.circular(30),
-              /*border: Border(
-                
-                top: BorderSide(color: Colors.grey),
-                bottom: BorderSide(color: Colors.grey),
-              ),*/
             ),
             child: Column(children: [
-              if (msgListProvider.quotedText.isNotEmpty ||
-                  msgListProvider.parentsmallImageName.isNotEmpty)
+              if (msglist.quotedText.isNotEmpty ||
+                  msglist.parentsmallImageName.isNotEmpty)
                 Row(children: [
-                  if (msgListProvider.parentsmallImageName.isNotEmpty)
+                  if (msglist.parentsmallImageName.isNotEmpty)
                     networkImage(
-                        serverURI.scheme +
-                            '://' +
-                            serverURI.authority +
-                            "/FileStorage/" +
-                            msgListProvider.parentsmallImageName,
+                        '${serverURI.scheme}://${serverURI.authority}/FileStorage/${msglist.parentsmallImageName}',
                         height: Platform().isAndroid ? 30 : 60),
                   Expanded(
                       child: Text(
-                    msgListProvider.quotedText,
+                    msglist.quotedText,
                     style: const TextStyle(color: Colors.grey),
                   )),
                   SizedBox(
                       width: 20,
                       child: IconButton(
                           onPressed: () {
-                            msgListProvider.quotedText = "";
-                            msgListProvider.parentsmallImageName = "";
-                            msgListProvider.refresh();
+                            msglist.quotedText = "";
+                            msglist.parentsmallImageName = "";
+                            msglist.refresh();
                           },
                           icon: const Icon(Icons.close)))
                 ]),
-              if (msgListProvider.quotedText.isNotEmpty) const Divider(),
+              if (msglist.quotedText.isNotEmpty) const Divider(),
               Row(
                 children: [
-                  if (msgListProvider.task != null)
+                  if (msglist.task != null)
                     NewMessageActionsMenu(
-                      msgListProvider: msgListProvider,
+                      msgListProvider: msglist,
                     ),
                   Expanded(
                     child: CallbackShortcuts(
@@ -194,20 +145,20 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                         const SingleActivator(LogicalKeyboardKey.enter,
                             control: false): () {
                           if (_messageInputController.text.isNotEmpty) {
-                            msgListProvider.createMessage(
+                            msglist.createMessage(
                               text: _messageInputController.text,
-                              task: msgListProvider.task,
+                              task: msglist.task,
                             );
                             _messageInputController.text = "";
                           }
                         },
                         const SingleActivator(LogicalKeyboardKey.escape,
                             control: false): () {
-                          if (msgListProvider.quotedText.isNotEmpty ||
-                              msgListProvider.parentsmallImageName.isNotEmpty) {
-                            msgListProvider.quotedText = "";
-                            msgListProvider.parentsmallImageName = "";
-                            msgListProvider.refresh();
+                          if (msglist.quotedText.isNotEmpty ||
+                              msglist.parentsmallImageName.isNotEmpty) {
+                            msglist.quotedText = "";
+                            msglist.parentsmallImageName = "";
+                            msglist.refresh();
                           }
                         },
                         const SingleActivator(LogicalKeyboardKey.keyV,
@@ -227,9 +178,9 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                           } else {
                             final bytes = await Pasteboard.image;
                             if (bytes != null) {
-                              msgListProvider.addUploadingItem(
+                              msglist.addUploadingItem(
                                   Message(
-                                      taskID: msgListProvider.taskID,
+                                      taskID: msglist.taskID,
                                       userID: currentUserID,
                                       fileName: "clipboard_image.png",
                                       loadingFile: true,
@@ -241,9 +192,9 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                                 for (final file in files) {
                                   var fileData = await readFile(file);
                                   if (fileData.isNotEmpty) {
-                                    msgListProvider.addUploadingItem(
+                                    msglist.addUploadingItem(
                                         Message(
-                                            taskID: msgListProvider.taskID,
+                                            taskID: msglist.taskID,
                                             userID: currentUserID,
                                             fileName: path.basename(file),
                                             loadingFile: true,
@@ -265,9 +216,9 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                                     }
 
                                     if (response.statusCode == 200) {
-                                      msgListProvider.addUploadingItem(
+                                      msglist.addUploadingItem(
                                           Message(
-                                              taskID: msgListProvider.taskID,
+                                              taskID: msglist.taskID,
                                               userID: currentUserID,
                                               fileName: "clipboard_image.png",
                                               loadingFile: true,
@@ -303,9 +254,9 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                   IconButton(
                     onPressed: () {
                       if (_messageInputController.text.isNotEmpty) {
-                        msgListProvider.createMessage(
+                        msglist.createMessage(
                             text: _messageInputController.text,
-                            task: msgListProvider.task);
+                            task: msglist.task);
                         _messageInputController.text = "";
                       }
                     },
@@ -329,9 +280,9 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
 
                         if (fileName.isNotEmpty) {
                           var res = await readFile(fileName);
-                          msgListProvider.addUploadingItem(
+                          msglist.addUploadingItem(
                               Message(
-                                  taskID: msgListProvider.taskID,
+                                  taskID: msglist.taskID,
                                   userID: currentUserID,
                                   fileName: path.basename(fileName),
                                   loadingFile: true,
@@ -342,9 +293,9 @@ class InifiniteMsgListState extends State<InifiniteMsgList> {
                       } else if (result.files.single.bytes != null &&
                           result.files.single.bytes!.isNotEmpty) {
                         var fileName = result.files.single.name;
-                        msgListProvider.addUploadingItem(
+                        msglist.addUploadingItem(
                             Message(
-                                taskID: msgListProvider.taskID,
+                                taskID: msglist.taskID,
                                 userID: currentUserID,
                                 fileName: path.basename(fileName),
                                 loadingFile: true,

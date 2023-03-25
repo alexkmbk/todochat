@@ -1,22 +1,11 @@
-//import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-//import 'package:http/http.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:todochat/tasklist_provider.dart';
-//import 'HttpClient.dart' as HTTPClient;
 import 'main_menu.dart';
-//import 'utils.dart';
 import 'package:provider/provider.dart';
 import 'msglist.dart';
 import 'msglist_provider.dart';
 import 'todochat.dart';
-//import 'dart:io';
-import 'tasklist.dart';
-//import 'package:progress_dialog/progress_dialog.dart';
-
-//import 'package:web_socket_channel/web_socket_channel.dart';
-//import 'package:web_socket_channel/status.dart' as status;
 
 class TaskMessagesPage extends StatefulWidget {
   final Task task;
@@ -29,9 +18,8 @@ class TaskMessagesPage extends StatefulWidget {
 }
 
 class _TaskMessagesPageState extends State<TaskMessagesPage> {
-  final ItemScrollController itemsScrollController = ItemScrollController();
-  final ItemPositionsListener itemPositionsListener =
-      ItemPositionsListener.create();
+  FlutterListViewController flutterListViewController =
+      FlutterListViewController();
 
   @override
   void initState() {
@@ -42,7 +30,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     msgListProvider.taskID = widget.task.ID;
     msgListProvider.task = widget.task;
     msgListProvider.foundMessageID = widget.task.lastMessageID;
-    msgListProvider.scrollController = itemsScrollController;
+    msgListProvider.scrollController = flutterListViewController;
     final taskListProvider =
         Provider.of<TaskListProvider>(context, listen: false);
     msgListProvider.requestMessages(taskListProvider, context);
@@ -54,30 +42,12 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
   }
 
   Widget drawBody() {
-    return /*Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [*/
-        Consumer<MsgListProvider>(builder: (context, provider, child) {
-      return NotificationListener<ScrollUpdateNotification>(
-        child: InifiniteMsgList(
-          scrollController: itemsScrollController,
-          itemPositionsListener: itemPositionsListener,
-        ),
-        onNotification: (notification) {
-          if (!provider.loading &&
-              (itemPositionsListener.itemPositions.value.isEmpty ||
-                  (itemPositionsListener.itemPositions.value.last.index >=
-                      provider.items.length - 10))) {
-            final taskListProvider =
-                Provider.of<TaskListProvider>(context, listen: false);
-            provider.requestMessages(taskListProvider, context);
-          }
-          return true;
-        },
+    return Consumer<MsgListProvider>(builder: (context, provider, child) {
+      return MsgList(
+        msglist: provider,
+        flutterListViewController: flutterListViewController,
       );
     });
-    //],
-    //);
   }
 
   @override

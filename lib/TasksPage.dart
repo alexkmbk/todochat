@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:todochat/tasklist_provider.dart';
 import 'HttpClient.dart';
-import 'msglist.dart';
 import 'customWidgets.dart';
 import 'msglist_provider.dart';
 import 'tasklist.dart';
@@ -12,16 +11,11 @@ import 'main_menu.dart';
 import 'TaskMessagesPage.dart';
 import 'LoginPage.dart';
 import 'ProjectsList.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-//import 'customWidgets.dart';
 import 'todochat.dart';
 import 'dart:convert';
 import 'highlight_text.dart';
-//import 'package:resizable_widget/resizable_widget.dart';
 import 'package:multi_split_view/multi_split_view.dart';
-
-//late TaskListProvider taskListProvider;
 
 class TasksPage extends StatefulWidget {
   const TasksPage({Key? key}) : super(key: key);
@@ -31,9 +25,6 @@ class TasksPage extends StatefulWidget {
 }
 
 class _TasksPageState extends State<TasksPage> {
-  // final ItemScrollController _scrollController = ItemScrollController();
-  // final ItemPositionsListener itemPositionsListener =
-  //     ItemPositionsListener.create();
   bool showSearch = isDesktopMode;
 
   late FloatingActionButton floatingActionButton;
@@ -41,48 +32,6 @@ class _TasksPageState extends State<TasksPage> {
   @override
   void initState() {
     super.initState();
-
-    /*final taskListProvider =
-        Provider.of<TaskListProvider>(context, listen: false);*/
-    //msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
-
-    //  taskListProvider.projectID = settings.getInt("projectID");
-
-    /*itemPositionsListener.itemPositions.addListener(() {
-      if (!taskListProvider.loading &&
-          !taskListProvider.searchMode &&
-          (itemPositionsListener.itemPositions.value.isEmpty ||
-              (itemPositionsListener.itemPositions.value.last.index >=
-                  taskListProvider.items.length - 10))) {
-        requestTasks(taskListProvider. context);
-      }
-    });*/
-
-    //taskListProvider.requestTasks(context);
-  }
-
-  Future<bool> initBeforeBuild(
-      BuildContext context, TaskListProvider taskListProvider) async {
-/*    if (taskListProvider.projectID == null || taskListProvider.projectID == 0) {
-      taskListProvider.project = await requestFirstItem();
-      if (taskListProvider.project != null) {
-        taskListProvider.projectID = taskListProvider.project!.ID;
-        await taskListProvider.requestTasks(context);
-      }
-    }
-
-    if (taskListProvider.projectID != null &&
-        taskListProvider.project == null) {
-      taskListProvider.project = await getProject(taskListProvider.projectID);
-      if (taskListProvider.project == null) {
-        taskListProvider.project = await requestFirstItem();
-        if (taskListProvider.project != null) {
-          taskListProvider.projectID = taskListProvider.project!.ID;
-          await taskListProvider.requestTasks(context);
-        }
-      }
-    }*/
-    return true;
   }
 
   Widget floatingActionButtonToSave(
@@ -149,11 +98,6 @@ class _TasksPageState extends State<TasksPage> {
     return TaskMessagesPage(
       task: currentTask,
     );
-    /*return Expanded(
-        flex: 6,
-        child: taskListProvider.currentTask != null
-            ? TaskMessagesPage(task: taskListProvider.currentTask!)
-            : const Center(child: Text("No any task was selected")));*/
   }
 
   Widget renderBody(TaskListProvider taskListProvider) {
@@ -168,31 +112,9 @@ class _TasksPageState extends State<TasksPage> {
               )),
           child: MultiSplitView(
             initialAreas: [Area(weight: 0.3)],
-            /*key: UniqueKey(),
-        separatorColor: Colors.blueGrey.shade100,
-        separatorSize: 2,
-        isHorizontalSeparator: false,
-        isDisabledSmartHide: false,
-        percentages: const [0.3, 0.7],*/
-            //crossAxisAlignment: CrossAxisAlignment.start,
-            //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //mainAxisAlignment: MainAxisAlignment.,
             children: [
               renderTasks(taskListProvider),
-              //Expanded(flex: 4, child: renderTasks(taskListProvider)),
-              /*const VerticalDivider(
-            indent: 0.1,
-            endIndent: 0.1,
-            color: Colors.grey,
-          ),*/
               renderMessages(taskListProvider),
-              //Expanded(flex: 6, child: const Text("data")),
-
-              //renderTasks(),
-              /*Expanded(
-              child: currentTask != null
-                  ? const Text("data") //TaskMessagesPage(task: currentTask!)
-                  : const Text("data"))*/
             ],
           ));
     } else {
@@ -246,13 +168,6 @@ class _TasksPageState extends State<TasksPage> {
         msgListProvider.clear(true);
         return;
       }
-
-      /*     if (tasks.length > 0) {
-        var lastItem = tasks[tasks.length - 1];
-        taskListProvider.lastID = lastItem["ID"];
-        taskListProvider.lastCreation_date =
-            DateTime.tryParse(lastItem["Creation_date"]);
-      }*/
       for (var item in tasks) {
         res.add(Task.fromJson(item));
       }
@@ -293,15 +208,6 @@ class TasksPageAppBar extends StatefulWidget with PreferredSizeWidget {
 
 class _TasksPageAppBarState extends State<TasksPageAppBar> {
   TextEditingController searchController = TextEditingController();
-  /*late taskListProvider._taskListProvider;
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    _taskListProvider =
-        Provider.of<taskListProvider.(this.context, listen: false);
-  }*/
-
   Widget getProjectField() {
     final taskListProvider =
         Provider.of<TaskListProvider>(context, listen: false);

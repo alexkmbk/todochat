@@ -124,7 +124,7 @@ Future<io.File> saveFile(List<int> data, String fullFileName) async {
 
 Future<String> saveInDownloads(Uint8List data, String fileName) async {
   return await FileSaver.instance
-      .saveFile(fileName, data, path.extension(fileName));
+      .saveFile(name: fileName, bytes: data, ext: path.extension(fileName));
 
   /*try {
     var downloadsDirectory = await DownloadsPathProvider.downloadsDirectory;
