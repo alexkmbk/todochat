@@ -279,7 +279,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var port = settings.getInt("port");
     tasklist.projectID = settings.getInt("projectID");
 
-    tasklist.showCompleted = settings.getBool("showCompleted") ?? true;
+    tasklist.showClosed = settings.getBool("showCompleted") ?? true;
 
     if (port == null || port == 0) {
       port = null;

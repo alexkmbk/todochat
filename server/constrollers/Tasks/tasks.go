@@ -73,7 +73,6 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Record Not Found", http.StatusNotFound)
 	} else {
-		print(task.Creation_date.GoString())
 		DB.Save(&task)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		io.WriteString(w, `{"updated": true}`)
@@ -132,9 +131,9 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	showCompleted, err := strconv.ParseBool(query.Get("showCompleted"))
+	showClosed, err := strconv.ParseBool(query.Get("showClosed"))
 	if err != nil {
-		showCompleted = true
+		showClosed = true
 	}
 
 	projectID, err := strconv.Atoi(query.Get("ProjectID"))
@@ -146,9 +145,9 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 
 	var tasks []*Task
 	if lastID == 0 {
-		DB.Order("Creation_date desc, ID desc").Where("project_ID = @projectID AND (NOT Completed OR @showCompleted)", sql.Named("projectID", projectID), sql.Named("showCompleted", showCompleted)).Limit(limit).Find(&tasks)
+		DB.Order("Creation_date desc, ID desc").Where("project_ID = @projectID AND (NOT Closed OR @showClosed)", sql.Named("projectID", projectID), sql.Named("showClosed", showClosed)).Limit(limit).Find(&tasks)
 	} else {
-		DB.Order("Creation_date desc, ID desc").Where("project_ID = @projectID AND (NOT Completed OR @showCompleted) AND ((Creation_date <= @Creation_date AND ID < @ID))", sql.Named("projectID", projectID), sql.Named("showCompleted", showCompleted), sql.Named("Creation_date", lastCreation_Date), sql.Named("ID", lastID)).Limit(limit).Find(&tasks)
+		DB.Order("Creation_date desc, ID desc").Where("project_ID = @projectID AND (NOT Closed OR @showClosed) AND ((Creation_date <= @Creation_date AND ID < @ID))", sql.Named("projectID", projectID), sql.Named("showClosed", showClosed), sql.Named("Creation_date", lastCreation_Date), sql.Named("ID", lastID)).Limit(limit).Find(&tasks)
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -192,9 +191,9 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 
 	query := r.URL.Query()
 	search := query.Get("search")
-	showCompleted, errShowCompleted := strconv.ParseBool(query.Get("showCompleted"))
-	if errShowCompleted != nil {
-		showCompleted = true
+	showClosed, errShowClosed := strconv.ParseBool(query.Get("showClosed"))
+	if errShowClosed != nil {
+		showClosed = true
 	}
 
 	projectID := ToInt64(query.Get("ProjectID"))
@@ -234,7 +233,7 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 	tasks.Last_Message_User_Name
 	FROM tasks_fts(@search)
 	inner join tasks as tasks on tasks.ID = tasks_fts.rowid
-	left join messages as messages on tasks.last_message_id = messages.ID where tasks.project_id = @projectID AND (NOT Completed OR @showCompleted) AND (messages.project_id = @projectID OR messages.project_id IS NULL)
+	left join messages as messages on tasks.last_message_id = messages.ID where tasks.project_id = @projectID AND (NOT Closed OR @showClosed) AND (messages.project_id = @projectID OR messages.project_id IS NULL)
 	UNION
 	SELECT ifnull(tasks.last_message_id, 0),
 	ifnull(tasks.last_message, 0),
@@ -246,7 +245,7 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 	tasks.author_name,
 	tasks.Last_Message_User_Name
 	FROM tasks 
-	left join messages as messages on tasks.last_message_id = messages.ID where tasks.id = @taskID AND tasks.project_id = @projectID AND (NOT Completed OR @showCompleted) AND (messages.project_id = @projectID OR messages.project_id IS NULL)`
+	left join messages as messages on tasks.last_message_id = messages.ID where tasks.id = @taskID AND tasks.project_id = @projectID AND (NOT Closed OR @showClosed) AND (messages.project_id = @projectID OR messages.project_id IS NULL)`
 
 	} else {
 		search = "%" + search + "%"
@@ -274,11 +273,11 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 		found_tasks.author_id,
 		found_tasks.author_name,
 		found_tasks.Last_Message_User_Name
-		FROM (SELECT * from tasks WHERE tasks.project_id = @projectID AND (NOT tasks.Completed OR @showCompleted) AND (tasks.Description Like @search OR tasks.ID = @taskID)) as found_tasks
+		FROM (SELECT * from tasks WHERE tasks.project_id = @projectID AND (NOT tasks.Closed OR @showClosed) AND (tasks.Description Like @search OR tasks.ID = @taskID)) as found_tasks
 		left join messages as messages on found_tasks.last_message_id = messages.ID where (messages.project_id = @projectID OR messages.project_id IS NULL)`
 	}
 
-	rows, err := DB.Raw(queryStr, sql.Named("search", search), sql.Named("showCompleted", showCompleted), sql.Named("projectID", projectID), sql.Named("taskID", strings.TrimLeft(search, "0"))).Order("created_at desc").Rows()
+	rows, err := DB.Raw(queryStr, sql.Named("search", search), sql.Named("showCompleted", showClosed), sql.Named("projectID", projectID), sql.Named("taskID", strings.TrimLeft(search, "0"))).Order("created_at desc").Rows()
 
 	defer func() {
 		if rows != nil {

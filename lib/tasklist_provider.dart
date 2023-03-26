@@ -122,7 +122,7 @@ class TaskListProvider extends ChangeNotifier {
   bool searchMode = false;
   bool taskEditMode = false;
   bool isNewItem = false;
-  bool showCompleted = true;
+  bool showClosed = true;
   List<String> searchHighlightedWords = [];
   String search = "";
   Task? currentTask;
@@ -406,13 +406,6 @@ class TaskListProvider extends ChangeNotifier {
     }
 
     loading = true;
-    // var s5 = formJsonToDate("2023-03-23T20:04:11.9882971Z");
-    // var s1 = formJsonToDate(lastCreation_date).toUtc().toIso8601String();
-    // var s2 = formJsonToDate(lastCreation_date).toIso8601String();
-    // if (lastCreation_date != null) {
-    //   var s3 = DateTime.tryParse(lastCreation_date!)!.toIso8601String();
-    //   var s4 = DateTime.tryParse(lastCreation_date!)!.toUtc().toIso8601String();
-    // }
 
     var url = setUriProperty(serverURI, path: 'tasks', queryParameters: {
       "ProjectID": projectID.toString(),
@@ -421,7 +414,7 @@ class TaskListProvider extends ChangeNotifier {
           ? null
           : formDateToJsonUtc(formJsonToDate(lastCreation_date)),
       "limit": "25",
-      "showCompleted": showCompleted.toString(),
+      "showClosed": showClosed.toString(),
     });
 
     Response response;

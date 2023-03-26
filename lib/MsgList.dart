@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:todochat/tasklist_provider.dart';
 
 import 'package:todochat/todochat.dart';
+import 'msglist_actions_menu.dart';
 import 'customWidgets.dart';
 import 'msglist_provider.dart';
 import 'msglist_tile.dart';
@@ -136,8 +137,8 @@ class MsgListState extends State<MsgList> {
               Row(
                 children: [
                   if (msglist.task != null)
-                    NewMessageActionsMenu(
-                      msgListProvider: msglist,
+                    ActionsMenu(
+                      msglist: msglist,
                     ),
                   Expanded(
                     child: CallbackShortcuts(

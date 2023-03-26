@@ -349,9 +349,6 @@ class TaskListTile extends StatelessWidget {
     task.closed = value;
     TaskListProvider.refresh();
 
-    //var res = await updateTask(Task.from(task)..closed = value);
-
-    //if (res) {
     final msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);
     final res = await msgListProvider.createMessage(
@@ -360,13 +357,8 @@ class TaskListTile extends StatelessWidget {
         messageAction: value
             ? MessageAction.CloseTaskAction
             : MessageAction.ReopenTaskAction);
-    //} else {
-    /*setState(() {
-        task.closed = !value;
-      });*/
-    //}
     if (res) {
-      if (!TaskListProvider.showCompleted) {
+      if (!TaskListProvider.showClosed) {
         if (task.closed) {
           TaskListProvider.deleteItem(task.ID, context);
         }

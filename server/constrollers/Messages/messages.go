@@ -140,6 +140,11 @@ func GetMessages__(w http.ResponseWriter, r *http.Request) {
 
 func GetMessages(w http.ResponseWriter, r *http.Request) {
 
+	userID := GetUserID(w, r)
+	if userID == 0 {
+		return
+	}
+
 	start := time.Now()
 	Log("Get Messages")
 
@@ -158,10 +163,7 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	taskID, err := strconv.Atoi(r.Header.Get("taskID"))
-	if err != nil {
-		return
-	}
+	taskID := ToInt64(r.Header.Get("taskID"))
 
 	var messages []*Message
 	//DB.Where("task_id = ?", taskID).Order("created_at desc").Offset(offset).Limit(limit).Find(&messages)
@@ -169,6 +171,21 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 		DB.Order("ID desc").Where("task_id = ?", taskID).Limit(limit).Find(&messages)
 	} else {
 		DB.Order("ID desc").Where("task_id = ? AND ID < ?", taskID, lastID).Limit(limit).Find(&messages)
+	}
+
+	if userID != 0 {
+		for i := range messages {
+			seenMessage := SeenMessage{UserID: userID, TaskID: taskID, MessageID: messages[i].ID}
+			if DB.Find(&seenMessage).RowsAffected == 0 {
+				DB.Create(&seenMessage)
+			}
+		}
+
+		seenTask := SeenTask{UserID: userID, TaskID: taskID}
+
+		if DB.Find(&seenTask).RowsAffected == 0 { // not found
+			DB.Create(&seenTask)
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -272,6 +289,20 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 	}
 	message.ProjectID = task.ProjectID
 	DB.Create(&message)
+
+	if userID != 0 {
+		seenMessage := SeenMessage{UserID: userID, TaskID: task.ID, MessageID: message.ID}
+		if DB.Find(&seenMessage).RowsAffected == 0 {
+			DB.Create(&seenMessage)
+		}
+
+		seenTask := SeenTask{UserID: userID, TaskID: task.ID}
+
+		if DB.Find(&seenTask).RowsAffected == 0 { // not found
+			DB.Create(&seenTask)
+		}
+	}
+
 	go WS.SendWSMessage(&message)
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
