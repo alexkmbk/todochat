@@ -272,10 +272,8 @@ class MsgListProvider extends ChangeNotifier {
     loading = false;
     if (data.length > 0) {
       lastID = data[data.length - 1]["ID"];
+      notifyListeners();
     }
-    //if (notify) {
-    notifyListeners();
-    // }
   }
 
   void addUploadingItem(Message message, Uint8List loadingFileData) {
@@ -378,7 +376,7 @@ class MsgListProvider extends ChangeNotifier {
 
   Future<bool> requestMessages(
       TaskListProvider taskListProvider, BuildContext context) async {
-    if (sessionID == "") {
+    if (sessionID == "" || loading) {
       return false;
     }
 
@@ -389,6 +387,7 @@ class MsgListProvider extends ChangeNotifier {
     loading = true;
 
     if (sessionID == "") {
+      loading = false;
       return false;
     }
 

@@ -401,7 +401,7 @@ class TaskListProvider extends ChangeNotifier {
       [bool forceRefresh = false]) async {
     List<Task> res = [];
 
-    if (sessionID == "" || loading || !context.mounted) {
+    if (sessionID == "" || loading || !context.mounted || searchMode) {
       return;
     }
 

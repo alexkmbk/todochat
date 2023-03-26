@@ -277,7 +277,6 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
                 getHighlightedWords(value);
             taskListProvider.clear();
             taskListProvider.refresh();
-
             await widget.tasksPageState.searchTasks(value, context);
             if (isDesktopMode) {
               msgListProvider.taskID = taskListProvider.currentTask?.ID ?? 0;

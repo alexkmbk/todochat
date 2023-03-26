@@ -39,6 +39,8 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 		Log("Add new TodoItem. Saving to database.")
 		task := &Task{Description: description,
 			Completed:     false,
+			Closed:        false,
+			Cancelled:     false,
 			Creation_date: time.Now(),
 			AuthorID:      userID,
 			ProjectID:     projectID}
@@ -55,9 +57,7 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 			DB.Create(&seenTask)
 		}
 
-		//DB.Last(&todo)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		//io.WriteString(w, `{result: true}`)
 		json.NewEncoder(w).Encode(task)
 
 		go WS.SendTask(task)
@@ -220,7 +220,7 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 	from
 	(SELECT max(rowid) as message_id, task_id FROM messages_fts(@search) where project_id = @projectID group by task_id) as found_messages
 	inner join messages on messages.ID = found_messages.message_id AND NOT messages.Is_Task_Description_Item
-	inner join tasks as tasks on tasks.ID = found_messages.task_id AND (NOT tasks.Completed OR @showCompleted) 
+	inner join tasks as tasks on tasks.ID = found_messages.task_id AND (NOT tasks.Closed OR @showClosed) 
 	UNION
 	SELECT ifnull(tasks.last_message_id, 0),
 	ifnull(tasks.last_message, 0),
@@ -262,7 +262,7 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 		from
 		(SELECT max(id) as message_id, task_id FROM messages where project_id = @projectID  AND messages.text like @search group by task_id) as found_messages
 		inner join messages on messages.ID = found_messages.message_id AND NOT messages.Is_Task_Description_Item
-		inner join tasks as tasks on tasks.ID = found_messages.task_id AND (NOT tasks.Completed OR @showCompleted)
+		inner join tasks as tasks on tasks.ID = found_messages.task_id AND (NOT tasks.Closed OR @showClosed)
 		UNION
 		SELECT coalesce(found_tasks.last_message_id, 0),
 		coalesce(found_tasks.last_message, ''),
@@ -277,7 +277,7 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 		left join messages as messages on found_tasks.last_message_id = messages.ID where (messages.project_id = @projectID OR messages.project_id IS NULL)`
 	}
 
-	rows, err := DB.Raw(queryStr, sql.Named("search", search), sql.Named("showCompleted", showClosed), sql.Named("projectID", projectID), sql.Named("taskID", strings.TrimLeft(search, "0"))).Order("created_at desc").Rows()
+	rows, err := DB.Raw(queryStr, sql.Named("search", search), sql.Named("showClosed", showClosed), sql.Named("projectID", projectID), sql.Named("taskID", strings.TrimLeft(search, "0"))).Order("created_at desc").Rows()
 
 	defer func() {
 		if rows != nil {
