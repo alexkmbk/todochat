@@ -97,3 +97,83 @@ class ActionsMenu extends StatelessWidget {
     );
   }
 }
+
+Widget getMessageActionDescription(Message message) {
+  switch (message.messageAction) {
+    case MessageAction.ReopenTaskAction:
+      return Text.rich(TextSpan(text: "The task was ", children: <InlineSpan>[
+        const WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: Label(
+            text: "Reopened",
+            backgroundColor: Colors.orange,
+          ),
+        ),
+        const WidgetSpan(child: Text(" by ")),
+        WidgetSpan(
+            child: Text(message.userName,
+                style: const TextStyle(color: Colors.blue))),
+      ]));
+
+    //'The task was reopen by ${message.userName}';
+    case MessageAction.CancelTaskAction:
+      return Text.rich(
+          TextSpan(text: "The task was marked as ", children: <InlineSpan>[
+        const WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: Label(
+            text: "Cancelled",
+            backgroundColor: Colors.grey,
+          ),
+        ),
+        const WidgetSpan(child: Text(" by ")),
+        WidgetSpan(
+            child: Text(message.userName,
+                style: const TextStyle(color: Colors.blue))),
+      ]));
+    case MessageAction.CompleteTaskAction:
+      return Text.rich(
+          TextSpan(text: "The task was marked as ", children: <InlineSpan>[
+        const WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Label(text: "Done", backgroundColor: Colors.green)),
+        const WidgetSpan(child: Text(" by ")),
+        WidgetSpan(
+            child: Text(message.userName,
+                style: const TextStyle(color: Colors.blue))),
+      ]));
+    case MessageAction.CloseTaskAction:
+      return Text.rich(TextSpan(text: "The task was ", children: <InlineSpan>[
+        const WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: Label(
+            text: "Closed",
+            backgroundColor: Colors.green,
+          ),
+        ),
+        const WidgetSpan(child: Text(" by ")),
+        WidgetSpan(
+            child: Text(message.userName,
+                style: const TextStyle(color: Colors.blue))),
+      ]));
+
+    case MessageAction.RemoveCompletedLabelAction:
+      return Text.rich(TextSpan(text: "The lable ", children: <InlineSpan>[
+        const WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: Label(
+            text: "Done",
+            backgroundColor: Colors.green,
+          ),
+        ),
+        const WidgetSpan(child: Text(" was removed by ")),
+        WidgetSpan(
+            child: Text(
+          message.userName,
+          style: const TextStyle(color: Colors.blue),
+        )),
+      ]));
+    default:
+      return const Text("");
+  }
+}

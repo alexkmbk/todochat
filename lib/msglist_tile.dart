@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:sn_progress_dialog/sn_progress_dialog.dart';
 //import 'package:text_selection_controls/text_selection_controls.dart';
+import 'msglist_actions_menu.dart';
 import 'text_selection_controls.dart';
 import 'package:todochat/tasklist_provider.dart';
 import 'package:todochat/todochat.dart';
@@ -91,86 +92,6 @@ class MsgListTile extends StatelessWidget {
     });
   }
 
-  Widget getMessageActionDescription(Message message) {
-    switch (message.messageAction) {
-      case MessageAction.ReopenTaskAction:
-        return Text.rich(TextSpan(text: "The task was ", children: <InlineSpan>[
-          const WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Label(
-              text: "Reopened",
-              backgroundColor: Colors.orange,
-            ),
-          ),
-          const WidgetSpan(child: Text(" by ")),
-          WidgetSpan(
-              child: Text(message.userName,
-                  style: const TextStyle(color: Colors.blue))),
-        ]));
-
-      //'The task was reopen by ${message.userName}';
-      case MessageAction.CancelTaskAction:
-        return Text.rich(
-            TextSpan(text: "The task was marked as ", children: <InlineSpan>[
-          const WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Label(
-              text: "Cancelled",
-              backgroundColor: Colors.grey,
-            ),
-          ),
-          const WidgetSpan(child: Text(" by ")),
-          WidgetSpan(
-              child: Text(message.userName,
-                  style: const TextStyle(color: Colors.blue))),
-        ]));
-      case MessageAction.CompleteTaskAction:
-        return Text.rich(
-            TextSpan(text: "The task was marked as ", children: <InlineSpan>[
-          const WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: Label(text: "Done", backgroundColor: Colors.green)),
-          const WidgetSpan(child: Text(" by ")),
-          WidgetSpan(
-              child: Text(message.userName,
-                  style: const TextStyle(color: Colors.blue))),
-        ]));
-      case MessageAction.CloseTaskAction:
-        return Text.rich(TextSpan(text: "The task was ", children: <InlineSpan>[
-          const WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Label(
-              text: "Closed",
-              backgroundColor: Colors.green,
-            ),
-          ),
-          const WidgetSpan(child: Text(" by ")),
-          WidgetSpan(
-              child: Text(message.userName,
-                  style: const TextStyle(color: Colors.blue))),
-        ]));
-
-      case MessageAction.RemoveCompletedLabelAction:
-        return Text.rich(TextSpan(text: "The lable ", children: <InlineSpan>[
-          const WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Label(
-              text: "Done",
-              backgroundColor: Colors.green,
-            ),
-          ),
-          const WidgetSpan(child: Text(" was removed by ")),
-          WidgetSpan(
-              child: Text(
-            message.userName,
-            style: const TextStyle(color: Colors.blue),
-          )),
-        ]));
-      default:
-        return const Text("");
-    }
-  }
-
   Color getBubbleColor() {
     if (message.isTaskDescriptionItem) {
       return msgListProvider.task!.completed
@@ -186,18 +107,21 @@ class MsgListTile extends StatelessWidget {
   Widget drawBubble(BuildContext context, BoxConstraints constraints,
       Uint8List? loadingFileData) {
     if (message.messageAction != MessageAction.CreateUpdateMessageAction) {
-      return DecoratedBox(
-        // chat bubble decoration
-        decoration: BoxDecoration(
-          border: message.isSelected
-              ? Border.all(color: Colors.blueAccent, width: 3)
-              : Border.all(color: const Color.fromARGB(255, 228, 232, 233)),
-          color: const Color.fromARGB(255, 228, 232, 233),
-          borderRadius: BorderRadius.circular(8),
+      return GestureDetectorWithMenu(
+        child: DecoratedBox(
+          // chat bubble decoration
+          decoration: BoxDecoration(
+            border: message.isSelected
+                ? Border.all(color: Colors.blueAccent, width: 3)
+                : Border.all(color: const Color.fromARGB(255, 228, 232, 233)),
+            color: const Color.fromARGB(255, 228, 232, 233),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: getMessageActionDescription(message)),
         ),
-        child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: getMessageActionDescription(message)),
+        onDelete: () => msgListProvider.deleteMesage(message.ID),
       );
       // Text bubble
     } else if (message.fileName.isEmpty) {
@@ -217,13 +141,6 @@ class MsgListTile extends StatelessWidget {
         isQuoteSelected.value =
             textWidgetSelection.start != textWidgetSelection.end;
       });
-      /*final TextBox? lastBox =
-          calcLastLineEnd(message.text, textSpan, context, constraints);
-      bool fitsLastLine = false;
-      if (lastBox != null) {
-        fitsLastLine =
-            constraints.maxWidth - lastBox.right > Timestamp.size.width + 10.0;
-      }*/
 
       return GestureDetectorWithMenu(
         onSecondaryTapDown: (details) {
@@ -341,28 +258,7 @@ class MsgListTile extends StatelessWidget {
                       ),
                     ]),
               if (message.isTaskDescriptionItem) const SizedBox(height: 5),
-              /*if (lastBox != null)
-                      SizedBox.fromSize(
-                          size: Size(
-                            Timestamp.size.width + lastBox.right,
-                            (fitsLastLine ? lastBox.top : lastBox.bottom) +
-                                Timestamp.size.height +
-                                5,
-                          ),
-                          child: Container()),*/
               textWidget,
-              /*Positioned(
-                      left: lastBox != null ? lastBox.right + 5 : 0,
-                      //constraints.maxWidth - (Timestamp.size.width + 10.0),
-                      top: lastBox != null
-                          ? (fitsLastLine ? lastBox.top : lastBox.bottom) + 5
-                          : 0.0,
-                      child: Timestamp(message.created_at ?? DateTime.now()),
-                    ),*/
-              /*Align(
-                      alignment: Alignment.bottomRight,
-                      child: Timestamp(message.created_at ?? DateTime.now()),
-                    )*/
             ]),
           ),
           //  ),
