@@ -195,7 +195,7 @@ class _TasksPageState extends State<TasksPage> {
   }
 }
 
-class TasksPageAppBar extends StatefulWidget with PreferredSizeWidget {
+class TasksPageAppBar extends StatefulWidget implements PreferredSizeWidget {
   final _TasksPageState tasksPageState;
 
   TasksPageAppBar({Key? key, required this.tasksPageState}) : super(key: key);

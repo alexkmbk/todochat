@@ -6,12 +6,14 @@ import 'package:sn_progress_dialog/sn_progress_dialog.dart';
 //import 'package:text_selection_controls/text_selection_controls.dart';
 import 'msglist_actions_menu.dart';
 import 'text_selection_controls.dart';
-import 'package:todochat/tasklist_provider.dart';
+//import 'package:todochat/tasklist_provider.dart';
 import 'package:todochat/todochat.dart';
 import 'package:todochat/utils.dart';
 
 import 'customWidgets.dart';
 import 'msglist_provider.dart';
+
+import 'package:easy_image_viewer/easy_image_viewer.dart';
 
 class MsgListTile extends StatelessWidget {
   MsgListTile(
@@ -427,21 +429,24 @@ class MsgListTile extends StatelessWidget {
           "${serverURI.scheme}://${serverURI.authority}/FileStorage/${message.localFileName}",
           headers: {"sessionID": sessionID});
       //if (res.isNotEmpty) {
-      await Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  ImageDialog(imageProvider: res, fileSize: message.fileSize)));
+      await showImageViewer(context, res);
+
+      // await Navigator.push(
+      //     context,
+      //     MaterialPageRoute(
+      //         builder: (context) =>
+      //             ImageDialog(imageProvider: res, fileSize: message.fileSize)));
       //}
     } else if (message.isImage && uploadingFiles.containsKey(message.tempID)) {
       // var res = await getFile(message.localFileName);
       var res = Image.memory(uploadingFiles[message.tempID]!.loadingFileData);
+      await showImageViewer(context, res.image);
       //if (res.isNotEmpty) {
-      await Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => ImageDialog(
-                  imageProvider: res.image, fileSize: message.fileSize)));
+      // await Navigator.push(
+      //     context,
+      //     MaterialPageRoute(
+      //         builder: (context) => ImageDialog(
+      //             imageProvider: res.image, fileSize: message.fileSize)));
       //}
     } else if (message.localFileName.isNotEmpty) {
       var res = await msgListProvider.getFile(message.localFileName,

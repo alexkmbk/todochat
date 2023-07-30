@@ -12,9 +12,7 @@ import 'todochat.dart';
 import 'LoginPage.dart';
 import 'customWidgets.dart';
 
-import 'tasklist.dart';
 //import 'TaskMessagesPage.dart';
-import 'msglist.dart';
 import 'package:provider/provider.dart';
 
 var connectWebSocketInProcess = false;

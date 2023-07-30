@@ -7,14 +7,11 @@ import 'ProjectsList.dart';
 import 'SettingsPage.dart';
 import 'customWidgets.dart';
 import 'msglist_provider.dart';
-import 'tasklist.dart';
 import 'TasksPage.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'msglist.dart';
 import 'todochat.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 Timer? timer;
 
@@ -53,7 +50,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var instance = WidgetsBinding.instance;
-    var mediaQueryData = MediaQueryData.fromWindow(instance.window);
+    var mediaQueryData = MediaQueryData.fromView(instance.window);
     var physicalPixelWidth = mediaQueryData.size.width;
     if (physicalPixelWidth > 1000) {
       isDesktopMode = true;

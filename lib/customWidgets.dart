@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:photo_view/photo_view.dart';
+//import 'package:photo_view/photo_view.dart';
 
 import 'utils.dart';
 
@@ -474,19 +474,19 @@ class ImageDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
         child: Stack(children: [
-      PhotoView(
-        initialScale: PhotoViewComputedScale.covered,
-        imageProvider: imageProvider,
-        loadingBuilder: (context, event) => Center(
-          child: SizedBox(
-            width: 20.0,
-            height: 20.0,
-            child: CircularProgressIndicator(
-              value: calsProgress(event),
-            ),
-          ),
-        ),
-      ),
+      // PhotoView(
+      //   initialScale: PhotoViewComputedScale.covered,
+      //   imageProvider: imageProvider,
+      //   loadingBuilder: (context, event) => Center(
+      //     child: SizedBox(
+      //       width: 20.0,
+      //       height: 20.0,
+      //       child: CircularProgressIndicator(
+      //         value: calsProgress(event),
+      //       ),
+      //     ),
+      //   ),
+      // ),
       Positioned(
           right: -2,
           top: -9,
