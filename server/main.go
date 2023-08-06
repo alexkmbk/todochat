@@ -28,7 +28,7 @@ func (p *program) Start(s service.Service) error {
 }
 
 func runMain() {
-	port_ := flag.String("port", "80", "port")
+	port_ := flag.String("port", "443", "port")
 	DBMS_ := flag.String("DBMS", "SQLite", "DBMS")
 	DBUserName_ := flag.String("DBUserName", "", "DBUserName")
 	DBPassword_ := flag.String("DBPassword", "", "DBPassword")
@@ -75,12 +75,12 @@ func runMain() {
 		port = val
 	}
 
-	err = http.ListenAndServe(":"+port, GetRoutesHandler())
+	//err = http.ListenAndServe(":"+port, GetRoutesHandler())
+	err = http.ListenAndServeTLS(":"+port, "./keys/localhost.crt", "./keys/localhost.key", GetRoutesHandler())
 	//}
 	if err != nil {
 		println(err.Error())
 	}
-	//http.ListenAndServeTLS(":8000", "./keys/localhost.crt", "./keys/localhost.key", GetRoutesHandler())
 
 }
 

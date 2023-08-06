@@ -53,7 +53,8 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 		DB.Create(&task)
 
 		seenTask := SeenTask{UserID: userID, TaskID: task.ID}
-		if DB.First(&seenTask).Error != nil {
+
+		if DB.Limit(1).Find(&seenTask).RowsAffected == 0 {
 			DB.Create(&seenTask)
 		}
 
