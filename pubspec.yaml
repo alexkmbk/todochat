@@ -72,6 +72,9 @@ dependencies:
   open_file_plus: ^3.4.0
   flutter_list_view: ^1.1.21
   easy_image_viewer: ^1.2.1
+  filter_list: ^1.0.2
+  dropdown_textfield: ^1.0.8
+  drop_down_search_field: ^0.1.0
   
 
 # dependency_overrides:

@@ -126,10 +126,25 @@ class TaskListProvider extends ChangeNotifier {
   List<String> searchHighlightedWords = [];
   String search = "";
   Task? currentTask;
+
   TextEditingController textEditingController = TextEditingController(text: "");
 
   void refresh() {
     notifyListeners();
+  }
+
+  void setCurrentTask(Task? currentTask, BuildContext context) {
+    if (this.currentTask != currentTask) {
+      this.currentTask = currentTask;
+
+      final msgListProvider =
+          Provider.of<MsgListProvider>(context, listen: false);
+      msgListProvider.clear();
+      msgListProvider.taskID = currentTask == null ? 0 : currentTask.ID;
+      msgListProvider.task = currentTask;
+      msgListProvider.requestMessages(this, context);
+      msgListProvider.refresh();
+    }
   }
 
   void clear() {
@@ -140,8 +155,10 @@ class TaskListProvider extends ChangeNotifier {
   }
 
   void setProjectID(int? value) {
-    projectID = value;
-    notifyListeners();
+    if (projectID != value) {
+      projectID = value;
+      notifyListeners();
+    }
   }
 
   void addEditorItem() {
@@ -249,23 +266,11 @@ class TaskListProvider extends ChangeNotifier {
         }
       }
 
-      final msgListProvider =
-          Provider.of<MsgListProvider>(context, listen: false);
-      msgListProvider.clear();
-
       if (index < items.length) {
-        currentTask = items[index];
-        msgListProvider.taskID = currentTask!.ID;
-        msgListProvider.task = currentTask;
-        final taskListProvider =
-            Provider.of<TaskListProvider>(context, listen: false);
-        msgListProvider.requestMessages(taskListProvider, context);
+        setCurrentTask(items[index], context);
       } else {
-        currentTask = null;
-        msgListProvider.taskID = 0;
-        msgListProvider.task = null;
+        setCurrentTask(null, context);
       }
-      msgListProvider.refresh();
       refresh();
     }
   }

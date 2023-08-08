@@ -282,16 +282,11 @@ class _ProjectsPageState extends State<ProjectsPage> {
     if (sessionID == "") {
       return false;
     }
-
-    Map<String, String> headers = <String, String>{};
-    headers["sessionID"] = sessionID;
-
     Response response;
 
     try {
-      response = await httpClient.delete(
-          setUriProperty(serverURI, path: 'deleteProject/$projectID'),
-          headers: headers);
+      response = await httpClient
+          .delete(setUriProperty(serverURI, path: 'deleteProject/$projectID'));
     } catch (e) {
       return false;
     }
@@ -318,9 +313,8 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
     Response response;
     try {
-      response = await httpClient.get(
-          setUriProperty(serverURI, path: 'projects'),
-          headers: {"sessionID": sessionID});
+      response =
+          await httpClient.get(setUriProperty(serverURI, path: 'projects'));
     } catch (e) {
       return;
     }
@@ -369,7 +363,7 @@ Future<Project?> requestFirstItem() async {
   Response response;
   try {
     response = await httpClient.get(setUriProperty(serverURI, path: 'projects'),
-        headers: {"sessionID": sessionID, "limit": "1"});
+        headers: {"limit": "1"});
   } catch (e) {
     return null;
   }

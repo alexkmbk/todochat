@@ -245,7 +245,6 @@ class MsgListProvider extends ChangeNotifier {
   }
 
   void addItems(dynamic data) {
-    bool notify = false;
     for (var item in data) {
       var message = Message.fromJson(item);
       if (message.taskID == taskID) {
@@ -258,7 +257,6 @@ class MsgListProvider extends ChangeNotifier {
         if (items.firstWhereOrNull((element) => element.ID == message.ID) ==
             null) {
           items.add(message);
-          notify = true;
         }
       }
     }
@@ -384,19 +382,17 @@ class MsgListProvider extends ChangeNotifier {
       return false;
     }
 
-    Map<String, String> headers = {
-      "sessionID": sessionID,
-      "taskID": taskID.toString(),
-      "lastID": lastID.toString(),
-      "limit": "30"
-    };
     Response response;
 
     bool doReconnect = false;
     try {
       response = await HTTPClient.httpClient.get(
           HTTPClient.setUriProperty(serverURI, path: "messages"),
-          headers: headers);
+          headers: {
+            "taskID": taskID.toString(),
+            "lastID": lastID.toString(),
+            "limit": "30"
+          });
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
@@ -404,9 +400,11 @@ class MsgListProvider extends ChangeNotifier {
         addItems(data);
       } else if (response.statusCode == 401) {
         doReconnect = true;
+        loading = false;
       }
     } catch (e) {
       doReconnect = true;
+      loading = false;
     }
 
     if (doReconnect) {

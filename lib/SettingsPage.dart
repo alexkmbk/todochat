@@ -59,21 +59,22 @@ class _SettingsPageState extends State<SettingsPage> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Spacer(),
+              Spacer(),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 getTextField(
-                  border: const UnderlineInputBorder(),
-                  width: 300,
-                  onFieldSubmitted: (value) {
-                    checkingConnection = true;
-                    setState(() {});
-                    checkConnectionAndUpdateState();
-                  },
-                  controller: serverAddressController,
-                  textAlign: TextAlign.center,
-                  hintText: 'Server address',
-                  validator: (value) => validateEmpty(value, 'Server address'),
-                ),
+                    border: const UnderlineInputBorder(),
+                    width: 300,
+                    onFieldSubmitted: (value) {
+                      checkingConnection = true;
+                      setState(() {});
+                      checkConnectionAndUpdateState();
+                    },
+                    controller: serverAddressController,
+                    textAlign: TextAlign.center,
+                    hintText: 'Server address',
+                    validator: (value) =>
+                        validateEmpty(value, 'Server address'),
+                    choiceList: settings.getStringList("addresses")),
                 getConnectionIcon(),
               ]),
               const Spacer(),
@@ -133,11 +134,22 @@ class _SettingsPageState extends State<SettingsPage> {
       toast("Couldn't connect to the server", context);
       return;
     }
+
+    if (serverURI.getFullPath().isNotEmpty) {
+      var addresses = settings.getStringList("addresses");
+      if (addresses == null) {
+        addresses = new List.empty(growable: true);
+      }
+      addresses.addUnique(serverURI.getFullPath());
+      settings.setStringList("addresses", addresses);
+    }
+
     if (serverURI.getFullPath() != serverURItemp.getFullPath()) {
       serverURI = serverURItemp;
       settings.setString("httpScheme", serverURI.scheme);
       settings.setString("host", serverURI.host);
       settings.setInt("port", serverURI.port);
+
       if (widget.restartAppOnChange) {
         RestartWidget.restartApp(context);
       }

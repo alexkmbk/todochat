@@ -25,15 +25,15 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
   void initState() {
     super.initState();
 
-    final msgListProvider =
-        Provider.of<MsgListProvider>(context, listen: false);
-    msgListProvider.taskID = widget.task.ID;
-    msgListProvider.task = widget.task;
-    msgListProvider.foundMessageID = widget.task.lastMessageID;
-    msgListProvider.scrollController = flutterListViewController;
-    final taskListProvider =
-        Provider.of<TaskListProvider>(context, listen: false);
-    msgListProvider.requestMessages(taskListProvider, context);
+    // final msgListProvider =
+    //     Provider.of<MsgListProvider>(context, listen: false);
+    // msgListProvider.taskID = widget.task.ID;
+    // msgListProvider.task = widget.task;
+    // msgListProvider.foundMessageID = widget.task.lastMessageID;
+    // msgListProvider.scrollController = flutterListViewController;
+    // final taskListProvider =
+    //     Provider.of<TaskListProvider>(context, listen: false);
+    // msgListProvider.requestMessages(taskListProvider, context);
   }
 
   @override

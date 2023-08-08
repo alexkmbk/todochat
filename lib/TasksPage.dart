@@ -127,8 +127,6 @@ class _TasksPageState extends State<TasksPage> {
   Future<void> searchTasks(String search, BuildContext context) async {
     final taskListProvider =
         Provider.of<TaskListProvider>(context, listen: false);
-    final msgListProvider =
-        Provider.of<MsgListProvider>(context, listen: false);
 
     if (search.isEmpty) {
       await taskListProvider.requestTasks(context);
@@ -164,9 +162,7 @@ class _TasksPageState extends State<TasksPage> {
 
       if (tasks == null) {
         taskListProvider.loading = false;
-        taskListProvider.currentTask = null;
-        taskListProvider.refresh();
-        msgListProvider.clear(true);
+        taskListProvider.setCurrentTask(null, context);
         return;
       }
       for (var item in tasks) {
@@ -175,12 +171,12 @@ class _TasksPageState extends State<TasksPage> {
       if (tasks.length > 0) {
         res[0].read = true;
         res[0].unreadMessages = 0;
-        taskListProvider.currentTask = Task.fromJson(tasks[0]);
+        taskListProvider.setCurrentTask(Task.fromJson(tasks[0]), context);
       } else {
-        taskListProvider.currentTask = null;
+        taskListProvider.setCurrentTask(null, context);
       }
     } else if (response.statusCode == 401) {
-      bool result = await Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const LoginPage()),
       );
@@ -258,8 +254,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
         fillColor: Colors.white,
         prefixIcon: const Icon(Icons.search),
         onCleared: () {
-          taskListProvider.currentTask = null;
-          msgListProvider.clear();
+          taskListProvider.setCurrentTask(null, context);
           taskListProvider.clear();
           setState(() {
             taskListProvider.searchMode = false;

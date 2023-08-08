@@ -205,3 +205,11 @@ String formDateToJsonUtc(DateTime? date) {
   }
   return utcDate.add(DateTime.now().timeZoneOffset).toIso8601String();
 }
+
+extension ListExtension<E> on List<E> {
+  void addUnique(E element) {
+    if (!contains(element)) {
+      add(element);
+    }
+  }
+}

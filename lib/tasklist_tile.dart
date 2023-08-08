@@ -320,9 +320,8 @@ class TaskListTile extends StatelessWidget {
 
       task.read = true;
       task.unreadMessages = 0;
-      taskListProvider.currentTask = task;
       msgListProvider.isOpen = true;
-      msgListProvider.requestMessages(taskListProvider, context);
+      taskListProvider.setCurrentTask(task, context);
       taskListProvider.refresh();
     } else {
       openTask(context, task, msgListProvider);

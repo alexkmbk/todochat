@@ -3,6 +3,10 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:todochat/todochat.dart';
+//import 'package:dropdown_textfield/dropdown_textfield.dart';
+import 'package:drop_down_search_field/drop_down_search_field.dart';
+
 //import 'package:photo_view/photo_view.dart';
 
 import 'utils.dart';
@@ -20,16 +24,18 @@ Widget getTextField({
   bool obscureText = false,
   Color? fillColor,
   Widget? prefixIcon,
-  Iterable<String>? autofillHints,
+  List<String>? autofillHints,
   FocusNode? focusNode,
   TextInputAction? textInputAction,
   InputBorder? border,
   TextAlign textAlign = TextAlign.left,
   double? width,
+  List<String>? choiceList,
 }) {
   final padding = Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: TextFormField(
+    padding: const EdgeInsets.all(8.0),
+    child: DropDownSearchFormField(
+      textFieldConfiguration: TextFieldConfiguration(
         focusNode: focusNode,
         autofillHints: autofillHints,
         textAlign: textAlign,
@@ -42,26 +48,74 @@ Widget getTextField({
           hintStyle: const TextStyle(color: Colors.grey),
           border: border ?? const OutlineInputBorder(),
           prefixIcon: prefixIcon,
-          suffixIcon: showClearButton
-              ? IconButton(
-                  focusNode: FocusNode(skipTraversal: true),
-                  onPressed: () {
-                    controller?.clear();
-                    if (onCleared != null) onCleared();
-                  },
-                  icon: const Icon(Icons.clear),
-                )
-              : null,
+          suffixIcon:
+              showClearButton || (choiceList != null && choiceList.isNotEmpty)
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                          // if (choiceList != null && choiceList.isNotEmpty)
+                          //   PopupMenuButton<String>(
+                          //       padding: EdgeInsets.zero,
+                          //       constraints: BoxConstraints(),
+                          //       onSelected: (String value) {},
+                          //       icon: Icon(Icons.arrow_drop_down),
+                          //       itemBuilder: (BuildContext bc) {
+                          //         var addresses =
+                          //             settings.getStringList("addresses");
+                          //         if (addresses != null && addresses.isNotEmpty) {
+                          //           return addresses
+                          //               .map((String item) => PopupMenuItem<String>(
+                          //                     value: item,
+                          //                     child: Text(item),
+                          //                   ))
+                          //               .toList();
+                          //         } else
+                          //           return new List.empty();
+                          //       }),
+                          IconButton(
+                            focusNode: FocusNode(skipTraversal: true),
+                            onPressed: () {
+                              controller?.clear();
+                              if (onCleared != null) onCleared();
+                            },
+                            icon: const Icon(Icons.clear),
+                          )
+                        ])
+                  : null,
         ),
-        validator: validator,
         controller: controller,
         onChanged: onChanged,
-        onFieldSubmitted: onFieldSubmitted,
-        keyboardType: keyboardType,
+        onSubmitted: onFieldSubmitted,
+        keyboardType: keyboardType == null ? TextInputType.text : keyboardType,
         obscureText: obscureText,
         autofocus: true,
         textInputAction: textInputAction ?? TextInputAction.next,
-      ));
+      ),
+      hideOnEmpty: true,
+      suggestionsCallback: (pattern) {
+        if (choiceList == null || pattern.isEmpty)
+          return List.empty();
+        else {
+          return choiceList
+              .where(
+                  (element) => element.contains(pattern) && element != pattern)
+              .toList();
+        }
+      },
+      itemBuilder: (context, itemData) {
+        return ListTile(
+          title: Text(itemData.toString()),
+        );
+      },
+      onSuggestionSelected: (suggestion) {
+        if (controller != null) controller.text = suggestion.toString();
+        if (onChanged != null) onChanged(suggestion.toString());
+        if (onFieldSubmitted != null) onFieldSubmitted(suggestion.toString());
+      },
+      validator: validator,
+    ),
+  );
 
   if (width == null) {
     return padding;
