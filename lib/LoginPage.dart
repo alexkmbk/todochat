@@ -138,7 +138,7 @@ class _LoginPageState extends State<LoginPage> {
                 const Spacer(),
                 SizedBox(
                     width: 300,
-                    child: getTextField(
+                    child: TextFieldEx(
                       autofillHints: [AutofillHints.username],
                       controller: userNameController,
                       border: const UnderlineInputBorder(),
@@ -153,7 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 SizedBox(
                     width: 300,
-                    child: getTextField(
+                    child: TextFieldEx(
                         autofillHints: [AutofillHints.password],
                         controller: passwordController,
                         border: const UnderlineInputBorder(),
@@ -239,7 +239,7 @@ class _LoginPageState extends State<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Spacer(),
-            getTextField(
+            TextFieldEx(
               controller: userNameController,
               hintText: 'User name',
               border: const UnderlineInputBorder(),
@@ -252,7 +252,7 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(
               height: 20,
             ),
-            getTextField(
+            TextFieldEx(
               controller: emailController,
               hintText: 'Email',
               border: const UnderlineInputBorder(),
@@ -266,7 +266,7 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(
               height: 20,
             ),
-            getTextField(
+            TextFieldEx(
               controller: passwordController,
               hintText: 'Password',
               border: const UnderlineInputBorder(),

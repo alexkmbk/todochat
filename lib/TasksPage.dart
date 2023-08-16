@@ -1,3 +1,5 @@
+//import 'dart:html';
+
 import 'package:flutter/material.dart';
 //import 'package:flutter/services.dart';
 import 'package:http/http.dart';
@@ -54,7 +56,7 @@ class _TasksPageState extends State<TasksPage> {
         Expanded(
             child: Scaffold(
                 appBar: TasksPageAppBar(tasksPageState: this),
-                body: renderBody(provider),
+                body: Body(taskListProvider: provider),
                 floatingActionButton: !isDesktopMode
                     ? provider.taskEditMode
                         ? floatingActionButtonToSave(provider, context)
@@ -72,56 +74,6 @@ class _TasksPageState extends State<TasksPage> {
                     : null))
       ]);
     });
-  }
-
-  Widget renderTasks(TaskListProvider taskListProvider) {
-    return TaskList(taskListProvider: taskListProvider);
-  }
-
-  Widget renderMessages(TaskListProvider taskListProvider) {
-    final msgListProvider =
-        Provider.of<MsgListProvider>(context, listen: false);
-
-    if (taskListProvider.currentTask != null) {
-      msgListProvider.taskID = taskListProvider.currentTask!.ID;
-      msgListProvider.task = taskListProvider.currentTask;
-      if (taskListProvider.searchMode) {
-        msgListProvider.foundMessageID =
-            taskListProvider.currentTask!.lastMessageID;
-      } else {
-        msgListProvider.foundMessageID = 0;
-      }
-    }
-
-    var currentTask = taskListProvider.currentTask;
-    currentTask ??= Task(ID: 0);
-    return TaskMessagesPage(
-      task: currentTask,
-    );
-  }
-
-  Widget renderBody(TaskListProvider taskListProvider) {
-    if (isDesktopMode) {
-      return MultiSplitViewTheme(
-          data: MultiSplitViewThemeData(
-              dividerThickness: 2,
-              dividerPainter: DividerPainters.background(
-                animationEnabled: false,
-                highlightedColor: Colors.blue,
-                color: Colors.blueGrey.shade100,
-              )),
-          child: MultiSplitView(
-            initialAreas: [Area(weight: 0.3)],
-            children: [
-              renderTasks(taskListProvider),
-              renderMessages(taskListProvider),
-            ],
-          ));
-    } else {
-      return Center(
-        child: renderTasks(taskListProvider),
-      );
-    }
   }
 
   Future<void> searchTasks(String search, BuildContext context) async {
@@ -191,6 +143,59 @@ class _TasksPageState extends State<TasksPage> {
   }
 }
 
+//final msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
+
+// if (taskListProvider.currentTask != null) {
+//   msgListProvider.taskID = taskListProvider.currentTask!.ID;
+//   msgListProvider.task = taskListProvider.currentTask;
+//   if (taskListProvider.searchMode) {
+//     msgListProvider.foundMessageID =
+//         taskListProvider.currentTask!.lastMessageID;
+//   } else {
+//     msgListProvider.foundMessageID = 0;
+//   }
+// }
+
+// var currentTask = taskListProvider.currentTask;
+// currentTask ??= Task(ID: 0);
+// return TaskMessagesPage(
+//   task: currentTask,
+// );
+
+class Body extends StatelessWidget {
+  final TaskListProvider taskListProvider;
+  const Body({required this.taskListProvider, Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (isDesktopMode) {
+      return MultiSplitViewTheme(
+          data: MultiSplitViewThemeData(
+              dividerThickness: 2,
+              dividerPainter: DividerPainters.background(
+                animationEnabled: false,
+                highlightedColor: Colors.blue,
+                color: Colors.blueGrey.shade100,
+              )),
+          child: MultiSplitView(
+            initialAreas: [Area(weight: 0.3)],
+            children: [
+              TaskList(taskListProvider: taskListProvider),
+              TaskMessagesPage(
+                task: taskListProvider.currentTask == null
+                    ? Task(ID: 0)
+                    : taskListProvider.currentTask as Task,
+              ),
+            ],
+          ));
+    } else {
+      return Center(
+        child: TaskList(taskListProvider: taskListProvider),
+      );
+    }
+  }
+}
+
 class TasksPageAppBar extends StatefulWidget implements PreferredSizeWidget {
   final _TasksPageState tasksPageState;
 
@@ -246,7 +251,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
         Provider.of<TaskListProvider>(context, listen: false);
     final msgListProvider =
         Provider.of<MsgListProvider>(context, listen: false);
-    return getTextField(
+    return TextFieldEx(
         focusNode: searchFocusNode,
         textInputAction: TextInputAction.done,
         controller: searchController,

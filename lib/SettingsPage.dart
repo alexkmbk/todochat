@@ -61,7 +61,7 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               Spacer(),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                getTextField(
+                TextFieldEx(
                     border: const UnderlineInputBorder(),
                     width: 300,
                     onFieldSubmitted: (value) {

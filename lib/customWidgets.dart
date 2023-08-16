@@ -1,9 +1,11 @@
+//import 'dart:core';
+
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:todochat/todochat.dart';
+//import 'package:todochat/todochat.dart';
 //import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
 
@@ -11,119 +13,146 @@ import 'package:drop_down_search_field/drop_down_search_field.dart';
 
 import 'utils.dart';
 
-Widget getTextField({
-  TextEditingController? controller,
-  String? hintText,
-  String? labelText,
-  FormFieldValidator<String>? validator,
-  ValueChanged<String>? onFieldSubmitted,
-  ValueChanged<String>? onChanged,
-  final VoidCallback? onCleared,
-  bool showClearButton = true,
-  TextInputType? keyboardType,
-  bool obscureText = false,
-  Color? fillColor,
-  Widget? prefixIcon,
-  List<String>? autofillHints,
-  FocusNode? focusNode,
-  TextInputAction? textInputAction,
-  InputBorder? border,
-  TextAlign textAlign = TextAlign.left,
-  double? width,
-  List<String>? choiceList,
-}) {
-  final padding = Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: DropDownSearchFormField(
-      textFieldConfiguration: TextFieldConfiguration(
-        focusNode: focusNode,
-        autofillHints: autofillHints,
-        textAlign: textAlign,
-        decoration: InputDecoration(
-          isDense: true,
-          filled: fillColor == null ? false : true,
-          fillColor: fillColor,
-          labelText: labelText,
-          hintText: hintText,
-          hintStyle: const TextStyle(color: Colors.grey),
-          border: border ?? const OutlineInputBorder(),
-          prefixIcon: prefixIcon,
-          suffixIcon:
-              showClearButton || (choiceList != null && choiceList.isNotEmpty)
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                          // if (choiceList != null && choiceList.isNotEmpty)
-                          //   PopupMenuButton<String>(
-                          //       padding: EdgeInsets.zero,
-                          //       constraints: BoxConstraints(),
-                          //       onSelected: (String value) {},
-                          //       icon: Icon(Icons.arrow_drop_down),
-                          //       itemBuilder: (BuildContext bc) {
-                          //         var addresses =
-                          //             settings.getStringList("addresses");
-                          //         if (addresses != null && addresses.isNotEmpty) {
-                          //           return addresses
-                          //               .map((String item) => PopupMenuItem<String>(
-                          //                     value: item,
-                          //                     child: Text(item),
-                          //                   ))
-                          //               .toList();
-                          //         } else
-                          //           return new List.empty();
-                          //       }),
-                          IconButton(
-                            focusNode: FocusNode(skipTraversal: true),
-                            onPressed: () {
-                              controller?.clear();
-                              if (onCleared != null) onCleared();
-                            },
-                            icon: const Icon(Icons.clear),
-                          )
-                        ])
-                  : null,
-        ),
-        controller: controller,
-        onChanged: onChanged,
-        onSubmitted: onFieldSubmitted,
-        keyboardType: keyboardType == null ? TextInputType.text : keyboardType,
-        obscureText: obscureText,
-        autofocus: true,
-        textInputAction: textInputAction ?? TextInputAction.next,
-      ),
-      hideOnEmpty: true,
-      suggestionsCallback: (pattern) {
-        if (choiceList == null || pattern.isEmpty)
-          return List.empty();
-        else {
-          return choiceList
-              .where(
-                  (element) => element.contains(pattern) && element != pattern)
-              .toList();
-        }
-      },
-      itemBuilder: (context, itemData) {
-        return ListTile(
-          title: Text(itemData.toString()),
-        );
-      },
-      onSuggestionSelected: (suggestion) {
-        if (controller != null) controller.text = suggestion.toString();
-        if (onChanged != null) onChanged(suggestion.toString());
-        if (onFieldSubmitted != null) onFieldSubmitted(suggestion.toString());
-      },
-      validator: validator,
-    ),
-  );
+class TextFieldEx extends StatelessWidget {
+  final TextEditingController? controller;
+  final String? hintText;
+  final String? labelText;
+  final FormFieldValidator<String>? validator;
+  final ValueChanged<String>? onFieldSubmitted;
+  final ValueChanged<String>? onChanged;
+  final VoidCallback? onCleared;
+  final bool showClearButton;
+  final TextInputType keyboardType;
+  final bool obscureText;
+  final Color? fillColor;
+  final Widget? prefixIcon;
+  final List<String>? autofillHints;
+  final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
+  final InputBorder? border;
+  final TextAlign textAlign;
+  final double? width;
+  final List<String>? choiceList;
 
-  if (width == null) {
-    return padding;
+  const TextFieldEx(
+      {this.controller,
+      this.hintText,
+      this.labelText,
+      this.autofillHints,
+      this.border,
+      this.choiceList,
+      this.fillColor,
+      this.focusNode,
+      this.keyboardType = TextInputType.text,
+      this.obscureText = false,
+      this.onChanged,
+      this.onCleared,
+      this.onFieldSubmitted,
+      this.prefixIcon,
+      this.showClearButton = true,
+      this.textAlign = TextAlign.left,
+      this.textInputAction,
+      this.validator,
+      this.width,
+      Key? key})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final padding = Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: DropDownSearchFormField(
+        textFieldConfiguration: TextFieldConfiguration(
+          focusNode: focusNode,
+          autofillHints: autofillHints,
+          textAlign: textAlign,
+          decoration: InputDecoration(
+            isDense: true,
+            filled: fillColor == null ? false : true,
+            fillColor: fillColor,
+            labelText: labelText,
+            hintText: hintText,
+            hintStyle: const TextStyle(color: Colors.grey),
+            border: border ?? const OutlineInputBorder(),
+            prefixIcon: prefixIcon,
+            suffixIcon: showClearButton ||
+                    (choiceList != null && choiceList!.isNotEmpty)
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                        // if (choiceList != null && choiceList.isNotEmpty)
+                        //   PopupMenuButton<String>(
+                        //       padding: EdgeInsets.zero,
+                        //       constraints: BoxConstraints(),
+                        //       onSelected: (String value) {},
+                        //       icon: Icon(Icons.arrow_drop_down),
+                        //       itemBuilder: (BuildContext bc) {
+                        //         var addresses =
+                        //             settings.getStringList("addresses");
+                        //         if (addresses != null && addresses.isNotEmpty) {
+                        //           return addresses
+                        //               .map((String item) => PopupMenuItem<String>(
+                        //                     value: item,
+                        //                     child: Text(item),
+                        //                   ))
+                        //               .toList();
+                        //         } else
+                        //           return new List.empty();
+                        //       }),
+                        IconButton(
+                          focusNode: FocusNode(skipTraversal: true),
+                          onPressed: () {
+                            controller?.clear();
+                            if (onCleared != null) onCleared!();
+                          },
+                          icon: const Icon(Icons.clear),
+                        )
+                      ])
+                : null,
+          ),
+          controller: controller,
+          onChanged: onChanged,
+          onSubmitted: onFieldSubmitted,
+          keyboardType: keyboardType,
+          obscureText: obscureText,
+          autofocus: true,
+          textInputAction: textInputAction ?? TextInputAction.next,
+        ),
+        hideOnEmpty: true,
+        suggestionsCallback: (pattern) {
+          if (choiceList == null || pattern.isEmpty)
+            return List.empty();
+          else {
+            return choiceList!
+                .where((element) =>
+                    element.contains(pattern) && element != pattern)
+                .toList();
+          }
+        },
+        itemBuilder: (context, itemData) {
+          return ListTile(
+            title: Text(itemData.toString()),
+          );
+        },
+        onSuggestionSelected: (suggestion) {
+          if (controller != null) controller!.text = suggestion.toString();
+          if (onChanged != null) onChanged!(suggestion.toString());
+          if (onFieldSubmitted != null)
+            onFieldSubmitted!(suggestion.toString());
+        },
+        validator: validator,
+      ),
+    );
+
+    if (width == null) {
+      return padding;
+    }
+    return SizedBox(
+      width: width,
+      child: padding,
+    );
   }
-  return SizedBox(
-    width: width,
-    child: padding,
-  );
 }
 
 Future<bool?> confirmDismissDlg(BuildContext context) {
