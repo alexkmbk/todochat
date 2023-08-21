@@ -1,22 +1,13 @@
-//import 'dart:html';
-
 import 'package:flutter/material.dart';
-//import 'package:flutter/services.dart';
-import 'package:http/http.dart';
+import 'package:todochat/searchField.dart';
 import 'package:todochat/tasklist_provider.dart';
-import 'HttpClient.dart';
-import 'customWidgets.dart';
-import 'msglist_provider.dart';
 import 'tasklist.dart';
 import 'package:provider/provider.dart';
 import 'main_menu.dart';
 import 'TaskMessagesPage.dart';
-import 'LoginPage.dart';
 import 'ProjectsList.dart';
 
 import 'todochat.dart';
-import 'dart:convert';
-import 'highlight_text.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
 class TasksPage extends StatefulWidget {
@@ -75,74 +66,7 @@ class _TasksPageState extends State<TasksPage> {
       ]);
     });
   }
-
-  Future<void> searchTasks(String search, BuildContext context) async {
-    final taskListProvider =
-        Provider.of<TaskListProvider>(context, listen: false);
-
-    if (search.isEmpty) {
-      await taskListProvider.requestTasks(context);
-      return;
-    }
-    taskListProvider.clear();
-    List<Task> res = [];
-
-    if (sessionID == "") {
-      return;
-    }
-
-    taskListProvider.loading = true;
-
-    var url = setUriProperty(serverURI, path: 'searchTasks', queryParameters: {
-      "ProjectID": taskListProvider.projectID.toString(),
-      "search": search,
-      "showClosed": taskListProvider.showClosed.toString(),
-    });
-
-    Response response;
-    try {
-      response = await httpClient.get(url);
-    } catch (e) {
-      taskListProvider.refresh();
-      return;
-    }
-
-    if (response.statusCode == 200 && response.body != "") {
-      var data = jsonDecode(response.body);
-
-      var tasks = data["tasks"];
-
-      if (tasks == null) {
-        taskListProvider.loading = false;
-        taskListProvider.setCurrentTask(null, context);
-        return;
-      }
-      for (var item in tasks) {
-        res.add(Task.fromJson(item));
-      }
-      if (tasks.length > 0) {
-        res[0].read = true;
-        res[0].unreadMessages = 0;
-        taskListProvider.setCurrentTask(Task.fromJson(tasks[0]), context);
-      } else {
-        taskListProvider.setCurrentTask(null, context);
-      }
-    } else if (response.statusCode == 401) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-      );
-    }
-
-    taskListProvider.loading = false;
-
-    if (res.isNotEmpty) {
-      taskListProvider.items = [...taskListProvider.items, ...res];
-    }
-    taskListProvider.refresh();
-  }
 }
-
 //final msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
 
 // if (taskListProvider.currentTask != null) {
@@ -224,7 +148,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
             if (res != null && taskListProvider.project != res) {
               taskListProvider.project = res;
               taskListProvider.projectID = res.ID;
-              taskListProvider.clear();
+              taskListProvider.clear(context);
               await taskListProvider.requestTasks(context, true);
               //taskListProvider.setProjectID(res.ID);
               await settings.setInt("projectID", res.ID);
@@ -246,54 +170,15 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
         ));
   }
 
-  Widget getSearchField() {
-    final taskListProvider =
-        Provider.of<TaskListProvider>(context, listen: false);
-    final msgListProvider =
-        Provider.of<MsgListProvider>(context, listen: false);
-    return TextFieldEx(
-        focusNode: searchFocusNode,
-        textInputAction: TextInputAction.done,
-        controller: searchController,
-        hintText: "Search",
-        fillColor: Colors.white,
-        prefixIcon: const Icon(Icons.search),
-        onCleared: () {
-          taskListProvider.setCurrentTask(null, context);
-          taskListProvider.clear();
-          setState(() {
-            taskListProvider.searchMode = false;
-            widget.tasksPageState.showSearch = isDesktopMode;
-          });
-          taskListProvider.refresh();
-          taskListProvider.requestTasks(context);
-        },
-        onFieldSubmitted: (value) async {
-          taskListProvider.search = value;
-          if (value.isNotEmpty) {
-            msgListProvider.clear();
-            taskListProvider.searchMode = true;
-            taskListProvider.searchHighlightedWords =
-                getHighlightedWords(value);
-            taskListProvider.clear();
-            taskListProvider.refresh();
-            await widget.tasksPageState.searchTasks(value, context);
-            if (isDesktopMode) {
-              msgListProvider.taskID = taskListProvider.currentTask?.ID ?? 0;
-              msgListProvider.task = taskListProvider.currentTask;
-              msgListProvider.requestMessages(taskListProvider, context);
-            }
-          } else {
-            taskListProvider.searchMode = false;
-          }
-          //FocusScope.of(context).requestFocus();
-        });
-  }
-
   Widget getAppBarTitle() {
     if (isDesktopMode) {
       return Row(children: [
-        Flexible(fit: FlexFit.tight, flex: 4, child: getSearchField()),
+        Flexible(
+            fit: FlexFit.tight,
+            flex: 4,
+            child: SearchField(
+              searchController: searchController,
+            )),
         const Text(
           "Project: ",
           style: TextStyle(fontSize: 15, color: Colors.black),
@@ -304,7 +189,9 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
             child: getProjectField())
       ]);
     } else if (widget.tasksPageState.showSearch) {
-      return getSearchField();
+      return SearchField(
+        searchController: searchController,
+      );
     } else {
       return getProjectField();
     }
@@ -315,6 +202,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
     final taskListProvider =
         Provider.of<TaskListProvider>(context, listen: false);
     return AppBar(
+      //toolbarHeight: 10, //MediaQuery.of(context).size.height * .1,
       backgroundColor: const Color.fromARGB(240, 255, 255, 255),
       //title: Text("ToDo Chat"),
       title: getAppBarTitle(),
@@ -341,10 +229,9 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
             onTap: () async {
               taskListProvider.showClosed = !taskListProvider.showClosed;
               settings.setBool("showClosed", taskListProvider.showClosed);
-              taskListProvider.clear();
+              taskListProvider.clear(context);
               if (taskListProvider.search.isNotEmpty) {
-                widget.tasksPageState
-                    .searchTasks(taskListProvider.search, context);
+                taskListProvider.searchTasks(taskListProvider.search, context);
               } else {
                 taskListProvider.requestTasks(context, true);
               }

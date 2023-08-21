@@ -306,29 +306,19 @@ class TaskListTile extends StatelessWidget {
 
   Future<void> onTap(Task task, TaskListProvider taskListProvider,
       BuildContext context) async {
-    final msgListProvider =
-        Provider.of<MsgListProvider>(context, listen: false);
+    // msgListProvider.clear(true);
+    // msgListProvider.taskID = task.ID;
+    // msgListProvider.task = task;
 
-    msgListProvider.clear(true);
-    msgListProvider.taskID = task.ID;
-    msgListProvider.task = task;
+    task.read = true;
+    task.unreadMessages = 0;
 
     if (isDesktopMode) {
-      if (sessionID == "") {
-        return;
-      }
-
-      task.read = true;
-      task.unreadMessages = 0;
-      msgListProvider.isOpen = true;
       taskListProvider.setCurrentTask(task, context);
-      taskListProvider.refresh();
     } else {
-      openTask(context, task, msgListProvider);
-      task.read = true;
-      task.unreadMessages = 0;
-      taskListProvider.refresh();
+      openTask(context, task);
     }
+    taskListProvider.refresh();
   }
 
   void onLongPress(Task task, TaskListProvider taskListProvider) {

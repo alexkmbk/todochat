@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:flutter_list_view/flutter_list_view.dart';
+import 'package:provider/provider.dart';
 
 import 'HttpClient.dart';
 import 'TaskMessagesPage.dart';
@@ -28,6 +29,7 @@ class TaskListState extends State<TaskList> {
       FlutterListViewController();
   @override
   void initState() {
+    widget.taskListProvider.requestTasks(context);
     flutterListViewController.sliverController.onPaintItemPositionsCallback =
         (height, positions) {
       // height is widget's height
@@ -81,8 +83,9 @@ Future<bool> updateTask(Task task) async {
   return false;
 }
 
-void openTask(
-    BuildContext context, Task task, MsgListProvider msgListProvider) async {
+void openTask(BuildContext context, Task task) async {
+  final msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
+
   msgListProvider.isOpen = true;
   await Navigator.push(
     context,
@@ -90,8 +93,7 @@ void openTask(
   );
   if (!isDesktopMode) {
     msgListProvider.clear();
-    msgListProvider.task = null;
-    msgListProvider.taskID = 0;
+    msgListProvider.task = Task();
     msgListProvider.isOpen = false;
   }
 }

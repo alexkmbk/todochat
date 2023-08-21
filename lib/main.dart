@@ -49,6 +49,8 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    // final w = View.of(context).physicalGeometry.width *
+    //     View.of(context).devicePixelRatio;
     var instance = WidgetsBinding.instance;
     var mediaQueryData = MediaQueryData.fromView(instance.window);
     var physicalPixelWidth = mediaQueryData.size.width;
@@ -316,10 +318,10 @@ class _MyHomePageState extends State<MyHomePage> {
         tasklist.project = await getProject(tasklist.projectID);
         tasklist.project ??= await requestFirstItem();
       }
-      if (tasklist.project != null) {
-        tasklist.projectID = tasklist.project!.ID;
-        await tasklist.requestTasks(context);
-      }
+      // if (tasklist.project != null) {
+      //   tasklist.projectID = tasklist.project!.ID;
+      //   await tasklist.requestTasks(context);
+      // }
 
       connectWebSocketChannel(serverURI).then((value) {
         listenWs(tasklist, context);

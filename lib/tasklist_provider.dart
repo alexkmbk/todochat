@@ -10,6 +10,7 @@ import 'HttpClient.dart';
 import 'LoginPage.dart';
 import 'ProjectsList.dart';
 import 'package:collection/collection.dart';
+import 'highlight_text.dart';
 import 'todochat.dart';
 import 'msglist_provider.dart';
 
@@ -137,21 +138,30 @@ class TaskListProvider extends ChangeNotifier {
     if (this.currentTask != currentTask) {
       this.currentTask = currentTask;
 
-      final msgListProvider =
-          Provider.of<MsgListProvider>(context, listen: false);
-      msgListProvider.clear();
-      msgListProvider.taskID = currentTask == null ? 0 : currentTask.ID;
-      msgListProvider.task = currentTask;
-      msgListProvider.requestMessages(this, context);
-      msgListProvider.refresh();
+      if (context.mounted) {
+        final msgListProvider =
+            Provider.of<MsgListProvider>(context, listen: false);
+        msgListProvider.clear();
+        msgListProvider.task = currentTask ?? Task();
+        if (isDesktopMode) {
+          msgListProvider.requestMessages(this, context);
+        }
+        //msgListProvider.refresh();
+      }
     }
   }
 
-  void clear() {
+  void clear(BuildContext context) {
     items.clear();
     lastID = 0;
     lastCreation_date = null;
     taskEditMode = false;
+    currentTask = null;
+    if (isDesktopMode) {
+      final msgListProvider =
+          Provider.of<MsgListProvider>(context, listen: false);
+      msgListProvider.clear();
+    }
   }
 
   void setProjectID(int? value) {
@@ -258,7 +268,7 @@ class TaskListProvider extends ChangeNotifier {
       items.removeAt(index);
 
       if (items.isEmpty) {
-        clear();
+        clear(context);
         refresh();
       } else {
         if (index >= items.length) {
@@ -327,7 +337,6 @@ class TaskListProvider extends ChangeNotifier {
       currentTask = task;
       addItem(task);
       msgListProvider.task = task;
-      msgListProvider.taskID = task.ID;
       msgListProvider.createMessage(
           text: "", task: task, isTaskDescriptionItem: true);
 
@@ -351,7 +360,7 @@ class TaskListProvider extends ChangeNotifier {
       msgListProvider.clear(true);
     } else {
       msgListProvider.clear(false);
-      openTask(context, task, msgListProvider);
+      openTask(context, task);
     }
 
     return true;
@@ -438,8 +447,8 @@ class TaskListProvider extends ChangeNotifier {
 
       if (tasks == null) return;
 
-      final msgListProvider =
-          Provider.of<MsgListProvider>(context, listen: false);
+      // final msgListProvider =
+      //     Provider.of<MsgListProvider>(context, listen: false);
 
       if (tasks.length > 0) {
         var lastItem = tasks[tasks.length - 1];
@@ -451,25 +460,24 @@ class TaskListProvider extends ChangeNotifier {
         }
 
         if (currentTask == null || currentTask!.projectID != projectID) {
-          currentTask = Task.fromJson(tasks[0]);
-          res[0].read = true;
-          res[0].unreadMessages = 0;
-          msgListProvider.task = currentTask;
-          msgListProvider.taskID = msgListProvider.task?.ID ?? 0;
-          msgListProvider.clear();
-          if (isDesktopMode) {
-            final taskListProvider =
-                Provider.of<TaskListProvider>(context, listen: false);
-
-            msgListProvider.requestMessages(taskListProvider, context);
-          }
+          setCurrentTask(res[0], context);
+          // currentTask = Task.fromJson(tasks[0]);
+          // res[0].read = true;
+          // res[0].unreadMessages = 0;
+          // msgListProvider.task = currentTask;
+          // msgListProvider.taskID = msgListProvider.task?.ID ?? 0;
+          // msgListProvider.clear();
+          // if (isDesktopMode) {
+          //   msgListProvider.requestMessages(this, context);
+          // }
         }
       } else if (items.isEmpty) {
-        currentTask == null;
-        msgListProvider.clear(true);
+        setCurrentTask(null, context);
+        // currentTask == null;
+        // msgListProvider.clear(true);
       }
     } else if (response.statusCode == 401) {
-      bool result = await Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const LoginPage()),
       );
@@ -479,5 +487,70 @@ class TaskListProvider extends ChangeNotifier {
       items = [...items, ...res];
       refresh();
     }
+  }
+
+  Future<void> searchTasks(String search, BuildContext context) async {
+    if (search.isEmpty) {
+      await requestTasks(context);
+      return;
+    }
+    searchHighlightedWords = getHighlightedWords(search);
+
+    clear(context);
+    List<Task> res = [];
+
+    if (sessionID == "") {
+      return;
+    }
+
+    loading = true;
+
+    var url = setUriProperty(serverURI, path: 'searchTasks', queryParameters: {
+      "ProjectID": projectID.toString(),
+      "search": search,
+      "showClosed": showClosed.toString(),
+    });
+
+    Response response;
+    try {
+      response = await httpClient.get(url);
+    } catch (e) {
+      refresh();
+      return;
+    }
+
+    if (response.statusCode == 200 && response.body != "") {
+      var data = jsonDecode(response.body);
+
+      var tasks = data["tasks"];
+
+      if (tasks == null) {
+        loading = false;
+        setCurrentTask(null, context);
+        return;
+      }
+      for (var item in tasks) {
+        res.add(Task.fromJson(item));
+      }
+      if (tasks.length > 0) {
+        res[0].read = true;
+        res[0].unreadMessages = 0;
+        setCurrentTask(Task.fromJson(tasks[0]), context);
+      } else {
+        setCurrentTask(null, context);
+      }
+    } else if (response.statusCode == 401) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    }
+
+    loading = false;
+
+    if (res.isNotEmpty) {
+      items = [...items, ...res];
+    }
+    refresh();
   }
 }

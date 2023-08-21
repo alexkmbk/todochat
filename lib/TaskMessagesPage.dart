@@ -9,7 +9,10 @@ import 'todochat.dart';
 
 class TaskMessagesPage extends StatefulWidget {
   final Task task;
-  const TaskMessagesPage({Key? key, required this.task}) : super(key: key);
+  const TaskMessagesPage({
+    Key? key,
+    required this.task,
+  }) : super(key: key);
 
   @override
   State<TaskMessagesPage> createState() {
@@ -41,46 +44,51 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
     super.dispose();
   }
 
-  Widget drawBody() {
-    return Consumer<MsgListProvider>(builder: (context, provider, child) {
-      return MsgList(
-        msglist: provider,
-        flutterListViewController: flutterListViewController,
-      );
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     if (isDesktopMode) {
-      return drawBody();
+      return Consumer<MsgListProvider>(builder: (context, provider, child) {
+        provider.task = widget.task;
+        return MsgList(
+          msglist: provider,
+          flutterListViewController: flutterListViewController,
+        );
+      });
     } else {
       return Scaffold(
-        appBar: isDesktopMode
-            ? null
-            : AppBar(
-                backgroundColor: const Color.fromARGB(240, 255, 255, 255),
-                title: Row(children: [
-                  Flexible(
-                      child: TextButton.icon(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          icon: const Icon(
-                            Icons.keyboard_arrow_left,
-                            color: Colors.black,
-                          ),
-                          label: Text(
-                            widget.task.description,
-                            style: const TextStyle(
-                                color: Colors.black, fontSize: 18),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ))),
-                ]),
-                leading: const MainMenu()),
-        body: Center(child: drawBody()),
-      );
+          appBar: isDesktopMode
+              ? null
+              : AppBar(
+                  backgroundColor: const Color.fromARGB(240, 255, 255, 255),
+                  title: Row(children: [
+                    Flexible(
+                        child: TextButton.icon(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            icon: const Icon(
+                              Icons.keyboard_arrow_left,
+                              color: Colors.black,
+                            ),
+                            label: Text(
+                              widget.task.description,
+                              style: const TextStyle(
+                                  color: Colors.black, fontSize: 18),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ))),
+                  ]),
+                  leading: const MainMenu()),
+          body: Center(
+            child:
+                Consumer<MsgListProvider>(builder: (context, provider, child) {
+              provider.task = widget.task;
+              return MsgList(
+                msglist: provider,
+                flutterListViewController: flutterListViewController,
+              );
+            }),
+          ));
     }
   }
 }

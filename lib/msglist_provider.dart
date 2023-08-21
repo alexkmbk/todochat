@@ -201,8 +201,8 @@ class MsgListProvider extends ChangeNotifier {
   num offset = 0;
   int lastID = 0;
   bool loading = false;
-  int taskID = 0;
-  Task? task;
+  //int taskID = 0;
+  Task task = Task();
   int foundMessageID = 0;
   FlutterListViewController? scrollController;
   bool isOpen = isDesktopMode;
@@ -234,7 +234,6 @@ class MsgListProvider extends ChangeNotifier {
     items.clear();
     offset = 0;
     lastID = 0;
-    //taskID = 0;
     loading = false;
     quotedText = "";
     parentsmallImageName = "";
@@ -247,7 +246,7 @@ class MsgListProvider extends ChangeNotifier {
   void addItems(dynamic data) {
     for (var item in data) {
       var message = Message.fromJson(item);
-      if (message.taskID == taskID) {
+      if (message.taskID == task.ID) {
         /*if (message.tempID.isNotEmpty) {
           final res = uploadingFiles[message.tempID];
           if (res != null && res.loadingFileData.isNotEmpty) {
@@ -268,7 +267,7 @@ class MsgListProvider extends ChangeNotifier {
   }
 
   void addUploadingItem(Message message, Uint8List loadingFileData) {
-    if (message.taskID != taskID) {
+    if (message.taskID != task.ID) {
       return;
     }
     message.tempID = UniqueKey().toString();
@@ -309,7 +308,7 @@ class MsgListProvider extends ChangeNotifier {
   }
 
   bool addItem(Message message) {
-    if (message.taskID != taskID || !isOpen) {
+    if (message.taskID != task.ID || !isOpen) {
       return false;
     }
     bool created = false;
@@ -389,7 +388,7 @@ class MsgListProvider extends ChangeNotifier {
       response = await HTTPClient.httpClient.get(
           HTTPClient.setUriProperty(serverURI, path: "messages"),
           headers: {
-            "taskID": taskID.toString(),
+            "taskID": task.ID.toString(),
             "lastID": lastID.toString(),
             "limit": "30"
           });
@@ -414,9 +413,9 @@ class MsgListProvider extends ChangeNotifier {
           "sessionID": sessionID,
           "command": "getMessages",
           "lastID": lastID.toString(),
-          "messageIDPosition": task?.lastMessageID.toString() ?? "0",
+          "messageIDPosition": task.lastMessageID.toString(),
           "limit": "30",
-          "taskID": taskID.toString(),
+          "taskID": task.ID.toString(),
         }));
       }
     }
@@ -568,7 +567,7 @@ class MsgListProvider extends ChangeNotifier {
     request.headers["content-type"] = "application/json; charset=utf-8";
 
     Message message = Message(
-        taskID: msgListProvider.taskID,
+        taskID: msgListProvider.task.ID,
         text: text,
         fileName: path.basename(fileName),
         isImage: isImage,

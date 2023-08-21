@@ -110,14 +110,14 @@ class _LoginPageState extends State<LoginPage> {
             key: "password", value: passwordController.text.trim());
       }
 
-      final msgListProvider =
-          Provider.of<MsgListProvider>(context, listen: false);
+      // final msgListProvider =
+      //     Provider.of<MsgListProvider>(context, listen: false);
 
       final taskListProvider =
           Provider.of<TaskListProvider>(context, listen: false);
-      taskListProvider.clear();
+      taskListProvider.clear(context);
       await taskListProvider.requestTasks(context);
-      msgListProvider.refresh();
+      //msgListProvider.refresh();
 
       return true;
     } else {
@@ -383,16 +383,16 @@ Future<bool> login(
     }
 
     if (userChanged && context != null) {
-      final msgListProvider =
-          Provider.of<MsgListProvider>(context, listen: false);
+      // final msgListProvider =
+      //     Provider.of<MsgListProvider>(context, listen: false);
 
       final taskListProvider =
           Provider.of<TaskListProvider>(context, listen: false);
-      taskListProvider.clear();
+      taskListProvider.clear(context);
       taskListProvider.requestTasks(context);
-      if (isDesktopMode) {
-        msgListProvider.refresh();
-      }
+      //if (isDesktopMode) {
+      //msgListProvider.refresh();
+      //}
     }
 
     return true;

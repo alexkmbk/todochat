@@ -26,17 +26,21 @@ class MsgList extends StatefulWidget {
       : super(key: key);
 
   @override
-  MsgListState createState() {
-    return MsgListState();
+  State<MsgList> createState() {
+    return _MsgListState();
   }
 }
 
-class MsgListState extends State<MsgList> {
+class _MsgListState extends State<MsgList> {
   final _messageInputController = TextEditingController();
   final messageTextFieldFocusNode = FocusNode();
 
   @override
   void initState() {
+    if (!isDesktopMode) {
+      widget.msglist.requestMessages(
+          Provider.of<TaskListProvider>(context, listen: false), context);
+    }
     widget.flutterListViewController.sliverController
         .onPaintItemPositionsCallback = (height, positions) {
       // height is widget's height
@@ -53,7 +57,7 @@ class MsgListState extends State<MsgList> {
   @override
   Widget build(BuildContext context) {
     final msglist = widget.msglist;
-    if (msglist.task == null || msglist.task?.ID == 0) {
+    if (msglist.task.ID == 0) {
       return const Center(child: Text("No any task was selected"));
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -181,7 +185,7 @@ class MsgListState extends State<MsgList> {
                             if (bytes != null) {
                               msglist.addUploadingItem(
                                   Message(
-                                      taskID: msglist.taskID,
+                                      taskID: msglist.task.ID,
                                       userID: currentUserID,
                                       fileName: "clipboard_image.png",
                                       loadingFile: true,
@@ -195,7 +199,7 @@ class MsgListState extends State<MsgList> {
                                   if (fileData.isNotEmpty) {
                                     msglist.addUploadingItem(
                                         Message(
-                                            taskID: msglist.taskID,
+                                            taskID: msglist.task.ID,
                                             userID: currentUserID,
                                             fileName: path.basename(file),
                                             loadingFile: true,
@@ -219,7 +223,7 @@ class MsgListState extends State<MsgList> {
                                     if (response.statusCode == 200) {
                                       msglist.addUploadingItem(
                                           Message(
-                                              taskID: msglist.taskID,
+                                              taskID: msglist.task.ID,
                                               userID: currentUserID,
                                               fileName: "clipboard_image.png",
                                               loadingFile: true,
@@ -283,7 +287,7 @@ class MsgListState extends State<MsgList> {
                           var res = await readFile(fileName);
                           msglist.addUploadingItem(
                               Message(
-                                  taskID: msglist.taskID,
+                                  taskID: msglist.task.ID,
                                   userID: currentUserID,
                                   fileName: path.basename(fileName),
                                   loadingFile: true,
@@ -296,7 +300,7 @@ class MsgListState extends State<MsgList> {
                         var fileName = result.files.single.name;
                         msglist.addUploadingItem(
                             Message(
-                                taskID: msglist.taskID,
+                                taskID: msglist.task.ID,
                                 userID: currentUserID,
                                 fileName: path.basename(fileName),
                                 loadingFile: true,
