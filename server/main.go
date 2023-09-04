@@ -10,7 +10,6 @@ import (
 
 	"gopkg.in/ini.v1"
 
-	//"gorm.io/driver/postgres"
 	. "todochat_server/App"
 	"todochat_server/DB"
 	WS "todochat_server/constrollers/WebSocked"
