@@ -26,7 +26,7 @@ class ActionsMenu extends StatelessWidget {
                   text: "",
                   task: msglist.task,
                   messageAction: MessageAction.CompleteTaskAction);
-              msglist.task!.completed = true;
+              msglist.task.completed = true;
             }),
       if (task.completed)
         PopupMenuItem(
@@ -47,7 +47,7 @@ class ActionsMenu extends StatelessWidget {
                   text: "",
                   task: msglist.task,
                   messageAction: MessageAction.RemoveCompletedLabelAction);
-              msglist.task!.completed = false;
+              msglist.task.completed = false;
             }),
       if (!task.cancelled)
         PopupMenuItem(
@@ -61,7 +61,7 @@ class ActionsMenu extends StatelessWidget {
                   text: "",
                   task: msglist.task,
                   messageAction: MessageAction.CancelTaskAction);
-              msglist.task!.cancelled = true;
+              msglist.task.cancelled = true;
             }),
       if (task.cancelled || task.closed)
         PopupMenuItem(
@@ -75,9 +75,9 @@ class ActionsMenu extends StatelessWidget {
                   text: "",
                   task: msglist.task,
                   messageAction: MessageAction.ReopenTaskAction);
-              msglist.task!.cancelled = false;
-              msglist.task!.completed = false;
-              msglist.task!.closed = false;
+              msglist.task.cancelled = false;
+              msglist.task.completed = false;
+              msglist.task.closed = false;
             }),
     ];
 

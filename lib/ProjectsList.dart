@@ -51,7 +51,7 @@ class ProjectsPage extends StatefulWidget {
 
 class _ProjectsPageState extends State<ProjectsPage> {
   final ScrollController _scrollController = ScrollController();
-  final _projetcInputController = TextEditingController();
+  //final _projetcInputController = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -333,7 +333,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
         res.add(Project(Description: item["Description"], ID: item["ID"]));
       }
     } else if (response.statusCode == 401) {
-      bool result = await Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const LoginPage()),
       );

@@ -96,7 +96,7 @@ class MsgListTile extends StatelessWidget {
 
   Color getBubbleColor() {
     if (message.isTaskDescriptionItem) {
-      return msgListProvider.task!.completed
+      return msgListProvider.task.completed
           ? closedTaskColor
           : uncompletedTaskColor;
     } else {
@@ -128,7 +128,7 @@ class MsgListTile extends StatelessWidget {
       // Text bubble
     } else if (message.fileName.isEmpty) {
       final text = message.isTaskDescriptionItem
-          ? msgListProvider.task?.description
+          ? msgListProvider.task.description
           : message.text;
       final textSpan = TextSpan(text: text);
       BoolRef isQuoteSelected = BoolRef();
@@ -151,7 +151,7 @@ class MsgListTile extends StatelessWidget {
         onCopy: () {
           message.isSelected = false;
           var text = message.isTaskDescriptionItem
-              ? msgListProvider.task?.description ?? ""
+              ? msgListProvider.task.description
               : message.text;
           if (textWidgetSelection.start != textWidgetSelection.end) {
             text = text.substring(
@@ -165,7 +165,7 @@ class MsgListTile extends StatelessWidget {
         onReply: () async {
           message.isSelected = false;
           msgListProvider.quotedText = message.isTaskDescriptionItem
-              ? msgListProvider.task?.description ?? ""
+              ? msgListProvider.task.description
               : message.text;
           msgListProvider.currentParentMessageID = message.ID;
 
@@ -181,7 +181,7 @@ class MsgListTile extends StatelessWidget {
         onQuoteSelection: () async {
           message.isSelected = false;
           var text = message.isTaskDescriptionItem
-              ? msgListProvider.task?.description ?? ""
+              ? msgListProvider.task.description
               : message.text;
           text = text.substring(
               textWidgetSelection.start, textWidgetSelection.end);
@@ -251,11 +251,11 @@ class MsgListTile extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Created by ${msgListProvider.task!.authorName} at ${dateFormat(msgListProvider.task!.creation_date)}",
+                        "Created by ${msgListProvider.task.authorName} at ${dateFormat(msgListProvider.task.creation_date)}",
                         style: const TextStyle(color: Colors.grey),
                       ),
                       SelectableText(
-                        msgListProvider.task!.ID.toString().padLeft(6, '0'),
+                        msgListProvider.task.ID.toString().padLeft(6, '0'),
                         style: const TextStyle(color: Colors.grey),
                       ),
                     ]),
