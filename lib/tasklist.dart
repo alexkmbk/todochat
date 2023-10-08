@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
-import 'package:flutter_list_view/flutter_list_view.dart';
+//import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:provider/provider.dart';
+import 'package:very_good_infinite_list/very_good_infinite_list.dart';
+//import 'package:scroll_to_index/scroll_to_index.dart';
 
 import 'HttpClient.dart';
 import 'TaskMessagesPage.dart';
@@ -25,37 +27,41 @@ class TaskList extends StatefulWidget {
 
 class TaskListState extends State<TaskList> {
   bool loading = false;
-  FlutterListViewController flutterListViewController =
-      FlutterListViewController();
+  //AutoScrollController scrollController = AutoScrollController();
   @override
   void initState() {
-    widget.taskListProvider.requestTasks(context);
-    flutterListViewController.sliverController.onPaintItemPositionsCallback =
-        (height, positions) {
-      // height is widget's height
-      // positions is the items which render in viewports
-      if (positions.last.index >= widget.taskListProvider.items.length - 5) {
-        widget.taskListProvider.requestTasks(context);
-      }
-    };
+    // widget.taskListProvider.requestTasks(context);
+    // scrollController.sliverController.onPaintItemPositionsCallback =
+    //     (height, positions) {
+    //   // height is widget's height
+    //   // positions is the items which render in viewports
+    //   if (positions.last.index >= widget.taskListProvider.items.length - 5) {
+    //     widget.taskListProvider.requestTasks(context);
+    //   }
+    // };
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    var taskListProvider = widget.taskListProvider;
     return Column(children: <Widget>[
       Expanded(
-          child: FlutterListView(
-              controller: flutterListViewController,
-              delegate: FlutterListViewDelegate(
-                (BuildContext context, int index) {
+          child: InfiniteList(
+              //scrollController: scrollController,
+              itemCount: taskListProvider.items.length,
+              isLoading: taskListProvider.loading,
+              onFetchData: () {
+                taskListProvider.requestTasks(context);
+              },
+              itemBuilder: (context, index) {
+                {
                   return TaskListTile(
                       index: index,
-                      task: widget.taskListProvider.items[index],
+                      task: taskListProvider.items[index],
                       taskList: widget);
-                },
-                childCount: widget.taskListProvider.items.length,
-              ))),
+                }
+              }))
     ]);
   }
 }
