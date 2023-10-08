@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 //import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:provider/provider.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
 //import 'package:scroll_to_index/scroll_to_index.dart';
 
@@ -27,7 +28,7 @@ class TaskList extends StatefulWidget {
 
 class TaskListState extends State<TaskList> {
   bool loading = false;
-  //AutoScrollController scrollController = AutoScrollController();
+  AutoScrollController scrollController = AutoScrollController();
   @override
   void initState() {
     // widget.taskListProvider.requestTasks(context);
@@ -45,10 +46,11 @@ class TaskListState extends State<TaskList> {
   @override
   Widget build(BuildContext context) {
     var taskListProvider = widget.taskListProvider;
+    taskListProvider.scrollController = scrollController;
     return Column(children: <Widget>[
       Expanded(
           child: InfiniteList(
-              //scrollController: scrollController,
+              scrollController: scrollController,
               itemCount: taskListProvider.items.length,
               isLoading: taskListProvider.loading,
               onFetchData: () {
@@ -56,10 +58,15 @@ class TaskListState extends State<TaskList> {
               },
               itemBuilder: (context, index) {
                 {
-                  return TaskListTile(
+                  return AutoScrollTag(
+                      key: ValueKey(index),
+                      controller: scrollController,
                       index: index,
-                      task: taskListProvider.items[index],
-                      taskList: widget);
+                      highlightColor: Colors.black.withOpacity(0.1),
+                      child: TaskListTile(
+                          index: index,
+                          task: taskListProvider.items[index],
+                          taskList: widget));
                 }
               }))
     ]);

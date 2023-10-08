@@ -54,6 +54,7 @@ class _MsgListState extends State<MsgList> {
   @override
   Widget build(BuildContext context) {
     final msglist = widget.msglist;
+    msglist.scrollController = widget.scrollController;
     if (msglist.task.ID == 0) {
       return const Center(child: Text("No any task was selected"));
     } else {
@@ -87,7 +88,6 @@ class _MsgListState extends State<MsgList> {
                     Provider.of<TaskListProvider>(context, listen: false),
                     context);
               },
-              separatorBuilder: (context, index) => const Divider(),
               emptyBuilder: (context) => Text("No any task was selected"),
               itemBuilder: (context, index) {
                 var item = msglist.items[index];

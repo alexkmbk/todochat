@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:todochat/tasklist.dart';
 import 'package:todochat/utils.dart';
 import 'HttpClient.dart';
@@ -127,11 +128,22 @@ class TaskListProvider extends ChangeNotifier {
   List<String> searchHighlightedWords = [];
   String search = "";
   Task? currentTask;
+  AutoScrollController? scrollController;
 
   TextEditingController textEditingController = TextEditingController(text: "");
 
   void refresh() {
     notifyListeners();
+  }
+
+  void jumpTo(int taskID) {
+    //if (taskID == 0) return;
+    var index = items.indexWhere((element) => element.ID == taskID);
+    if (index >= 0 && scrollController != null) {
+      scrollController!
+          .scrollToIndex(index, preferPosition: AutoScrollPosition.begin);
+      scrollController!.highlight(index, animated: false);
+    }
   }
 
   void setCurrentTask(Task? currentTask, BuildContext context) {
@@ -175,6 +187,9 @@ class TaskListProvider extends ChangeNotifier {
     taskEditMode = true;
     isNewItem = true;
     items.insert(0, Task(editMode: true));
+    if (items.isNotEmpty) {
+      jumpTo(items[0].ID);
+    }
     notifyListeners();
   }
 
