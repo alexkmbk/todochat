@@ -4,7 +4,6 @@ import 'package:todochat/tasklist_provider.dart';
 import 'package:todochat/todochat.dart';
 
 import 'customWidgets.dart';
-import 'msglist_provider.dart';
 
 class SearchField extends StatelessWidget {
   final TextEditingController searchController;

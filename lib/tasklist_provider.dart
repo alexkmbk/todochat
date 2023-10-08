@@ -53,7 +53,7 @@ class Task {
       'LastMessageID': lastMessageID,
       'ProjectID': projectID,
       'AuthorID': authorID,
-      'Creation_date': creation_date.toIso8601String(),
+      'Creation_date': formDateToJsonUtc(creation_date),
       'AuthorName': authorName,
       'Read': read,
       'UnreadMessages': unreadMessages,

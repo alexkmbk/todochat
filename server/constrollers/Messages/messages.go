@@ -176,7 +176,8 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 	if userID != 0 {
 		for i := range messages {
 			seenMessage := SeenMessage{UserID: userID, TaskID: taskID, MessageID: messages[i].ID}
-			if DB.Find(&seenMessage).RowsAffected == 0 {
+			found := DB.Find(&seenMessage)
+			if found.RowsAffected == 0 {
 				DB.Create(&seenMessage)
 			}
 		}

@@ -13,7 +13,6 @@ import 'package:todochat/tasklist_provider.dart';
 import 'HttpClient.dart';
 import 'SettingsPage.dart';
 import 'customWidgets.dart';
-import 'msglist_provider.dart';
 import 'todochat.dart';
 import 'utils.dart';
 
