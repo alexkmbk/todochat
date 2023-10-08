@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:http/http.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 
 //import 'package:http/http.dart';
 //import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -204,7 +205,7 @@ class MsgListProvider extends ChangeNotifier {
   //int taskID = 0;
   Task task = Task();
   int foundMessageID = 0;
-  FlutterListViewController? scrollController;
+  AutoScrollController? scrollController;
   bool isOpen = isDesktopMode;
   String quotedText = "";
   String parentsmallImageName = "";
@@ -215,7 +216,8 @@ class MsgListProvider extends ChangeNotifier {
     var index = items.indexWhere((element) => element.ID == messageID);
     if (index >= 0 && scrollController != null) {
       try {
-        scrollController!.sliverController.jumpToIndex(index);
+        scrollController!
+            .scrollToIndex(index, preferPosition: AutoScrollPosition.end);
       } catch (e) {}
     }
   }
@@ -366,7 +368,7 @@ class MsgListProvider extends ChangeNotifier {
 
   Future<bool> requestMessages(
       TaskListProvider taskListProvider, BuildContext context) async {
-    if (sessionID == "" || loading) {
+    if (loading) {
       return false;
     }
 
@@ -476,7 +478,7 @@ class MsgListProvider extends ChangeNotifier {
       bool loadinInProcess = false,
       MessageAction messageAction =
           MessageAction.CreateUpdateMessageAction}) async {
-    if (sessionID == "" || task == null) {
+    if (task == null) {
       return false;
     }
 

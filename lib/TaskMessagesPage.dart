@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_list_view/flutter_list_view.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:todochat/tasklist_provider.dart';
 import 'main_menu.dart';
 import 'package:provider/provider.dart';
@@ -21,8 +22,7 @@ class TaskMessagesPage extends StatefulWidget {
 }
 
 class _TaskMessagesPageState extends State<TaskMessagesPage> {
-  FlutterListViewController flutterListViewController =
-      FlutterListViewController();
+  AutoScrollController scrollController = AutoScrollController();
 
   @override
   void initState() {
@@ -51,7 +51,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
         provider.task = widget.task;
         return MsgList(
           msglist: provider,
-          flutterListViewController: flutterListViewController,
+          scrollController: scrollController,
         );
       });
     } else {
@@ -85,7 +85,7 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
               provider.task = widget.task;
               return MsgList(
                 msglist: provider,
-                flutterListViewController: flutterListViewController,
+                scrollController: scrollController,
               );
             }),
           ));
