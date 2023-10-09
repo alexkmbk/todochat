@@ -1,16 +1,8 @@
-//import 'dart:core';
-
 import 'dart:math';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-//import 'package:todochat/todochat.dart';
-//import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
-
-//import 'package:photo_view/photo_view.dart';
-
 import 'utils.dart';
 
 class TextFieldEx extends StatelessWidget {
