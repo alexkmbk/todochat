@@ -40,9 +40,6 @@ class Project {
 }
 
 class ProjectsPage extends StatefulWidget {
-  List<Project> items = [];
-  bool loading = false;
-
   ProjectsPage({Key? key}) : super(key: key);
 
   @override
@@ -51,13 +48,16 @@ class ProjectsPage extends StatefulWidget {
 
 class _ProjectsPageState extends State<ProjectsPage> {
   final ScrollController _scrollController = ScrollController();
+  List<Project> items = [];
+  bool loading = false;
+
   //final _projetcInputController = TextEditingController();
   @override
   void initState() {
     super.initState();
 
     _scrollController.addListener(() {
-      if (!widget.loading &&
+      if (!loading &&
           _scrollController.position.pixels >=
               _scrollController.position.maxScrollExtent) {
         requestItems(context);
@@ -105,14 +105,14 @@ class _ProjectsPageState extends State<ProjectsPage> {
                 child: ListView.builder(
               controller: _scrollController,
               itemBuilder: (context, index) {
-                return buildListRow(context, index, widget.items[index]);
+                return buildListRow(context, index, items[index]);
                 /*if (index < _taskListProvider.items.length) {
             return buildListRow(context, index, _taskListProvider.items[index],
                 _taskListProvider, widget);
           }
           return const Center(child: Text('End of list'));*/
               },
-              itemCount: widget.items.length,
+              itemCount: items.length,
             )),
           ]),
         ),
@@ -203,13 +203,13 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
   void addEditorItem() {
     setState(() {
-      widget.items.insert(0, Project(editMode: true, isNewItem: true));
+      items.insert(0, Project(editMode: true, isNewItem: true));
     });
   }
 
   void deleteEditorItem() {
     setState(() {
-      widget.items.removeWhere((item) => item.editMode == true);
+      items.removeWhere((item) => item.editMode == true);
     });
   }
 
@@ -233,7 +233,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
       var data = jsonDecode(response.body) as Map<String, dynamic>;
       project.ID = data["ID"];
       setState(() {
-        widget.items.insert(0, project);
+        items.insert(0, project);
       });
       return project;
     }
@@ -270,7 +270,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
   Future<void> onLongPress(Project project) async {
     setState(() {
       var foundProject =
-          widget.items.firstWhereOrNull((element) => element.ID == project.ID);
+          items.firstWhereOrNull((element) => element.ID == project.ID);
       if (foundProject != null) {
         foundProject.editMode = true;
         foundProject.isNewItem = false;
@@ -293,7 +293,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
     if (response.statusCode == 200) {
       setState(() {
-        widget.items.removeWhere((item) => item.ID == projectID);
+        items.removeWhere((item) => item.ID == projectID);
       });
 
       return true;
@@ -309,7 +309,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
       return;
     }
 
-    widget.loading = true;
+    loading = true;
 
     Response response;
     try {
@@ -325,7 +325,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
       var items = data["items"];
 
       if (items == null) {
-        widget.loading = false;
+        loading = false;
         return;
       }
 
@@ -339,9 +339,9 @@ class _ProjectsPageState extends State<ProjectsPage> {
       );
     }
 
-    widget.loading = false;
+    loading = false;
 
-    widget.items = [...widget.items, ...res];
+    items = [...items, ...res];
     if (mounted) {
       setState(() => {});
     }

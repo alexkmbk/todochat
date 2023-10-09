@@ -31,7 +31,7 @@ class MsgListTile extends StatelessWidget {
   final int index;
   final FocusNode messageTextFieldFocusNode;
 
-  double progress = 1.0;
+  //double progress = 1.0;
   /*final String text;
   final String isImage = false;
   final Uint8List? smallImageData;
