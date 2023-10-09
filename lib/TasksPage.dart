@@ -240,7 +240,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
         ],
       ),
       actions: [
-        if (!widget.tasksPageState.showSearch)
+        if (!isDesktopMode && !widget.tasksPageState.showSearch)
           IconButton(
             onPressed: () {
               setState(() {
@@ -252,7 +252,19 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
               color: Colors.black,
             ),
             tooltip: "Search",
-          ),
+          )
+        else if (!isDesktopMode && widget.tasksPageState.showSearch)
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  widget.tasksPageState.showSearch = false;
+                });
+              },
+              icon: const Icon(
+                Icons.arrow_right,
+                color: Colors.black,
+              ),
+              tooltip: "Project"),
         if (isDesktopMode)
           Padding(
               padding: const EdgeInsets.all(8.0),
