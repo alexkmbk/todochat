@@ -172,8 +172,7 @@ class BoolRef {
   bool value = false;
 }
 
-class GestureDetectorWithMenu extends StatelessWidget {
-  TapDownDetails? _tapDownDetails;
+class GestureDetectorWithMenu extends StatefulWidget {
   Widget child;
   GestureTapCallback? onTap;
   GestureTapDownCallback? onSecondaryTapDown;
@@ -183,7 +182,7 @@ class GestureDetectorWithMenu extends StatelessWidget {
   Function? onDelete;
   Function? onQuoteSelection;
   List<PopupMenuEntry>? addMenuItems;
-  BoolRef? isQuoteSelected;
+  bool? isQuoteSelected;
 
   GestureDetectorWithMenu(
       {required this.child,
@@ -199,48 +198,56 @@ class GestureDetectorWithMenu extends StatelessWidget {
       Key? key})
       : super(key: key);
 
+  @override
+  State<GestureDetectorWithMenu> createState() =>
+      _GestureDetectorWithMenuState();
+}
+
+class _GestureDetectorWithMenuState extends State<GestureDetectorWithMenu> {
+  TapDownDetails? _tapDownDetails;
+
   void _onSecondaryTapDown(TapDownDetails details, BuildContext context) async {
-    if (onSecondaryTapDown != null) {
-      onSecondaryTapDown!(details);
+    if (widget.onSecondaryTapDown != null) {
+      widget.onSecondaryTapDown!(details);
     }
     final x = details.globalPosition.dx;
     final y = details.globalPosition.dy;
     List<PopupMenuEntry> items = [
-      if (onCopy != null)
+      if (widget.onCopy != null)
         PopupMenuItem<String>(
             child: const Text('Copy'),
             onTap: () async {
-              if (onCopy != null) {
-                onCopy!();
+              if (widget.onCopy != null) {
+                widget.onCopy!();
               }
             }),
-      if (onEdit != null)
+      if (widget.onEdit != null)
         PopupMenuItem<String>(
             child: const Text('Edit'),
             onTap: () async {
-              if (onEdit != null) {
-                onEdit!();
+              if (widget.onEdit != null) {
+                widget.onEdit!();
               }
             }),
-      if (onReply != null)
+      if (widget.onReply != null)
         PopupMenuItem<String>(
             child: const Text('Reply'),
             onTap: () async {
-              if (onReply != null) {
-                onReply!();
+              if (widget.onReply != null) {
+                widget.onReply!();
               }
             }),
-      if (onDelete != null)
+      if (widget.onDelete != null)
         const PopupMenuItem<String>(
           value: 'Delete',
           child: Text('Delete'),
         ),
-      if (isQuoteSelected != null && isQuoteSelected!.value)
+      if (widget.isQuoteSelected != null && widget.isQuoteSelected!)
         PopupMenuItem<String>(
             child: const Text('Quote selection'),
             onTap: () async {
-              if (onQuoteSelection != null) {
-                onQuoteSelection!();
+              if (widget.onQuoteSelection != null) {
+                widget.onQuoteSelection!();
               }
 
               /*message.isSelected = false;
@@ -258,8 +265,8 @@ class GestureDetectorWithMenu extends StatelessWidget {
               msgListProvider.refresh();*/
             }),
     ];
-    if (addMenuItems != null) {
-      items = [...items, ...addMenuItems!];
+    if (widget.addMenuItems != null) {
+      items = [...items, ...widget.addMenuItems!];
     }
     final res = await showMenu(
       context: context,
@@ -269,8 +276,8 @@ class GestureDetectorWithMenu extends StatelessWidget {
     if (res == "Delete") {
       var res = await confirmDismissDlg(context);
       if (res ?? false) {
-        if (onDelete != null) {
-          onDelete!();
+        if (widget.onDelete != null) {
+          widget.onDelete!();
         }
       }
     }
@@ -279,7 +286,7 @@ class GestureDetectorWithMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: onTap,
+        onTap: widget.onTap,
         onTapDown: (details) {
           _tapDownDetails = details;
         },
@@ -289,7 +296,7 @@ class GestureDetectorWithMenu extends StatelessWidget {
             _onSecondaryTapDown(_tapDownDetails!, context);
           }
         },
-        child: child);
+        child: widget.child);
   }
 }
 
