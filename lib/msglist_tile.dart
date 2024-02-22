@@ -215,11 +215,11 @@ class _MsgListTileState extends State<MsgListTile> {
               : message.text;
           msgListProvider.currentParentMessageID = message.ID;
 
-          msgListProvider.refresh();
+          //msgListProvider.refresh();
           //FocusScope.of(context).unfocus();
           searchFocusNode.unfocus();
-          //messageTextFieldFocusNode.dispose();
-          //messageTextFieldFocusNode.requestFocus();
+          //widget.messageTextFieldFocusNode.dispose();
+          widget.messageTextFieldFocusNode.requestFocus();
           msgListProvider.refresh();
         },
         onDelete: () => msgListProvider.deleteMesage(message.ID),

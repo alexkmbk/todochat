@@ -756,6 +756,7 @@ class Label extends StatelessWidget {
       ));
     } else {
       return Chip(
+        //labelPadding: EdgeInsets.all(0.0),
         padding: EdgeInsets.all(0.0),
         visualDensity: const VisualDensity(horizontal: -4.0, vertical: -4.0),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
