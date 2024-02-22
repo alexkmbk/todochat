@@ -739,18 +739,6 @@ class Label extends StatelessWidget {
       this.clickableCursor = false})
       : super(key: key);
 
-  Widget chip() {
-    return Chip(
-        visualDensity: const VisualDensity(horizontal: 0.0, vertical: -4),
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(5))),
-        backgroundColor: backgroundColor,
-        label: Text(
-          text,
-        ));
-  }
-
   @override
   Widget build(BuildContext context) {
     if (onPressed != null || clickableCursor) {
@@ -767,7 +755,18 @@ class Label extends StatelessWidget {
         ),
       ));
     } else {
-      return chip();
+      return Chip(
+        padding: EdgeInsets.all(0.0),
+        visualDensity: const VisualDensity(horizontal: -4.0, vertical: -4.0),
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(5))),
+        backgroundColor: backgroundColor,
+        label: Text(
+          style: TextStyle(fontSize: 14, height: 1),
+          text,
+        ),
+      );
     }
   }
 }
