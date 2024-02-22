@@ -270,6 +270,8 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
               padding: const EdgeInsets.all(8.0),
               child: ElevatedButton(
                   style: ButtonStyle(
+                      shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(7))),
                       elevation: MaterialStateProperty.resolveWith<double>(
                         (Set<MaterialState> states) {
                           // if the button is pressed the elevation is 10.0, if not
