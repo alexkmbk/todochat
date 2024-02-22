@@ -213,8 +213,13 @@ class TaskListTile extends StatelessWidget {
             leading: Checkbox(
                 checkColor: task.cancelled ? Colors.grey : null,
                 shape: const CircleBorder(),
-                fillColor: MaterialStateProperty.all(
-                    task.cancelled ? Colors.grey : Colors.green),
+                fillColor: MaterialStateProperty.resolveWith((states) {
+                  if (task.cancelled) {
+                    return Colors.grey;
+                  } else if (task.closed) return Colors.green;
+                }),
+                // fillColor: MaterialStateProperty.all(
+                //     task.cancelled ? Colors.grey : Colors.green),
                 value: task.closed,
                 onChanged: (value) => taskClosedOnChanged(
                     value, task, taskListProvider, context)),
