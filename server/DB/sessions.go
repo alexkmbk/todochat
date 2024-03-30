@@ -6,8 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	//"gorm.io/driver/sqlite"
-	"github.com/glebarez/sqlite"
-	"gorm.io/gorm"
 )
 
 // Session Session info
@@ -17,7 +15,7 @@ type Session struct {
 	UserID    int64     `gorm:"foreignKey:ID"`
 }
 
-var sessionDB, _ = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{SkipDefaultTransaction: true})
+//var sessionDB, _ = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{SkipDefaultTransaction: true})
 
 // CheckSessionID Checks if session exists
 func CheckSessionID(w http.ResponseWriter, r *http.Request, udateLastVisit bool) bool {
@@ -30,13 +28,13 @@ func CheckSessionID(w http.ResponseWriter, r *http.Request, udateLastVisit bool)
 		http.Error(w, "Unauthorised.", http.StatusUnauthorized)
 		return false
 	}
-	if sessionDB.First(&session).Error != nil {
+	if DB.First(&session).Error != nil {
 		http.Error(w, "Unauthorised.", http.StatusUnauthorized)
 		return false
 	}
 	if udateLastVisit {
 		session.LastVisit = time.Now()
-		sessionDB.Save(&session)
+		DB.Save(&session)
 	}
 	return true //session.UserID
 }
@@ -55,7 +53,7 @@ func GetUserID(w http.ResponseWriter, r *http.Request) int64 {
 		http.Error(w, "Unauthorised.", http.StatusUnauthorized)
 		return 0
 	}
-	if err = sessionDB.First(&session).Error; err != nil {
+	if err = DB.First(&session).Error; err != nil {
 		http.Error(w, "Unauthorised.", http.StatusUnauthorized)
 		return 0
 	}
@@ -67,7 +65,7 @@ func GetUserIDBySessionID(sessionID uuid.UUID) int64 {
 	session.SessionID = sessionID
 
 	var err error
-	if err = sessionDB.First(&session).Error; err != nil {
+	if err = DB.First(&session).Error; err != nil {
 		return 0
 	}
 	return session.UserID
@@ -76,7 +74,7 @@ func GetUserIDBySessionID(sessionID uuid.UUID) int64 {
 func SessionIDExists(sessionID uuid.UUID) bool {
 	var session Session
 	session.SessionID = sessionID
-	if sessionDB.First(&session).Error != nil {
+	if DB.First(&session).Error != nil {
 		return false
 	}
 	return true
@@ -85,7 +83,7 @@ func SessionIDExists(sessionID uuid.UUID) bool {
 func DeleteSession(sessionID uuid.UUID) {
 	var session Session
 	session.SessionID = sessionID
-	sessionDB.Delete(&session)
+	DB.Delete(&session)
 }
 
 // CreateNewSession ...
@@ -94,6 +92,6 @@ func CreateNewSession(user User) uuid.UUID {
 	session.LastVisit = time.Now()
 	session.SessionID = uuid.New()
 	session.UserID = user.ID
-	sessionDB.Create(&session)
+	DB.Create(&session)
 	return session.SessionID
 }

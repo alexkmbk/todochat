@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:todochat/tasklist_provider.dart';
+import 'package:todochat/utils.dart';
 import 'HttpClient.dart';
 import 'LoginPage.dart';
 import 'ProjectsList.dart';
@@ -276,9 +277,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
     settings = await SharedPreferences.getInstance();
 
+    var sessionID_ = settings.getString("sessionID");
+    if (sessionID_ == null) {
+      sessionID = "";
+    } else
+      sessionID = sessionID_;
+
     var httpScheme = settings.getString("httpScheme");
     var host = settings.getString("host");
     var port = settings.getInt("port");
+
+    if (isWeb() && (host == null || host.isEmpty)) {
+      host = Uri.base.host;
+      port = Uri.base.port;
+      httpScheme = Uri.base.scheme;
+    }
     tasklist.projectID = settings.getInt("projectID");
 
     tasklist.showClosed = settings.getBool("showCompleted") ?? true;
@@ -299,13 +312,16 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       serverURI = Uri(scheme: httpScheme, host: host, port: port);
     }
-    try {
-      res = await login();
-    } catch (e) {
-      return Future.error(e.toString());
+    bool login = false;
+    if (sessionID.isNotEmpty) {
+      httpClient.defaultHeaders = {"sessionID": sessionID};
+      try {
+        login = await checkLogin();
+      } catch (e) {
+        return Future.error(e.toString());
+      }
     }
-
-    if (!res) {
+    if (!login) {
       await openLoginPage(context);
     }
     if (isServerURI && sessionID.isNotEmpty) {

@@ -765,18 +765,20 @@ class Label extends StatelessWidget {
         ),
       ));
     } else {
-      return Container(
-        //color: backgroundColor,
-        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-        decoration: ShapeDecoration(
-          color: backgroundColor,
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(5))),
-        ),
-        alignment: Alignment.topLeft,
-        child: Text(
-          style: TextStyle(fontSize: 14, height: 1),
-          text,
+      return IntrinsicWidth(
+        child: Container(
+          //color: backgroundColor,
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+          decoration: ShapeDecoration(
+            color: backgroundColor,
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5))),
+          ),
+          alignment: Alignment.topLeft,
+          child: Text(
+            style: TextStyle(fontSize: 14, height: 1),
+            text,
+          ),
         ),
       );
       // return Chip(

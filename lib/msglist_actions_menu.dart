@@ -136,8 +136,9 @@ Widget getMessageActionDescription(Message message) {
       return Text.rich(
           TextSpan(text: "The task was marked as ", children: <InlineSpan>[
         const WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Label(text: "Done", backgroundColor: Colors.green)),
+          alignment: PlaceholderAlignment.middle,
+          child: Label(text: "Done", backgroundColor: Colors.green),
+        ),
         const WidgetSpan(child: Text(" by ")),
         WidgetSpan(
             child: Text(message.userName,

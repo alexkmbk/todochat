@@ -98,7 +98,7 @@ func InitDB(DBMS string, DBUserName string, DBPassword string, DBName string, DB
 	}
 
 	// Sessions
-	sessionDB.AutoMigrate(&Session{})
+	DB.AutoMigrate(&Session{})
 
 }
 

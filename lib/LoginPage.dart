@@ -101,7 +101,8 @@ class _LoginPageState extends State<LoginPage> {
       currentUserName = userNameController.text.trim();
       httpClient.defaultHeaders = {"sessionID": sessionID};
 
-      if (serverURI.scheme != "http" || !isWeb()) {
+      settings.setString("sessionID", sessionID);
+      if (!isWeb()) {
         const storage = FlutterSecureStorage();
         await storage.write(
             key: "userName", value: userNameController.text.trim());
@@ -334,7 +335,7 @@ Future<bool> login(
     String? password = "",
     BuildContext? context}) async {
   if (userName == null || userName.isEmpty) {
-    if (serverURI.scheme != "http" || !isWeb()) {
+    if (!isWeb()) {
       const storage = FlutterSecureStorage();
       userName = await storage.read(key: "userName");
       password = await storage.read(key: "password");
@@ -375,7 +376,9 @@ Future<bool> login(
     currentUserName = userName;
     httpClient.defaultHeaders = {"sessionID": sessionID};
 
-    if (serverURI.scheme != "http" || !isWeb()) {
+    settings.setString("sessionID", sessionID);
+
+    if (!isWeb()) {
       const storage = FlutterSecureStorage();
       await storage.write(key: "userName", value: userName);
       await storage.write(key: "password", value: password);
