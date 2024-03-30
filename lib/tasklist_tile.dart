@@ -32,40 +32,41 @@ class TaskListTile extends StatelessWidget {
       taskListProvider.textEditingController =
           TextEditingController(text: task.description);
       return Card(
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(8.0))),
-          child: Column(children: [
-            Row(children: [
-              Expanded(
-                  child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: CallbackShortcuts(
-                          bindings: {
-                            const SingleActivator(LogicalKeyboardKey.escape,
-                                control: false): () {
-                              if (taskListProvider.isNewItem) {
-                                taskListProvider.deleteEditorItem();
-                              } else {
-                                task.editMode = false;
-                                taskListProvider.refresh();
-                              }
-                              FocusScope.of(context).unfocus();
-                            },
-                            const SingleActivator(LogicalKeyboardKey.enter,
-                                control: true): () {
-                              taskListProvider.textEditingController.text =
-                                  '${taskListProvider.textEditingController.text}\n';
-                              taskListProvider.textEditingController
-                                  .setCursorOnEnd();
-                            },
-                            const SingleActivator(LogicalKeyboardKey.enter,
-                                control: false): () {
-                              taskListProvider.saveEditingItem(context);
-                            },
+        color: Colors.white,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8.0))),
+        child: Column(children: [
+          Row(children: [
+            Expanded(
+                child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: CallbackShortcuts(
+                        bindings: {
+                          const SingleActivator(LogicalKeyboardKey.escape,
+                              control: false): () {
+                            if (taskListProvider.isNewItem) {
+                              taskListProvider.deleteEditorItem();
+                            } else {
+                              task.editMode = false;
+                              taskListProvider.refresh();
+                            }
+                            FocusScope.of(context).unfocus();
                           },
-                          child: Focus(
-                            onFocusChange: (hasFocus) {
-                              /*  if (!hasFocus) {
+                          const SingleActivator(LogicalKeyboardKey.enter,
+                              control: true): () {
+                            taskListProvider.textEditingController.text =
+                                '${taskListProvider.textEditingController.text}\n';
+                            taskListProvider.textEditingController
+                                .setCursorOnEnd();
+                          },
+                          const SingleActivator(LogicalKeyboardKey.enter,
+                              control: false): () {
+                            taskListProvider.saveEditingItem(context);
+                          },
+                        },
+                        child: Focus(
+                          onFocusChange: (hasFocus) {
+                            /*  if (!hasFocus) {
                               if (task.isNewItem) {
                                 taskListProvider.deleteEditorItem();
                               } else {
@@ -74,86 +75,88 @@ class TaskListTile extends StatelessWidget {
                                 });
                               }
                             }*/
-                            },
-                            child: TextField(
-                                keyboardType: TextInputType.multiline,
-                                maxLines: null,
-                                controller:
-                                    taskListProvider.textEditingController,
-                                decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: taskListProvider.isNewItem
-                                        ? "New task name"
-                                        : null),
-                                autofocus: true,
-                                textInputAction: TextInputAction.newline,
-                                onSubmitted: (value) async {
-                                  if (value.isNotEmpty) {
-                                    if (taskListProvider.isNewItem) {
-                                      await taskListProvider.onAddTask(
-                                          value, context);
-                                      taskListProvider.deleteEditorItem();
-                                    } else {
-                                      var tempTask = Task.from(task);
-                                      tempTask.description = value;
-                                      if (tempTask.description.endsWith('\n')) {
-                                        tempTask.description =
-                                            tempTask.description.substring(
-                                                0,
-                                                tempTask.description.length -
-                                                    1);
-                                      }
-                                      var res = await updateTask(tempTask);
-                                      if (res) {
-                                        task.description = tempTask.description;
-                                        task.editMode = false;
-                                        taskListProvider.refresh();
-                                      }
+                          },
+                          child: TextField(
+                              keyboardType: TextInputType.multiline,
+                              maxLines: null,
+                              controller:
+                                  taskListProvider.textEditingController,
+                              decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: taskListProvider.isNewItem
+                                      ? "New task name"
+                                      : null),
+                              autofocus: true,
+                              textInputAction: TextInputAction.newline,
+                              onSubmitted: (value) async {
+                                if (value.isNotEmpty) {
+                                  if (taskListProvider.isNewItem) {
+                                    await taskListProvider.onAddTask(
+                                        value, context);
+                                    taskListProvider.deleteEditorItem();
+                                  } else {
+                                    var tempTask = Task.from(task);
+                                    tempTask.description = value;
+                                    if (tempTask.description.endsWith('\n')) {
+                                      tempTask.description =
+                                          tempTask.description.substring(0,
+                                              tempTask.description.length - 1);
+                                    }
+                                    var res = await updateTask(tempTask);
+                                    if (res) {
+                                      task.description = tempTask.description;
+                                      task.editMode = false;
+                                      taskListProvider.refresh();
                                     }
                                   }
-                                }),
-                          )))),
-            ]),
-            if (task.fileSize > 0) ...[
-              const Expanded(child: Divider()),
-              if (task.previewSmallImageData != null)
-                Image.memory(task.previewSmallImageData as Uint8List)
-              else if (task.fileName.isNotEmpty)
-                DecoratedBox(
-                    // chat bubble decoration
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: GestureDetector(
-                      //onTap: () => onTapOnFileMessage(task, context),
-                      child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Icon(Icons.file_present_rounded,
-                                    color: Colors.white),
-                                const SizedBox(width: 10),
-                                FittedBox(
-                                    fit: BoxFit.fill,
-                                    alignment: Alignment.center,
-                                    child: SelectableText(
-                                      task.fileName,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge!
-                                          .copyWith(color: Colors.white),
-                                    )),
-                              ])),
-                    )),
-            ],
-            Wrap(alignment: WrapAlignment.spaceAround, children: [
+                                }
+                              }),
+                        )))),
+          ]),
+          if (task.fileSize > 0) ...[
+            const Expanded(child: Divider()),
+            if (task.previewSmallImageData != null)
+              Image.memory(task.previewSmallImageData as Uint8List)
+            else if (task.fileName.isNotEmpty)
+              DecoratedBox(
+                  // chat bubble decoration
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: GestureDetector(
+                    //onTap: () => onTapOnFileMessage(task, context),
+                    child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Icon(Icons.file_present_rounded,
+                                  color: Colors.white),
+                              const SizedBox(width: 10),
+                              FittedBox(
+                                  fit: BoxFit.fill,
+                                  alignment: Alignment.center,
+                                  child: SelectableText(
+                                    task.fileName,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge!
+                                        .copyWith(color: Colors.white),
+                                  )),
+                            ])),
+                  )),
+          ],
+          Wrap(
+            alignment: WrapAlignment.spaceAround,
+            children: [
               OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    shape: const StadiumBorder(),
+                    shape: const StadiumBorder(
+                      side: BorderSide(width: 3.0, color: Colors.blue),
+                    ),
                   ),
                   onPressed: taskListProvider.loading
                       ? null
@@ -177,7 +180,9 @@ class TaskListTile extends StatelessWidget {
               const SizedBox(width: 10),
               OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    shape: const StadiumBorder(),
+                    shape: const StadiumBorder(
+                      side: BorderSide(width: 3.0, color: Colors.blue),
+                    ),
                   ),
                   onPressed: () {
                     taskListProvider.taskEditMode = false;
@@ -188,9 +193,14 @@ class TaskListTile extends StatelessWidget {
                       taskListProvider.refresh();
                     }
                   },
-                  child: const Text("Cancel"))
-            ]),
-          ]));
+                  child: const Text(
+                    "Cancel",
+                    style: TextStyle(color: Colors.blue, fontSize: 13),
+                  ))
+            ],
+          ),
+        ]),
+      );
     } else {
       return GestureDetectorWithMenu(
         onDelete: () async {
@@ -211,26 +221,55 @@ class TaskListTile extends StatelessWidget {
                 task),
             onTap: () => onTap(task, taskListProvider, context),
             //leading:
-            title: taskListProvider.searchMode
-                ? HighlightText(
-                    highlightColor: Colors.red,
-                    text: task.description,
-                    words: taskListProvider.searchHighlightedWords,
-                    maxLines: 5,
-                  )
-                : Text(
-                    task.description,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 5,
-                    style: task.cancelled
-                        ? const TextStyle(
-                            decoration: TextDecoration.lineThrough,
-                            fontStyle: FontStyle.italic)
-                        : null,
-                    textAlign: TextAlign.left,
-                  ),
-            subtitle: Column(
+            title: Row(
               children: [
+                if (task.completed)
+                  const Label(
+                    text: "Done",
+                    backgroundColor: Colors.green,
+                  ),
+                if (task.cancelled)
+                  const Label(
+                    text: "Cancelled",
+                    backgroundColor: Colors.grey,
+                  ),
+                Spacer(),
+                Checkbox(
+                    checkColor: task.cancelled ? Colors.grey : null,
+                    shape: const CircleBorder(),
+                    fillColor: MaterialStateProperty.resolveWith((states) {
+                      if (task.cancelled) {
+                        return Colors.grey;
+                      } else if (task.closed) return Colors.green;
+                    }),
+                    // fillColor: MaterialStateProperty.all(
+                    //     task.cancelled ? Colors.grey : Colors.green),
+                    value: task.closed,
+                    onChanged: (value) => taskClosedOnChanged(
+                        value, task, taskListProvider, context)),
+              ],
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                taskListProvider.searchMode
+                    ? HighlightText(
+                        highlightColor: Colors.red,
+                        text: task.description,
+                        words: taskListProvider.searchHighlightedWords,
+                        maxLines: 5,
+                      )
+                    : Text(
+                        task.description,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 5,
+                        style: task.cancelled
+                            ? const TextStyle(
+                                decoration: TextDecoration.lineThrough,
+                                fontStyle: FontStyle.italic)
+                            : null,
+                        textAlign: TextAlign.left,
+                      ),
                 if (task.lastMessage.isNotEmpty || task.unreadMessages > 0)
                   taskListProvider.searchMode
                       ? HighlightText(
@@ -262,34 +301,6 @@ class TaskListTile extends StatelessWidget {
                               if (task.unreadMessages > 0)
                                 NumberInStadium(number: task.unreadMessages),
                             ]),
-                Row(
-                  children: [
-                    if (task.completed)
-                      const Label(
-                        text: "Done",
-                        backgroundColor: Colors.green,
-                      ),
-                    if (task.cancelled)
-                      const Label(
-                        text: "Cancelled",
-                        backgroundColor: Colors.grey,
-                      ),
-                    Spacer(),
-                    Checkbox(
-                        checkColor: task.cancelled ? Colors.grey : null,
-                        shape: const CircleBorder(),
-                        fillColor: MaterialStateProperty.resolveWith((states) {
-                          if (task.cancelled) {
-                            return Colors.grey;
-                          } else if (task.closed) return Colors.green;
-                        }),
-                        // fillColor: MaterialStateProperty.all(
-                        //     task.cancelled ? Colors.grey : Colors.green),
-                        value: task.closed,
-                        onChanged: (value) => taskClosedOnChanged(
-                            value, task, taskListProvider, context)),
-                  ],
-                )
               ],
             ),
           ),

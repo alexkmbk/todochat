@@ -69,7 +69,7 @@ class TextFieldEx extends StatelessWidget {
               borderSide: const BorderSide(color: Colors.grey),
             ),
             focusedBorder: const OutlineInputBorder(
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
+              borderSide: const BorderSide(color: Colors.lightBlue, width: 2),
             ),
             border: border ??
                 const OutlineInputBorder(
@@ -753,6 +753,7 @@ class Label extends StatelessWidget {
     if (onPressed != null || clickableCursor) {
       return AbsorbPointer(
           child: ActionChip(
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 3),
         visualDensity: const VisualDensity(horizontal: 0.0, vertical: -4),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: const RoundedRectangleBorder(
@@ -764,19 +765,33 @@ class Label extends StatelessWidget {
         ),
       ));
     } else {
-      return Chip(
-        //labelPadding: EdgeInsets.all(0.0),
-        padding: EdgeInsets.all(0.0),
-        visualDensity: const VisualDensity(horizontal: -4.0, vertical: -4.0),
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(5))),
-        backgroundColor: backgroundColor,
-        label: Text(
+      return Container(
+        //color: backgroundColor,
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+        decoration: ShapeDecoration(
+          color: backgroundColor,
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5))),
+        ),
+        alignment: Alignment.topLeft,
+        child: Text(
           style: TextStyle(fontSize: 14, height: 1),
           text,
         ),
       );
+      // return Chip(
+      //   //labelPadding: EdgeInsets.all(0.0),
+      //   padding: EdgeInsets.all(0.0),
+      //   visualDensity: const VisualDensity(horizontal: -4.0, vertical: -4.0),
+      //   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      //   shape: const RoundedRectangleBorder(
+      //       borderRadius: BorderRadius.all(Radius.circular(5))),
+      //   backgroundColor: backgroundColor,
+      //   label: Text(
+      //     style: TextStyle(fontSize: 14, height: 1),
+      //     text,
+      //   ),
+      // );
     }
   }
 }

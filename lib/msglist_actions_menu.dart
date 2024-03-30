@@ -82,6 +82,7 @@ class ActionsMenu extends StatelessWidget {
     ];
 
     return PopupMenuButton(
+      color: Colors.white,
       shape: ContinuousRectangleBorder(
         borderRadius: BorderRadius.circular(30),
       ),

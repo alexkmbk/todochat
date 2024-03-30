@@ -72,10 +72,13 @@ class MyApp extends StatelessWidget {
           navigatorKey: NavigationService.navigatorKey,
           title: 'ToDo Chat',
           theme: ThemeData(
+            cardColor: Colors.white,
+            dialogBackgroundColor: Colors.white,
             textTheme: Theme.of(context).textTheme.apply(
-                  fontSizeFactor: 1.1,
+                  fontSizeFactor: 1.0,
                   fontSizeDelta: 2.0,
                 ),
+            scaffoldBackgroundColor: Colors.grey[100],
             primarySwatch: Colors.blue,
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
