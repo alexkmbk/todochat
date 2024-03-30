@@ -65,7 +65,16 @@ class TextFieldEx extends StatelessWidget {
             labelText: labelText,
             hintText: hintText,
             hintStyle: const TextStyle(color: Colors.grey),
-            border: border ?? const OutlineInputBorder(),
+            enabledBorder: const OutlineInputBorder(
+              borderSide: const BorderSide(color: Colors.grey),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: const BorderSide(color: Colors.blue, width: 2),
+            ),
+            border: border ??
+                const OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.grey),
+                ),
             prefixIcon: prefixIcon,
             suffixIcon: showClearButton ||
                     (choiceList != null && choiceList!.isNotEmpty)

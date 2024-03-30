@@ -72,13 +72,14 @@ dependencies:
   google_fonts: ^6.1.0
   open_file_plus: ^3.4.0
   #flutter_list_view: ^1.1.21
-  easy_image_viewer: ^1.2.1
+  easy_image_viewer: ^1.4.1
   #filter_list: ^1.0.2
   #dropdown_textfield: ^1.0.8
   drop_down_search_field: ^1.0.0
   #loadmore_listview: ^1.0.7
   very_good_infinite_list: ^0.7.1
   scroll_to_index: ^3.0.1
+  super_clipboard: ^0.8.5
   
 
 # dependency_overrides:

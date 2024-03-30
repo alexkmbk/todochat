@@ -15,40 +15,43 @@ class SearchField extends StatelessWidget {
         Provider.of<TaskListProvider>(context, listen: false);
     // final msgListProvider =
     //     Provider.of<MsgListProvider>(context, listen: false);
-    return TextFieldEx(
-        focusNode: searchFocusNode,
-        textInputAction: TextInputAction.done,
-        controller: searchController,
-        hintText: "Search",
-        fillColor: Colors.white,
-        prefixIcon: Icon(Icons.search),
-        onCleared: () {
-          //taskListProvider.setCurrentTask(null, context);
-          taskListProvider.clear(context);
-          taskListProvider.searchMode = false;
-          // setState(() {
-          //   taskListProvider.searchMode = false;
-          //   widget.tasksPageState.showSearch = isDesktopMode;
-          // });
-          taskListProvider.refresh();
-          taskListProvider.requestTasks(context);
-        },
-        onFieldSubmitted: (value) async {
-          taskListProvider.search = value;
-          if (value.isNotEmpty) {
-            //msgListProvider.clear();
-            taskListProvider.searchMode = true;
+    return SizedBox(
+      height: 50, // <-- TextField height
+      child: TextFieldEx(
+          focusNode: searchFocusNode,
+          textInputAction: TextInputAction.done,
+          controller: searchController,
+          hintText: "Search",
+          fillColor: Colors.white,
+          prefixIcon: Icon(Icons.search),
+          onCleared: () {
+            //taskListProvider.setCurrentTask(null, context);
             taskListProvider.clear(context);
-            taskListProvider.refresh();
-            await taskListProvider.searchTasks(value, context);
-            // if (isDesktopMode) {
-            //   msgListProvider.task = taskListProvider.currentTask ?? Task();
-            //   msgListProvider.requestMessages(taskListProvider, context);
-            // }
-          } else {
             taskListProvider.searchMode = false;
-          }
-          //FocusScope.of(context).requestFocus();
-        });
+            // setState(() {
+            //   taskListProvider.searchMode = false;
+            //   widget.tasksPageState.showSearch = isDesktopMode;
+            // });
+            taskListProvider.refresh();
+            taskListProvider.requestTasks(context);
+          },
+          onFieldSubmitted: (value) async {
+            taskListProvider.search = value;
+            if (value.isNotEmpty) {
+              //msgListProvider.clear();
+              taskListProvider.searchMode = true;
+              taskListProvider.clear(context);
+              taskListProvider.refresh();
+              await taskListProvider.searchTasks(value, context);
+              // if (isDesktopMode) {
+              //   msgListProvider.task = taskListProvider.currentTask ?? Task();
+              //   msgListProvider.requestMessages(taskListProvider, context);
+              // }
+            } else {
+              taskListProvider.searchMode = false;
+            }
+            //FocusScope.of(context).requestFocus();
+          }),
+    );
   }
 }

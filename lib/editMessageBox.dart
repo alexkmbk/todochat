@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 import 'package:pasteboard/pasteboard.dart';
+import 'package:super_clipboard/super_clipboard.dart';
 import 'package:http/http.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
@@ -124,34 +125,44 @@ class EditMessageBox extends StatelessWidget {
                             }
                           }
                         } else {
-                          var html = await Pasteboard.html;
-                          if (html != null && html.isNotEmpty) {
-                            String imageURL = getImageURLFromHTML(html);
-                            if (imageURL.isNotEmpty) {
-                              Response response;
-                              try {
-                                response = await get(Uri.parse(imageURL));
-                              } catch (e) {
-                                toast(e.toString(), context);
-                                return;
-                              }
+                          final clipboard = SystemClipboard.instance;
+                          if (clipboard == null) {
+                            return; // Clipboard API is not supported on this platform.
+                          }
+                          final reader = await clipboard.read();
+                          if (reader.canProvide(Formats.htmlText)) {
+                            final html =
+                                await reader.readValue(Formats.htmlText);
 
-                              if (response.statusCode == 200) {
-                                msglist.addUploadingItem(
-                                    Message(
-                                        taskID: msglist.task.ID,
-                                        userID: currentUserID,
-                                        fileName: "clipboard_image.png",
-                                        loadingFile: true,
-                                        isImage: true),
-                                    response.bodyBytes);
+                            //var html = await Pasteboard.html;
+                            if (html != null && html.isNotEmpty) {
+                              String imageURL = getImageURLFromHTML(html);
+                              if (imageURL.isNotEmpty) {
+                                Response response;
+                                try {
+                                  response = await get(Uri.parse(imageURL));
+                                } catch (e) {
+                                  toast(e.toString(), context);
+                                  return;
+                                }
+
+                                if (response.statusCode == 200) {
+                                  msglist.addUploadingItem(
+                                      Message(
+                                          taskID: msglist.task.ID,
+                                          userID: currentUserID,
+                                          fileName: "clipboard_image.png",
+                                          loadingFile: true,
+                                          isImage: true),
+                                      response.bodyBytes);
+                                }
+                              } else {
+                                _messageInputController.text = html.trim();
+                                _messageInputController.selection =
+                                    TextSelection.fromPosition(TextPosition(
+                                        offset: _messageInputController
+                                            .text.length));
                               }
-                            } else {
-                              _messageInputController.text = html.trim();
-                              _messageInputController.selection =
-                                  TextSelection.fromPosition(TextPosition(
-                                      offset:
-                                          _messageInputController.text.length));
                             }
                           }
                         }
