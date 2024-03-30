@@ -210,19 +210,7 @@ class TaskListTile extends StatelessWidget {
                     taskListProvider.currentTask!.ID == task.ID,
                 task),
             onTap: () => onTap(task, taskListProvider, context),
-            leading: Checkbox(
-                checkColor: task.cancelled ? Colors.grey : null,
-                shape: const CircleBorder(),
-                fillColor: MaterialStateProperty.resolveWith((states) {
-                  if (task.cancelled) {
-                    return Colors.grey;
-                  } else if (task.closed) return Colors.green;
-                }),
-                // fillColor: MaterialStateProperty.all(
-                //     task.cancelled ? Colors.grey : Colors.green),
-                value: task.closed,
-                onChanged: (value) => taskClosedOnChanged(
-                    value, task, taskListProvider, context)),
+            //leading:
             title: taskListProvider.searchMode
                 ? HighlightText(
                     highlightColor: Colors.red,
@@ -276,7 +264,6 @@ class TaskListTile extends StatelessWidget {
                             ]),
                 Row(
                   children: [
-                    const Spacer(),
                     if (task.completed)
                       const Label(
                         text: "Done",
@@ -287,6 +274,20 @@ class TaskListTile extends StatelessWidget {
                         text: "Cancelled",
                         backgroundColor: Colors.grey,
                       ),
+                    Spacer(),
+                    Checkbox(
+                        checkColor: task.cancelled ? Colors.grey : null,
+                        shape: const CircleBorder(),
+                        fillColor: MaterialStateProperty.resolveWith((states) {
+                          if (task.cancelled) {
+                            return Colors.grey;
+                          } else if (task.closed) return Colors.green;
+                        }),
+                        // fillColor: MaterialStateProperty.all(
+                        //     task.cancelled ? Colors.grey : Colors.green),
+                        value: task.closed,
+                        onChanged: (value) => taskClosedOnChanged(
+                            value, task, taskListProvider, context)),
                   ],
                 )
               ],
