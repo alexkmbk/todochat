@@ -24,7 +24,7 @@ class MainMenu extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
-      const PopupMenuDivider(),
+      if (currentUserName.isNotEmpty) const PopupMenuDivider(),
       PopupMenuItem(
         child: const Text("Logout"),
         onTap: () async {
@@ -50,8 +50,10 @@ class MainMenu extends StatelessWidget {
     ];
 
     return PopupMenuButton(
+        color: Colors.white,
+        popUpAnimationStyle: AnimationStyle.noAnimation,
         shape: ContinuousRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(10),
         ),
 
         // add icon, by default "3 dot" icon

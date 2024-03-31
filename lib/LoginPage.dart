@@ -443,6 +443,7 @@ Future<bool> checkLogin() async {
   }
 
   if (response.statusCode == 200) {
+    currentUserName = jsonDecode(response.body).toString();
     return true;
   }
 

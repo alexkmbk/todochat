@@ -12,6 +12,7 @@ import (
 
 	. "todochat_server/App"
 	. "todochat_server/DB"
+	"todochat_server/constrollers/Sessions"
 )
 
 type WSMessage struct {
@@ -96,6 +97,57 @@ func SendTask(task *Task) {
 	WSHub.broadcast <- &WSMessage{"createTask", task, 0}
 }
 
+func GetMessagesDB(SessionID uuid.UUID, lastID int64, limit int64, taskID int64, filter string, messageIDPosition int64) []*Message {
+
+	//	start := time.Now()
+	Log("Get Messages")
+
+	var messages []*Message
+	//DB.Where("task_id = ?", taskID).Order("created_at desc").Offset(offset).Limit(limit).Find(&messages)
+	if lastID == 0 {
+		if messageIDPosition > 0 {
+			var addMessages []*Message
+			DB.Order("ID desc").Where("task_id = ? AND ID >= ?", taskID, messageIDPosition).Find(&addMessages)
+			DB.Order("ID desc").Where("task_id = ? AND ID < ?", taskID, messageIDPosition).Limit(int(limit)).Find(&messages)
+			messages = append(addMessages, messages...)
+			/*DB.Raw("? UNION ?",
+				DB.Order("ID desc").Where("task_id = ? AND ID >= ?", taskID, messageIDPosition).Model(&Message{}),
+				DB.Order("ID desc").Where("task_id = ? AND ID >= ?", taskID, messageIDPosition).Model(&Message{}),
+			).Scan(&messages)*/
+		} else {
+			DB.Order("ID desc").Where("task_id = ?", taskID).Limit(int(limit)).Find(&messages)
+		}
+	} else {
+		DB.Order("ID desc").Where("task_id = ? AND ID < ?", taskID, lastID).Limit(int(limit)).Find(&messages)
+	}
+
+	UserID := Sessions.GetUserIDBySessionID(SessionID)
+	if UserID != 0 {
+		for i := range messages {
+			seenMessage := SeenMessage{UserID: UserID, TaskID: taskID, MessageID: messages[i].ID}
+			if DB.Find(&seenMessage).RowsAffected == 0 {
+				DB.Create(&seenMessage)
+			}
+		}
+
+		seenTask := SeenTask{UserID: UserID, TaskID: taskID}
+
+		if DB.Find(&seenTask).RowsAffected == 0 { // not found
+			DB.Create(&seenTask)
+		}
+	}
+
+	/*res, err := json.Marshal(messages)
+
+	if err != nil {
+		res = []byte{}
+	}*/
+	//elapsed := time.Since(start)
+	//log.Printf("Get messages took %s", elapsed.Seconds())
+
+	return messages
+}
+
 // readPump pumps messages from the websocket connection to the hub.
 //
 // The application runs readPump in a per-connection goroutine. The application
@@ -106,7 +158,7 @@ func (c *Client) readPump() {
 		c.hub.unregister <- c
 		c.conn.Close()
 		if c.sessionID != uuid.Nil {
-			DeleteSession(c.sessionID)
+			Sessions.DeleteSession(c.sessionID)
 			c.sessionID = uuid.Nil
 		}
 
@@ -152,14 +204,14 @@ func (c *Client) readPump() {
 
 		if query["command"] == "init" {
 			sessionID, err = uuid.Parse(query["sessionID"])
-			if sessionID == uuid.Nil || !SessionIDExists(sessionID) {
+			if sessionID == uuid.Nil || !Sessions.SessionIDExists(sessionID) {
 				Log("CLOSE WS CONNECTION ON init!")
 				break
 			}
 			c.sessionID = sessionID
 		} else if query["command"] == "getMessages" {
 			sessionID, err = uuid.Parse(query["sessionID"])
-			if sessionID == uuid.Nil || !SessionIDExists(sessionID) {
+			if sessionID == uuid.Nil || !Sessions.SessionIDExists(sessionID) {
 				Log("CLOSE WS CONNECTION ON getMessages!")
 				break
 			}
@@ -190,7 +242,7 @@ func (c *Client) writePump() {
 		ticker.Stop()
 		c.conn.Close()
 		if c.sessionID != uuid.Nil {
-			DeleteSession(c.sessionID)
+			Sessions.DeleteSession(c.sessionID)
 			c.sessionID = uuid.Nil
 		}
 	}()

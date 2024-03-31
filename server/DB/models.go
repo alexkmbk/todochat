@@ -2,7 +2,16 @@ package DB
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
+
+// Session Session info
+type Session struct {
+	SessionID uuid.UUID `gorm:"primary_key"`
+	LastVisit time.Time `gorm:"index"`
+	UserID    int64     `gorm:"foreignKey:ID"`
+}
 
 // User ... idk
 type User struct {

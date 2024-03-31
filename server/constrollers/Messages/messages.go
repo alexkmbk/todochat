@@ -24,10 +24,11 @@ import (
 	. "todochat_server/App"
 
 	. "todochat_server/DB"
+
 	WS "todochat_server/constrollers/WebSocked"
 
+	"todochat_server/constrollers/Sessions"
 	Tasks "todochat_server/constrollers/Tasks"
-	Users "todochat_server/constrollers/Users"
 )
 
 func GetFile(w http.ResponseWriter, r *http.Request) {
@@ -140,7 +141,7 @@ func GetMessages__(w http.ResponseWriter, r *http.Request) {
 
 func GetMessages(w http.ResponseWriter, r *http.Request) {
 
-	userID := GetUserID(w, r)
+	userID := Sessions.GetUserID(w, r)
 	if userID == 0 {
 		return
 	}
@@ -228,7 +229,7 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 
 func CreateMessage(w http.ResponseWriter, r *http.Request) {
 
-	userID := GetUserID(w, r)
+	userID := Sessions.GetUserID(w, r)
 	if userID == 0 {
 		return
 	}
@@ -242,7 +243,7 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, success := Users.GetItemByID(userID)
+	user, success := Sessions.GetUserByID(userID)
 	if success {
 		message.UserName = user.Name
 	}
@@ -313,7 +314,7 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 
 func CreateMessageWithFile(w http.ResponseWriter, r *http.Request) {
 
-	userID := GetUserID(w, r)
+	userID := Sessions.GetUserID(w, r)
 	if userID == 0 {
 		return
 	}
@@ -388,7 +389,7 @@ func CreateMessageWithFile(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	user, success := Users.GetItemByID(userID)
+	user, success := Sessions.GetUserByID(userID)
 	if success {
 		message.UserName = user.Name
 	}

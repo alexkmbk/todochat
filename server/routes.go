@@ -6,12 +6,12 @@ import (
 	"path/filepath"
 
 	"todochat_server/App"
-	. "todochat_server/DB"
+	//. "todochat_server/DB"
 	"todochat_server/constrollers/Messages"
+	"todochat_server/constrollers/Sessions"
 
 	"todochat_server/constrollers/Projects"
 	"todochat_server/constrollers/Tasks"
-	"todochat_server/constrollers/Users"
 	WS "todochat_server/constrollers/WebSocked"
 
 	"github.com/gorilla/mux"
@@ -36,7 +36,8 @@ func WebClient(fs http.Handler) http.HandlerFunc {
 
 func CommonHandler(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !CheckSessionID(w, r, true) {
+		res, _ := Sessions.CheckSessionID(w, r, true)
+		if !res {
 			return
 		}
 		f(w, r)
@@ -57,14 +58,14 @@ func originRequest(r *http.Request, origin string) bool {
 	return true
 }
 
-//GetRoutesHandler inits router
+// GetRoutesHandler inits router
 func GetRoutesHandler() http.Handler {
 
 	router := mux.NewRouter()
 
 	router.HandleFunc("/healthz", App.Healthz).Methods("GET")
-	router.HandleFunc("/login", Users.Login).Methods("POST")
-	router.HandleFunc("/checkLogin", CheckLogin).Methods("GET")
+	router.HandleFunc("/login", Sessions.Login).Methods("POST")
+	router.HandleFunc("/checkLogin", Sessions.CheckLogin).Methods("GET")
 	router.HandleFunc("/tasks", CommonHandler(Tasks.GetItems)).Methods("GET")
 	router.HandleFunc("/searchTasks", CommonHandler(Tasks.SearchItems)).Methods("GET")
 
@@ -84,7 +85,7 @@ func GetRoutesHandler() http.Handler {
 	router.HandleFunc("/updateProject", CommonHandler(Projects.UpdateItem)).Methods("POST")
 	router.HandleFunc("/deleteProject/{id}", CommonHandler(Projects.DeleteItem)).Methods("DELETE")
 
-	router.HandleFunc("/registerNewUser", Users.RegisterNewUser).Methods("POST")
+	router.HandleFunc("/registerNewUser", Sessions.RegisterNewUser).Methods("POST")
 
 	//router.HandleFunc("/initMessagesWS", WS.InitMessagesWS).Methods("GET")
 	router.HandleFunc("/initMessagesWS", func(w http.ResponseWriter, r *http.Request) {

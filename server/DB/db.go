@@ -7,8 +7,6 @@ import (
 
 	. "todochat_server/App"
 
-	"github.com/google/uuid"
-
 	//"gorm.io/driver/sqlite"
 
 	"gorm.io/gorm"
@@ -100,55 +98,4 @@ func InitDB(DBMS string, DBUserName string, DBPassword string, DBName string, DB
 	// Sessions
 	DB.AutoMigrate(&Session{})
 
-}
-
-func GetMessagesDB(SessionID uuid.UUID, lastID int64, limit int64, taskID int64, filter string, messageIDPosition int64) []*Message {
-
-	//	start := time.Now()
-	Log("Get Messages")
-
-	var messages []*Message
-	//DB.Where("task_id = ?", taskID).Order("created_at desc").Offset(offset).Limit(limit).Find(&messages)
-	if lastID == 0 {
-		if messageIDPosition > 0 {
-			var addMessages []*Message
-			DB.Order("ID desc").Where("task_id = ? AND ID >= ?", taskID, messageIDPosition).Find(&addMessages)
-			DB.Order("ID desc").Where("task_id = ? AND ID < ?", taskID, messageIDPosition).Limit(int(limit)).Find(&messages)
-			messages = append(addMessages, messages...)
-			/*DB.Raw("? UNION ?",
-				DB.Order("ID desc").Where("task_id = ? AND ID >= ?", taskID, messageIDPosition).Model(&Message{}),
-				DB.Order("ID desc").Where("task_id = ? AND ID >= ?", taskID, messageIDPosition).Model(&Message{}),
-			).Scan(&messages)*/
-		} else {
-			DB.Order("ID desc").Where("task_id = ?", taskID).Limit(int(limit)).Find(&messages)
-		}
-	} else {
-		DB.Order("ID desc").Where("task_id = ? AND ID < ?", taskID, lastID).Limit(int(limit)).Find(&messages)
-	}
-
-	UserID := GetUserIDBySessionID(SessionID)
-	if UserID != 0 {
-		for i := range messages {
-			seenMessage := SeenMessage{UserID: UserID, TaskID: taskID, MessageID: messages[i].ID}
-			if DB.Find(&seenMessage).RowsAffected == 0 {
-				DB.Create(&seenMessage)
-			}
-		}
-
-		seenTask := SeenTask{UserID: UserID, TaskID: taskID}
-
-		if DB.Find(&seenTask).RowsAffected == 0 { // not found
-			DB.Create(&seenTask)
-		}
-	}
-
-	/*res, err := json.Marshal(messages)
-
-	if err != nil {
-		res = []byte{}
-	}*/
-	//elapsed := time.Since(start)
-	//log.Printf("Get messages took %s", elapsed.Seconds())
-
-	return messages
 }

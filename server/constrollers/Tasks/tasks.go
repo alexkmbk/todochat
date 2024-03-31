@@ -13,12 +13,12 @@ import (
 
 	. "todochat_server/App"
 	. "todochat_server/DB"
-	"todochat_server/constrollers/Users"
+	"todochat_server/constrollers/Sessions"
 	WS "todochat_server/constrollers/WebSocked"
 )
 
 func CreateItem(w http.ResponseWriter, r *http.Request) {
-	userID := GetUserID(w, r)
+	userID := Sessions.GetUserID(w, r)
 	if userID == 0 {
 		return
 	}
@@ -45,7 +45,7 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 			AuthorID:      userID,
 			ProjectID:     projectID}
 
-		user, success := Users.GetItemByID(userID)
+		user, success := Sessions.GetUserByID(userID)
 		if success {
 			task.AuthorName = user.Name
 		}
@@ -153,7 +153,7 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	UserID := GetUserID(w, r)
+	UserID := Sessions.GetUserID(w, r)
 	if UserID != 0 {
 		for i := range tasks {
 			//seenTask := SeenTask{UserID: UserID, TaskID: tasks[i].ID}
@@ -199,7 +199,7 @@ func SearchItems(w http.ResponseWriter, r *http.Request) {
 
 	projectID := ToInt64(query.Get("ProjectID"))
 
-	UserID := GetUserID(w, r)
+	UserID := Sessions.GetUserID(w, r)
 
 	//filter := query.Get("filter")
 
