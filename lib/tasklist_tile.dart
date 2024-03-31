@@ -224,7 +224,6 @@ class TaskListTile extends StatelessWidget {
               height: 10.0,
               width: 10.0,
               child: Checkbox(
-                  //visualDensity: VisualDensity(horizontal: -4, vertical: -4),
                   checkColor: task.cancelled ? Colors.grey : null,
                   shape: const CircleBorder(),
                   fillColor: MaterialStateProperty.resolveWith((states) {
@@ -263,21 +262,24 @@ class TaskListTile extends StatelessWidget {
                       ? Row(
                           children: [
                             const SizedBox(width: 15),
-                            HighlightText(
-                              leading: task.lastMessageUserName.isNotEmpty
-                                  ? TextSpan(
-                                      text: "${task.lastMessageUserName}: ",
-                                      style: const TextStyle(
-                                          fontStyle: FontStyle.italic,
-                                          color: Colors.blue))
-                                  : null,
-                              highlightColor: Colors.red,
-                              text: task.lastMessage,
-                              textStyle: const TextStyle(
-                                  fontStyle: FontStyle.italic,
-                                  color: Colors.grey),
-                              words: taskListProvider.searchHighlightedWords,
-                            )
+                            Expanded(
+                              child: HighlightText(
+                                maxLines: 1,
+                                leading: task.lastMessageUserName.isNotEmpty
+                                    ? TextSpan(
+                                        text: "${task.lastMessageUserName}: ",
+                                        style: const TextStyle(
+                                            fontStyle: FontStyle.italic,
+                                            color: Colors.blue))
+                                    : null,
+                                highlightColor: Colors.red,
+                                text: task.lastMessage,
+                                textStyle: const TextStyle(
+                                    fontStyle: FontStyle.italic,
+                                    color: Colors.grey),
+                                words: taskListProvider.searchHighlightedWords,
+                              ),
+                            ),
                           ],
                         )
                       : Row(
@@ -285,24 +287,25 @@ class TaskListTile extends StatelessWidget {
                           children: [
                               const SizedBox(width: 15),
                               Expanded(
-                                  child: Text.rich(
-                                TextSpan(children: [
-                                  if (task.lastMessageUserName.isNotEmpty)
+                                child: Text.rich(
+                                  TextSpan(children: [
+                                    if (task.lastMessageUserName.isNotEmpty)
+                                      TextSpan(
+                                          text: "${task.lastMessageUserName}: ",
+                                          style: const TextStyle(
+                                              fontStyle: FontStyle.italic,
+                                              color: Colors.blue)),
                                     TextSpan(
-                                        text: "${task.lastMessageUserName}: ",
-                                        style: const TextStyle(
-                                            fontStyle: FontStyle.italic,
-                                            color: Colors.blue)),
-                                  TextSpan(
-                                    text: task.lastMessage,
-                                    style: const TextStyle(
-                                        fontStyle: FontStyle.italic,
-                                        color: Colors.grey),
-                                  ),
-                                ]),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              )),
+                                      text: task.lastMessage,
+                                      style: const TextStyle(
+                                          fontStyle: FontStyle.italic,
+                                          color: Colors.grey),
+                                    ),
+                                  ]),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
                               if (task.unreadMessages > 0)
                                 NumberInStadium(number: task.unreadMessages),
                             ]),
