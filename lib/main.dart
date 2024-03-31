@@ -78,6 +78,7 @@ class MyApp extends StatelessWidget {
             textTheme: Theme.of(context).textTheme.apply(
                   fontSizeFactor: 1.0,
                   fontSizeDelta: 2.0,
+                  displayColor: Colors.grey,
                 ),
             scaffoldBackgroundColor: Colors.grey[100],
             primarySwatch: Colors.blue,
