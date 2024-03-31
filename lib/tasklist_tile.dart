@@ -214,41 +214,29 @@ class TaskListTile extends StatelessWidget {
         onEdit: () => onLongPress(task, taskListProvider),
         child: Material(
           child: ListTile(
-            horizontalTitleGap: 0,
+            horizontalTitleGap: 5,
             tileColor: getTileColor(
                 taskListProvider.currentTask != null &&
                     taskListProvider.currentTask!.ID == task.ID,
                 task),
             onTap: () => onTap(task, taskListProvider, context),
-            //leading:
-            title: Row(
-              children: [
-                if (task.completed)
-                  const Label(
-                    text: "Done",
-                    backgroundColor: Colors.green,
-                  ),
-                if (task.cancelled)
-                  const Label(
-                    text: "Cancelled",
-                    backgroundColor: Colors.grey,
-                  ),
-                Spacer(),
-                Checkbox(
-                    checkColor: task.cancelled ? Colors.grey : null,
-                    shape: const CircleBorder(),
-                    fillColor: MaterialStateProperty.resolveWith((states) {
-                      if (task.cancelled) {
-                        return Colors.grey;
-                      } else if (task.closed) return Colors.green;
-                    }),
-                    // fillColor: MaterialStateProperty.all(
-                    //     task.cancelled ? Colors.grey : Colors.green),
-                    value: task.closed,
-                    onChanged: (value) => taskClosedOnChanged(
-                        value, task, taskListProvider, context)),
-              ],
+            leading: SizedBox(
+              height: 10.0,
+              width: 10.0,
+              child: Checkbox(
+                  //visualDensity: VisualDensity(horizontal: -4, vertical: -4),
+                  checkColor: task.cancelled ? Colors.grey : null,
+                  shape: const CircleBorder(),
+                  fillColor: MaterialStateProperty.resolveWith((states) {
+                    if (task.cancelled) {
+                      return Colors.grey;
+                    } else if (task.closed) return Colors.green;
+                  }),
+                  value: task.closed,
+                  onChanged: (value) => taskClosedOnChanged(
+                      value, task, taskListProvider, context)),
             ),
+            //title:
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -272,19 +260,30 @@ class TaskListTile extends StatelessWidget {
                       ),
                 if (task.lastMessage.isNotEmpty || task.unreadMessages > 0)
                   taskListProvider.searchMode
-                      ? HighlightText(
-                          leading: task.lastMessageUserName.isNotEmpty
-                              ? TextSpan(
-                                  text: "${task.lastMessageUserName}: ",
-                                  style: const TextStyle(color: Colors.blue))
-                              : null,
-                          highlightColor: Colors.red,
-                          text: task.lastMessage,
-                          words: taskListProvider.searchHighlightedWords,
+                      ? Row(
+                          children: [
+                            const SizedBox(width: 15),
+                            HighlightText(
+                              leading: task.lastMessageUserName.isNotEmpty
+                                  ? TextSpan(
+                                      text: "${task.lastMessageUserName}: ",
+                                      style: const TextStyle(
+                                          fontStyle: FontStyle.italic,
+                                          color: Colors.blue))
+                                  : null,
+                              highlightColor: Colors.red,
+                              text: task.lastMessage,
+                              textStyle: const TextStyle(
+                                  fontStyle: FontStyle.italic,
+                                  color: Colors.grey),
+                              words: taskListProvider.searchHighlightedWords,
+                            )
+                          ],
                         )
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                              const SizedBox(width: 15),
                               Expanded(
                                   child: Text.rich(
                                 TextSpan(children: [
@@ -292,8 +291,14 @@ class TaskListTile extends StatelessWidget {
                                     TextSpan(
                                         text: "${task.lastMessageUserName}: ",
                                         style: const TextStyle(
+                                            fontStyle: FontStyle.italic,
                                             color: Colors.blue)),
-                                  TextSpan(text: task.lastMessage)
+                                  TextSpan(
+                                    text: task.lastMessage,
+                                    style: const TextStyle(
+                                        fontStyle: FontStyle.italic,
+                                        color: Colors.grey),
+                                  ),
                                 ]),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
@@ -301,6 +306,21 @@ class TaskListTile extends StatelessWidget {
                               if (task.unreadMessages > 0)
                                 NumberInStadium(number: task.unreadMessages),
                             ]),
+                Row(
+                  children: [
+                    Spacer(),
+                    if (task.completed)
+                      const Label(
+                        text: "Done",
+                        backgroundColor: Colors.green,
+                      ),
+                    if (task.cancelled)
+                      const Label(
+                        text: "Cancelled",
+                        backgroundColor: Colors.grey,
+                      ),
+                  ],
+                ),
               ],
             ),
           ),
