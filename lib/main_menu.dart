@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:todochat/SettingsPage.dart';
-import 'LoginPage.dart';
+import 'LoginRegistrationPage.dart';
 import 'customWidgets.dart';
 import 'utils.dart';
 import 'todochat.dart';
@@ -37,14 +37,15 @@ class MainMenu extends StatelessWidget {
         child: const Text("Settings"),
         onTap: () async {
           await Future.delayed(Duration.zero);
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => SettingsPage(
-                      key: UniqueKey(),
-                      restartAppOnChange: true,
-                    )),
-          );
+          await openSettings(context, restartAppOnChange: true);
+          // await Navigator.push(
+          //   context,
+          //   MaterialPageRoute(
+          //       builder: (context) => SettingsPage(
+          //             key: UniqueKey(),
+          //             restartAppOnChange: true,
+          //           )),
+          // );
         },
       )
     ];

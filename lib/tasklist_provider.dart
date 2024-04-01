@@ -8,7 +8,7 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:todochat/tasklist.dart';
 import 'package:todochat/utils.dart';
 import 'HttpClient.dart';
-import 'LoginPage.dart';
+import 'LoginRegistrationPage.dart';
 import 'ProjectsList.dart';
 import 'package:collection/collection.dart';
 import 'highlight_text.dart';

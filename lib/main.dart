@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:todochat/tasklist_provider.dart';
 import 'package:todochat/utils.dart';
 import 'HttpClient.dart';
-import 'LoginPage.dart';
+import 'LoginRegistrationPage.dart';
 import 'ProjectsList.dart';
 import 'SettingsPage.dart';
 import 'customWidgets.dart';
@@ -73,12 +73,20 @@ class MyApp extends StatelessWidget {
           navigatorKey: NavigationService.navigatorKey,
           title: 'ToDo Chat',
           theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+            buttonTheme: ButtonThemeData(
+              buttonColor: Colors.white,
+              colorScheme: ColorScheme.fromSeed(
+                  seedColor: Colors.blue), //  <-- dark color
+              textTheme: ButtonTextTheme
+                  .primary, //  <-- this auto selects the right color
+            ),
             cardColor: Colors.white,
             dialogBackgroundColor: Colors.white,
             textTheme: Theme.of(context).textTheme.apply(
                   fontSizeFactor: 1.0,
                   fontSizeDelta: 2.0,
-                  displayColor: Colors.grey,
+                  //displayColor: Colors.grey,
                 ),
             scaffoldBackgroundColor: Colors.grey[100],
             primarySwatch: Colors.blue,
@@ -243,15 +251,17 @@ class _MyHomePageState extends State<MyHomePage> {
                                             BorderRadius.circular(15)),
                                   ),
                                   onPressed: () async {
-                                    await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => SettingsPage(
-                                                key: UniqueKey(),
-                                                restartAppOnChange: true,
-                                              )),
-                                    );
-                                    setState(() {});
+                                    final res = await openSettings(context,
+                                        restartAppOnChange: true);
+                                    // await Navigator.push(
+                                    //   context,
+                                    //   MaterialPageRoute(
+                                    //       builder: (context) => SettingsPage(
+                                    //             key: UniqueKey(),
+                                    //             restartAppOnChange: true,
+                                    //           )),
+                                    // );
+                                    if (res) setState(() {});
                                   },
                                   child: const Text(
                                     "Settings",

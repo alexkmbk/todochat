@@ -5,7 +5,7 @@ import 'HttpClient.dart';
 import 'customWidgets.dart';
 import 'utils.dart';
 import 'main_menu.dart';
-import 'LoginPage.dart';
+import 'LoginRegistrationPage.dart';
 
 import 'todochat.dart';
 import 'dart:convert';

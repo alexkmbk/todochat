@@ -1,9 +1,27 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'HttpClient.dart';
 import 'customWidgets.dart';
 import 'todochat.dart';
 import 'utils.dart';
+
+Future<bool> openSettings(BuildContext context,
+    {bool restartAppOnChange = true}) async {
+  switch (await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return SettingsPage(restartAppOnChange: restartAppOnChange);
+      })) {
+    case true:
+      return true;
+    case false:
+    case null:
+      return false;
+  }
+  return false;
+}
 
 class SettingsPage extends StatefulWidget {
   final bool restartAppOnChange;
@@ -37,73 +55,79 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        shape: const Border(bottom: BorderSide(color: Colors.grey, width: 3)),
-        automaticallyImplyLeading: false,
-        elevation: 0,
-        backgroundColor: appBarColor,
-        actions: const [TextButton(onPressed: ExitApp, child: Text("Exit"))],
-        title: const Text("SETTINGS",
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 24,
-            )),
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+      // child: Scaffold(
+      //   appBar: AppBar(
+      //     shape: const Border(bottom: BorderSide(color: Colors.grey, width: 3)),
+      //     automaticallyImplyLeading: false,
+      //     elevation: 0,
+      //     backgroundColor: appBarColor,
+      //     actions: const [TextButton(onPressed: ExitApp, child: Text("Exit"))],
+      //     title: const Text("SETTINGS",
+      //         style: TextStyle(
+      //           color: Colors.grey,
+      //           fontSize: 24,
+      //         )),
+      //   ),
+      //   backgroundColor: Colors.white,
+      //   body:
+      child: AlertDialog(
+        title: Row(children: [
+          Text("Settings"),
+          Spacer(),
+          TextButton(onPressed: ExitApp, child: Text("Exit")),
+        ]),
+        titleTextStyle: TextStyle(
+            fontWeight: FontWeight.bold, color: Colors.black, fontSize: 20),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+        //backgroundColor: Color(ColorResources.BLACK_ALPHA_65),
+        content: Form(
+            canPop: false,
+            key: _formKey,
+            child: Column(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    TextFieldEx(
+                        labelText: "Server address",
+                        border: const UnderlineInputBorder(),
+                        width: 300,
+                        onFieldSubmitted: (value) {
+                          checkingConnection = true;
+                          setState(() {});
+                          checkConnectionAndUpdateState();
+                        },
+                        controller: serverAddressController,
+                        textAlign: TextAlign.center,
+                        hintText: 'Server address',
+                        validator: (value) =>
+                            validateEmpty(value, 'Server address'),
+                        choiceList: settings.getStringList("addresses")),
+                    getConnectionIcon(),
+                  ]),
+                ])),
+        actions: [
+          TextButton(
+            child: const Text(
+              'OK',
+              style: TextStyle(fontSize: 16),
+            ),
+            onPressed: () {
+              saveAndClose();
+            },
+            // style: OutlinedButton.styleFrom(
+            //   backgroundColor:
+            //       const Color.fromARGB(255, 20, 125, 199),
+            //   shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(15)),
+            // ),
+          ),
+        ],
       ),
-      backgroundColor: Colors.white,
-      body: Form(
-          onWillPop: () async => false,
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Spacer(),
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                TextFieldEx(
-                    border: const UnderlineInputBorder(),
-                    width: 300,
-                    onFieldSubmitted: (value) {
-                      checkingConnection = true;
-                      setState(() {});
-                      checkConnectionAndUpdateState();
-                    },
-                    controller: serverAddressController,
-                    textAlign: TextAlign.center,
-                    hintText: 'Server address',
-                    validator: (value) =>
-                        validateEmpty(value, 'Server address'),
-                    choiceList: settings.getStringList("addresses")),
-                getConnectionIcon(),
-              ]),
-              const Spacer(),
-              Column(children: [
-                SizedBox(
-                    height: 80,
-                    child: Container(
-                      color: closedTaskColor,
-                      child: Align(
-                          alignment: Alignment.bottomCenter,
-                          child: SizedBox(
-                              width: 200,
-                              height: 50,
-                              child: ElevatedButton(
-                                  child: const Text(
-                                    'Save and close',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                  onPressed: () {
-                                    saveAndClose();
-                                  }))),
-                    )),
-                Container(
-                  height: 20,
-                  color: closedTaskColor,
-                )
-              ])
-            ],
-          )),
     );
   }
 

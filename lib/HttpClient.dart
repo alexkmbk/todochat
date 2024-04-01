@@ -9,7 +9,7 @@ import 'package:todochat/utils.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'msglist_provider.dart';
 import 'todochat.dart';
-import 'LoginPage.dart';
+import 'LoginRegistrationPage.dart';
 import 'customWidgets.dart';
 
 //import 'TaskMessagesPage.dart';

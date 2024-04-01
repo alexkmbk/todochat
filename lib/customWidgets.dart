@@ -278,6 +278,8 @@ class _GestureDetectorWithMenuState extends State<GestureDetectorWithMenu> {
       items = [...items, ...widget.addMenuItems!];
     }
     final res = await showMenu(
+      color: Colors.white,
+      popUpAnimationStyle: AnimationStyle.noAnimation,
       context: context,
       position: RelativeRect.fromLTRB(x, y, x, y),
       items: items,
@@ -341,6 +343,8 @@ class NetworkImageWithMenu extends StatelessWidget {
     final x = details.globalPosition.dx;
     final y = details.globalPosition.dy;
     final res = await showMenu(
+      popUpAnimationStyle: AnimationStyle.noAnimation,
+      color: Colors.white,
       context: context,
       position: RelativeRect.fromLTRB(x, y, x, y),
       items: [
