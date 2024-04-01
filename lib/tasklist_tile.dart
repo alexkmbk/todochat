@@ -214,6 +214,7 @@ class TaskListTile extends StatelessWidget {
         onEdit: () => onLongPress(task, taskListProvider),
         child: Material(
           child: ListTile(
+            splashColor: Colors.transparent,
             horizontalTitleGap: 5,
             tileColor: getTileColor(
                 taskListProvider.currentTask != null &&
