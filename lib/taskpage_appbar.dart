@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todochat/projects_menu.dart';
 import 'package:todochat/searchField.dart';
 import 'package:todochat/tasklist_provider.dart';
 import 'package:provider/provider.dart';
@@ -20,39 +21,40 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
   TextEditingController searchController = TextEditingController();
   bool showSearch = isDesktopMode;
   Widget getProjectField() {
-    final taskListProvider =
-        Provider.of<TaskListProvider>(context, listen: false);
-    return Align(
-        alignment: Alignment.topLeft,
-        child: TextButton.icon(
-          onPressed: () async {
-            var res = await Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProjectsPage()),
-            );
-            if (res != null && taskListProvider.project != res) {
-              taskListProvider.project = res;
-              taskListProvider.projectID = res.ID;
-              taskListProvider.clear(context);
-              await taskListProvider.requestTasks(context, true);
-              //taskListProvider.setProjectID(res.ID);
-              await settings.setInt("projectID", res.ID);
-            }
-            setState(() {});
-          },
+    return ProjectsMenu();
+    // final taskListProvider =
+    //     Provider.of<TaskListProvider>(context, listen: false);
+    // return Align(
+    //     alignment: Alignment.topLeft,
+    //     child: TextButton.icon(
+    //       onPressed: () async {
+    //         var res = await Navigator.push(
+    //           context,
+    //           MaterialPageRoute(builder: (context) => ProjectsPage()),
+    //         );
+    //         if (res != null && taskListProvider.project != res) {
+    //           taskListProvider.project = res;
+    //           taskListProvider.projectID = res.ID;
+    //           taskListProvider.clear(context);
+    //           await taskListProvider.requestTasks(context, true);
+    //           //taskListProvider.setProjectID(res.ID);
+    //           await settings.setInt("projectID", res.ID);
+    //         }
+    //         setState(() {});
+    //       },
 
-          label: taskListProvider.project == null
-              ? const Text("")
-              : Text(
-                  taskListProvider.project?.Description ?? "",
-                  style: const TextStyle(color: Colors.black, fontSize: 15),
-                ),
-          icon: const Icon(
-            Icons.keyboard_arrow_down,
-            color: Colors.black,
-          ),
-          //style: TextStyle(color: Colors.white),
-        ));
+    //       label: taskListProvider.project == null
+    //           ? const Text("")
+    //           : Text(
+    //               taskListProvider.project?.Description ?? "",
+    //               style: const TextStyle(color: Colors.black, fontSize: 15),
+    //             ),
+    //       icon: const Icon(
+    //         Icons.keyboard_arrow_down,
+    //         color: Colors.black,
+    //       ),
+    //       //style: TextStyle(color: Colors.white),
+    //     ));
   }
 
   Widget getAppBarTitle() {

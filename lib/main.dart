@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:todochat/bloc/projects.dart';
 import 'package:todochat/tasklist_provider.dart';
 import 'package:todochat/utils.dart';
 import 'HttpClient.dart';
@@ -138,37 +140,39 @@ class _MyHomePageState extends State<MyHomePage> {
       return Scaffold(
         backgroundColor: Colors.transparent, //Colors.orange[600],
         //appBar: AppBar(title: Text(widget.title), leading: MainMenu()),
-        body: FutureBuilder<bool>(
-          future: initApp(context), // function where you call your api
-          builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-            // AsyncSnapshot<Your object type>
-            if (snapshot.data != null && snapshot.data as bool) {
-              return const TasksPage();
-            } else {
-              return Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.white, Colors.white],
-                        /*colors: [
+        body: BlocProvider(
+          create: (BuildContext context) => ProjectCubit(),
+          child: FutureBuilder<bool>(
+            future: initApp(context), // function where you call your api
+            builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+              // AsyncSnapshot<Your object type>
+              if (snapshot.data != null && snapshot.data as bool) {
+                return const TasksPage();
+              } else {
+                return Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.white, Colors.white],
+                          /*colors: [
                           Color.fromARGB(
                               255, 87, 108, 245), //Color(0xFF3366FF),
                           Color.fromARGB(
                               255, 109, 164, 246), //Color(0xFF00CCFF),
                         ],*/
-                        stops: [0.0, 1.0],
-                        tileMode: TileMode.clamp),
-                  ),
-                  child: Center(
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const SizedBox(
-                            height: 50,
-                          ),
-                          /*RichText(
+                          stops: [0.0, 1.0],
+                          tileMode: TileMode.clamp),
+                    ),
+                    child: Center(
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const SizedBox(
+                              height: 50,
+                            ),
+                            /*RichText(
                               text: TextSpan(children: [
                             TextSpan(
                               text: "ToDo\n",
@@ -190,91 +194,93 @@ class _MyHomePageState extends State<MyHomePage> {
                                 fontWeight: FontWeight.bold)*/
                             ),
                           ])),*/
-                          Image.asset(
-                            "assets/images/todochat_logo.png",
-                            width: 200,
-                          ),
-                          // TextInCircle(
-                          //   width: 200,
-                          //   color: Colors.white,
-                          //   borderColor: Colors.green,
-                          //   textWidget: TextSpan(
-                          //     children: [
-                          //       TextSpan(
-                          //         text: "ToDo\n",
-                          //         style: GoogleFonts.righteous(
-                          //             fontSize: 56, color: Colors.green),
-                          //       ),
-                          //       TextSpan(
-                          //         text: "Chat",
-                          //         style: GoogleFonts.righteous(
-                          //             height: 1.0,
-                          //             fontSize: 56,
-                          //             color: Colors.orangeAccent),
-                          //         //00116d
-                          //         //1a6ce3
-                          //         /*TextStyle(
-                          //       height: 1.0,
-                          //       color: Colors.orangeAccent,
-                          //       fontSize: 50,
-                          //       fontWeight: FontWeight.bold)*/
-                          //       ),
-                          //     ],
-                          //   ),
-                          // ),
-                          const Spacer(),
-                          if (snapshot.hasError)
-                            IconButton(
-                                iconSize: 40,
-                                padding: const EdgeInsets.all(0.0),
-                                onPressed: () => setState(() {}),
-                                icon: const Icon(
-                                  Icons.refresh,
-                                  color: Color.fromARGB(255, 203, 202, 202),
-                                )),
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting)
-                            const Text('Connecting...',
-                                style: TextStyle(
-                                    color: Color.fromARGB(255, 203, 202, 202)),
-                                textDirection: TextDirection.ltr),
-                          const Spacer(),
-                          SizedBox(
+                            Image.asset(
+                              "assets/images/todochat_logo.png",
                               width: 200,
-                              height: 50,
-                              child: ElevatedButton(
-                                  style: OutlinedButton.styleFrom(
-                                    backgroundColor:
-                                        const Color.fromARGB(255, 20, 125, 199),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(15)),
-                                  ),
-                                  onPressed: () async {
-                                    final res = await openSettings(context,
-                                        restartAppOnChange: true);
-                                    // await Navigator.push(
-                                    //   context,
-                                    //   MaterialPageRoute(
-                                    //       builder: (context) => SettingsPage(
-                                    //             key: UniqueKey(),
-                                    //             restartAppOnChange: true,
-                                    //           )),
-                                    // );
-                                    if (res) setState(() {});
-                                  },
-                                  child: const Text(
-                                    "Settings",
-                                    style: TextStyle(
-                                        fontSize: 16, color: Colors.white),
-                                  ))),
-                          const SizedBox(
-                            height: 30,
-                          )
-                        ]),
-                  ));
-            }
-          },
+                            ),
+                            // TextInCircle(
+                            //   width: 200,
+                            //   color: Colors.white,
+                            //   borderColor: Colors.green,
+                            //   textWidget: TextSpan(
+                            //     children: [
+                            //       TextSpan(
+                            //         text: "ToDo\n",
+                            //         style: GoogleFonts.righteous(
+                            //             fontSize: 56, color: Colors.green),
+                            //       ),
+                            //       TextSpan(
+                            //         text: "Chat",
+                            //         style: GoogleFonts.righteous(
+                            //             height: 1.0,
+                            //             fontSize: 56,
+                            //             color: Colors.orangeAccent),
+                            //         //00116d
+                            //         //1a6ce3
+                            //         /*TextStyle(
+                            //       height: 1.0,
+                            //       color: Colors.orangeAccent,
+                            //       fontSize: 50,
+                            //       fontWeight: FontWeight.bold)*/
+                            //       ),
+                            //     ],
+                            //   ),
+                            // ),
+                            const Spacer(),
+                            if (snapshot.hasError)
+                              IconButton(
+                                  iconSize: 40,
+                                  padding: const EdgeInsets.all(0.0),
+                                  onPressed: () => setState(() {}),
+                                  icon: const Icon(
+                                    Icons.refresh,
+                                    color: Color.fromARGB(255, 203, 202, 202),
+                                  )),
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting)
+                              const Text('Connecting...',
+                                  style: TextStyle(
+                                      color:
+                                          Color.fromARGB(255, 203, 202, 202)),
+                                  textDirection: TextDirection.ltr),
+                            const Spacer(),
+                            SizedBox(
+                                width: 200,
+                                height: 50,
+                                child: ElevatedButton(
+                                    style: OutlinedButton.styleFrom(
+                                      backgroundColor: const Color.fromARGB(
+                                          255, 20, 125, 199),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(15)),
+                                    ),
+                                    onPressed: () async {
+                                      final res = await openSettings(context,
+                                          restartAppOnChange: true);
+                                      // await Navigator.push(
+                                      //   context,
+                                      //   MaterialPageRoute(
+                                      //       builder: (context) => SettingsPage(
+                                      //             key: UniqueKey(),
+                                      //             restartAppOnChange: true,
+                                      //           )),
+                                      // );
+                                      if (res) setState(() {});
+                                    },
+                                    child: const Text(
+                                      "Settings",
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.white),
+                                    ))),
+                            const SizedBox(
+                              height: 30,
+                            )
+                          ]),
+                    ));
+              }
+            },
+          ),
         ),
       );
     }
@@ -282,9 +288,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<bool> initApp(BuildContext context) async {
     if (appInitialized) return true;
-    bool res;
-
-    final tasklist = Provider.of<TaskListProvider>(context, listen: false);
 
     settings = await SharedPreferences.getInstance();
 
@@ -303,9 +306,6 @@ class _MyHomePageState extends State<MyHomePage> {
       port = Uri.base.port;
       httpScheme = Uri.base.scheme;
     }
-    tasklist.projectID = settings.getInt("projectID");
-
-    tasklist.showClosed = settings.getBool("showCompleted") ?? true;
 
     if (port == null || port == 0) {
       port = null;
@@ -335,23 +335,22 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!login) {
       await openLoginPage(context);
     }
-    if (isServerURI && sessionID.isNotEmpty) {
-      if (tasklist.projectID == null || tasklist.projectID == 0) {
-        tasklist.project = await requestFirstItem();
-        if (tasklist.project != null) {
-          tasklist.projectID = tasklist.project!.ID;
-          await tasklist.requestTasks(context);
-        }
-      }
 
-      if (tasklist.projectID != null && tasklist.project == null) {
-        tasklist.project = await getProject(tasklist.projectID);
-        tasklist.project ??= await requestFirstItem();
+    final projectID = settings.getInt("projectID") ?? 0;
+
+    final currentProject = await context
+        .read<ProjectCubit>()
+        .loadItems(currentProjectID: projectID);
+
+    final tasklist = Provider.of<TaskListProvider>(context, listen: false);
+    tasklist.projectID = currentProject.ID;
+    tasklist.project = currentProject;
+    tasklist.showClosed = settings.getBool("showCompleted") ?? true;
+
+    if (isServerURI && sessionID.isNotEmpty) {
+      if (tasklist.project != null) {
+        await tasklist.requestTasks(context);
       }
-      // if (tasklist.project != null) {
-      //   tasklist.projectID = tasklist.project!.ID;
-      //   await tasklist.requestTasks(context);
-      // }
 
       connectWebSocketChannel(serverURI).then((value) {
         listenWs(tasklist, context);

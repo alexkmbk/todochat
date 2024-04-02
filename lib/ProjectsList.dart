@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/src/response.dart';
+import 'package:todochat/bloc/projects.dart';
 import 'HttpClient.dart';
 import 'customWidgets.dart';
 import 'utils.dart';
@@ -10,34 +11,6 @@ import 'LoginRegistrationPage.dart';
 import 'todochat.dart';
 import 'dart:convert';
 import 'package:collection/collection.dart';
-
-class Project {
-  int ID = 0;
-  String Description = "";
-  bool editMode = false;
-  bool isNewItem = false;
-
-  Project(
-      {this.ID = 0,
-      this.Description = "",
-      this.editMode = false,
-      this.isNewItem = false});
-
-  Map<String, dynamic> toJson() {
-    return {
-      'ID': ID,
-      'Description': Description,
-    };
-  }
-
-  Project.fromJson(Map<String, dynamic> json)
-      : ID = json['ID'],
-        Description = json['Description'];
-
-  Project.from(Project project)
-      : ID = project.ID,
-        Description = project.Description;
-}
 
 class ProjectsPage extends StatefulWidget {
   ProjectsPage({Key? key}) : super(key: key);

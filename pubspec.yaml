@@ -80,6 +80,8 @@ dependencies:
   very_good_infinite_list: ^0.7.1
   scroll_to_index: ^3.0.1
   super_clipboard: ^0.8.5
+  bloc: ^8.1.4
+  flutter_bloc: ^8.1.5
   
 
 # dependency_overrides:
