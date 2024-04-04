@@ -4,7 +4,8 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:todochat/tasklist_provider.dart';
+import 'package:todochat/models/task.dart';
+import 'package:todochat/state/tasks.dart';
 import 'package:todochat/utils.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'msglist_provider.dart';
@@ -120,7 +121,7 @@ Future<void> connectWebSocketChannel(Uri serverURI) async {
 
 StreamSubscription? subscription;
 
-void listenWs(TaskListProvider taskListProvider, BuildContext context) {
+void listenWs(TasksState taskListProvider, BuildContext context) {
   final msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
 
   if (sessionID.isNotEmpty && ws != null) {
@@ -182,7 +183,7 @@ void listenWs(TaskListProvider taskListProvider, BuildContext context) {
   }
 }
 
-Future<void> reconnect(TaskListProvider taskListProvider, BuildContext context,
+Future<void> reconnect(TasksState taskListProvider, BuildContext context,
     [force = false]) async {
   if (!connectWebSocketInProcess &&
       (!isWSConnected || force) &&

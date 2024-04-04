@@ -3,12 +3,13 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:pasteboard/pasteboard.dart";
 import "package:provider/provider.dart";
+import "package:todochat/models/task.dart";
 import "package:todochat/todochat.dart";
 import "package:todochat/utils.dart";
 
 import "customWidgets.dart";
 import "highlight_text.dart";
-import "tasklist_provider.dart";
+import "state/tasks.dart";
 import "tasklist.dart";
 import 'msglist_provider.dart';
 
@@ -26,8 +27,7 @@ class TaskListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final taskListProvider =
-        Provider.of<TaskListProvider>(context, listen: false);
+    final taskListProvider = Provider.of<TasksState>(context, listen: false);
     if (task.editMode) {
       taskListProvider.textEditingController =
           TextEditingController(text: task.description);
@@ -347,8 +347,8 @@ class TaskListTile extends StatelessWidget {
             : const Color.fromARGB(255, 250, 161, 27);
   }
 
-  Future<void> onTap(Task task, TaskListProvider taskListProvider,
-      BuildContext context) async {
+  Future<void> onTap(
+      Task task, TasksState taskListProvider, BuildContext context) async {
     // msgListProvider.clear(true);
     // msgListProvider.taskID = task.ID;
     // msgListProvider.task = task;
@@ -364,7 +364,7 @@ class TaskListTile extends StatelessWidget {
     taskListProvider.refresh();
   }
 
-  void onLongPress(Task task, TaskListProvider taskListProvider) {
+  void onLongPress(Task task, TasksState taskListProvider) {
     var foundTask = taskListProvider.items
         .firstWhereOrNull((element) => element.ID == task.ID);
     if (foundTask != null) {
@@ -374,8 +374,8 @@ class TaskListTile extends StatelessWidget {
     taskListProvider.refresh();
   }
 
-  void taskClosedOnChanged(bool? value, Task task,
-      TaskListProvider TaskListProvider, BuildContext context) async {
+  void taskClosedOnChanged(bool? value, Task task, TasksState TaskListProvider,
+      BuildContext context) async {
     if (value == null) return;
 
     task.closed = value;

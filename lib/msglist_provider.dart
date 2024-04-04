@@ -8,10 +8,12 @@ import 'package:flutter/services.dart';
 //import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:http/http.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:todochat/models/task.dart';
+import 'package:todochat/state/tasks.dart';
 
 //import 'package:http/http.dart';
 //import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:todochat/tasklist_provider.dart';
+
 import 'HttpClient.dart' as HTTPClient;
 
 import 'package:http/http.dart' as http;
@@ -367,7 +369,7 @@ class MsgListProvider extends ChangeNotifier {
   }
 
   Future<bool> requestMessages(
-      TaskListProvider taskListProvider, BuildContext context) async {
+      TasksState taskListProvider, BuildContext context) async {
     if (loading) {
       return false;
     }

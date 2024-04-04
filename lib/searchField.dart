@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:todochat/tasklist_provider.dart';
+import 'package:todochat/state/tasks.dart';
 import 'package:todochat/todochat.dart';
 
 import 'customWidgets.dart';
@@ -11,8 +11,7 @@ class SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final taskListProvider =
-        Provider.of<TaskListProvider>(context, listen: false);
+    final taskListProvider = Provider.of<TasksState>(context, listen: false);
     // final msgListProvider =
     //     Provider.of<MsgListProvider>(context, listen: false);
     return SizedBox(

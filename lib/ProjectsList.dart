@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/src/response.dart';
-import 'package:todochat/bloc/projects.dart';
+import 'package:todochat/state/projects.dart';
+import 'package:todochat/models/project.dart';
 import 'HttpClient.dart';
 import 'customWidgets.dart';
 import 'utils.dart';

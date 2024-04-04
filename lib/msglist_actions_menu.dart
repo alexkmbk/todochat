@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:todochat/tasklist_provider.dart';
+import 'package:todochat/models/task.dart';
+import 'package:todochat/state/tasks.dart';
 
 import 'customWidgets.dart';
 import 'msglist_provider.dart';

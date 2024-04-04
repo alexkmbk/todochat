@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:todochat/projects_menu.dart';
 import 'package:todochat/searchField.dart';
-import 'package:todochat/tasklist_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:todochat/state/tasks.dart';
 import 'main_menu.dart';
 import 'ProjectsList.dart';
 import 'todochat.dart';
 
 class TasksPageAppBar extends StatefulWidget implements PreferredSizeWidget {
-  TasksPageAppBar({Key? key}) : super(key: key);
+  const TasksPageAppBar({Key? key}) : super(key: key);
 
   @override
   State<TasksPageAppBar> createState() => _TasksPageAppBarState();
@@ -21,7 +21,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
   TextEditingController searchController = TextEditingController();
   bool showSearch = isDesktopMode;
   Widget getProjectField() {
-    return ProjectsMenu();
+    return const ProjectsMenu();
     // final taskListProvider =
     //     Provider.of<TaskListProvider>(context, listen: false);
     // return Align(
@@ -86,8 +86,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
 
   @override
   Widget build(BuildContext context) {
-    final taskListProvider =
-        Provider.of<TaskListProvider>(context, listen: false);
+    final taskListProvider = Provider.of<TasksState>(context, listen: false);
     return AppBar(
       //toolbarHeight: 10, //MediaQuery.of(context).size.height * .1,
       backgroundColor: const Color.fromARGB(240, 255, 255, 255),

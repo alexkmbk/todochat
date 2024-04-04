@@ -5,6 +5,7 @@ import 'package:http/http.dart';
 //import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:todochat/models/task.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
 //import 'package:scroll_to_index/scroll_to_index.dart';
 
@@ -12,13 +13,12 @@ import 'HttpClient.dart';
 import 'TaskMessagesPage.dart';
 import 'customWidgets.dart';
 import 'todochat.dart';
-import 'tasklist_provider.dart';
+import 'state/tasks.dart';
 import 'tasklist_tile.dart';
 import 'msglist_provider.dart';
 
 class TaskList extends StatefulWidget {
-  final TaskListProvider taskListProvider;
-  const TaskList({Key? key, required this.taskListProvider}) : super(key: key);
+  const TaskList({Key? key}) : super(key: key);
 
   @override
   TaskListState createState() {
@@ -27,8 +27,8 @@ class TaskList extends StatefulWidget {
 }
 
 class TaskListState extends State<TaskList> {
-  bool loading = false;
-  AutoScrollController scrollController = AutoScrollController();
+  //bool loading = false;
+  final AutoScrollController scrollController = AutoScrollController();
   @override
   void initState() {
     // widget.taskListProvider.requestTasks(context);
@@ -45,16 +45,19 @@ class TaskListState extends State<TaskList> {
 
   @override
   Widget build(BuildContext context) {
-    var taskListProvider = widget.taskListProvider;
-    taskListProvider.scrollController = scrollController;
+    // var taskListProvider = widget.taskListProvider;
+
     return Column(children: <Widget>[
       Expanded(
-          child: InfiniteList(
+        child: Consumer<TasksState>(
+          builder: (context, provider, child) {
+            provider.scrollController = scrollController;
+            return InfiniteList(
               scrollController: scrollController,
-              itemCount: taskListProvider.items.length,
-              isLoading: taskListProvider.loading,
+              itemCount: provider.items.length,
+              isLoading: provider.loading,
               onFetchData: () {
-                taskListProvider.requestTasks(context);
+                provider.requestTasks(context);
               },
               itemBuilder: (context, index) {
                 {
@@ -65,10 +68,14 @@ class TaskListState extends State<TaskList> {
                       highlightColor: Colors.black.withOpacity(0.1),
                       child: TaskListTile(
                           index: index,
-                          task: taskListProvider.items[index],
+                          task: provider.items[index],
                           taskList: widget));
                 }
-              }))
+              },
+            );
+          },
+        ),
+      )
     ]);
   }
 }
@@ -102,7 +109,7 @@ void openTask(BuildContext context, Task task) async {
   msgListProvider.isOpen = true;
   await Navigator.push(
     context,
-    MaterialPageRoute(builder: (context) => TaskMessagesPage(task: task)),
+    MaterialPageRoute(builder: (context) => const TaskMessagesPage()),
   );
   if (!isDesktopMode) {
     msgListProvider.clear();
