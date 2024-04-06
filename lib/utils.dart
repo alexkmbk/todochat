@@ -6,12 +6,14 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mime/mime.dart';
 import 'package:file_saver/file_saver.dart';
 //import 'package:open_file/open_file.dart';
 import 'package:open_file_plus/open_file_plus.dart';
 import 'package:path/path.dart' as path;
 import 'package:intl/intl.dart';
+import 'dart:ui' as ui;
 
 class WSMessage {
   String command = "";
@@ -212,4 +214,20 @@ extension ListExtension<E> on List<E> {
       add(element);
     }
   }
+}
+
+Size calcTextSize(String text, BuildContext context, {TextStyle? style}) {
+  // create a nice span
+  final textSpan = TextSpan(
+    text: text,
+    style: style,
+  );
+// which we paint with the media's scaling in place please
+  final tp = TextPainter(
+      text: textSpan,
+      textDirection: ui.TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context));
+  tp.layout();
+// and return the size of the text span we just drew
+  return tp.size;
 }

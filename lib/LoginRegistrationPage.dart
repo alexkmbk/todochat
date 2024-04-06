@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:todochat/state/tasks.dart';
 
 import 'HttpClient.dart';
-import 'SettingsPage.dart';
+import 'settings_page.dart';
 import 'customWidgets.dart';
 import 'todochat.dart';
 import 'utils.dart';

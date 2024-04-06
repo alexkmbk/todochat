@@ -105,7 +105,6 @@ Future<bool> updateTask(Task task) async {
 
 void openTask(BuildContext context, Task task) async {
   final msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
-
   msgListProvider.isOpen = true;
   await Navigator.push(
     context,

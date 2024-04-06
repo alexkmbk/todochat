@@ -82,6 +82,10 @@ dependencies:
   super_clipboard: ^0.8.5
   bloc: ^8.1.4
   flutter_bloc: ^8.1.5
+  dropdown_button2: ^2.3.9
+  choice: ^2.3.2
+  flutter_settings_ui: ^3.0.1
+  sticky_headers: ^0.3.0+2
   
 
 # dependency_overrides:

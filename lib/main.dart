@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:todochat/state/projects.dart';
+import 'package:todochat/state/settings.dart';
 import 'package:todochat/state/tasks.dart';
 import 'package:todochat/utils.dart';
 import 'HttpClient.dart';
 import 'LoginRegistrationPage.dart';
-import 'ProjectsList.dart';
-import 'SettingsPage.dart';
+import 'settings_page.dart';
 import 'customWidgets.dart';
 import 'msglist_provider.dart';
 import 'TasksPage.dart';
@@ -22,7 +21,7 @@ void main() {
   runApp(
     RestartWidget(
       builder: () {
-        return const MyApp();
+        return MyApp();
       },
       beforeRestart: () {
         if (timer != null) {
@@ -52,52 +51,46 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    // final w = View.of(context).physicalGeometry.width *
-    //     View.of(context).devicePixelRatio;
-    var instance = WidgetsBinding.instance;
-    var mediaQueryData = MediaQueryData.fromView(instance.window);
-    var physicalPixelWidth = mediaQueryData.size.width;
-    if (physicalPixelWidth > 1000) {
-      isDesktopMode = true;
-    }
-
-    return MaterialApp(
-      navigatorKey: NavigationService.navigatorKey,
-      title: 'ToDo Chat',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        buttonTheme: ButtonThemeData(
-          buttonColor: Colors.white,
-          colorScheme:
-              ColorScheme.fromSeed(seedColor: Colors.blue), //  <-- dark color
-          textTheme:
-              ButtonTextTheme.primary, //  <-- this auto selects the right color
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => MsgListProvider(),
         ),
-        cardColor: Colors.white,
-        dialogBackgroundColor: Colors.white,
-        textTheme: Theme.of(context).textTheme.apply(
-              fontSizeFactor: 1.0,
-              fontSizeDelta: 2.0,
-              //displayColor: Colors.grey,
-            ),
-        scaffoldBackgroundColor: Colors.grey[100],
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: BlocProvider(
-        create: (BuildContext context) => ProjectCubit(),
-        child: MultiProvider(
-          providers: [
-            ChangeNotifierProvider(
-              create: (context) => MsgListProvider(),
-            ),
-            ChangeNotifierProvider(
-              create: (context) => TasksState(),
-            ),
-          ],
-          child: const MyHomePage(
-            title: "ToDo Chat",
+        ChangeNotifierProvider(
+          create: (context) => TasksState(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ProjectsState(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => SettingsState(),
+        ),
+      ],
+      child: MaterialApp(
+        navigatorKey: NavigationService.navigatorKey,
+        title: 'ToDo Chat',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          buttonTheme: ButtonThemeData(
+            buttonColor: Colors.white,
+            colorScheme:
+                ColorScheme.fromSeed(seedColor: Colors.blue), //  <-- dark color
+            textTheme: ButtonTextTheme
+                .primary, //  <-- this auto selects the right color
           ),
+          cardColor: Colors.white,
+          dialogBackgroundColor: Colors.white,
+          textTheme: Theme.of(context).textTheme.apply(
+                fontSizeFactor: 1.0,
+                fontSizeDelta: 2.0,
+                //displayColor: Colors.grey,
+              ),
+          scaffoldBackgroundColor: Colors.grey[100],
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: const MyHomePage(
+          title: "ToDo Chat",
         ),
       ),
     );
@@ -280,6 +273,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
     settings = await SharedPreferences.getInstance();
 
+    var screenModeIndex =
+        settings.getInt("ScreenMode") ?? ScreenModes.Auto.index;
+
+    isDesktopMode = GetDesktopMode(ScreenModes.values[screenModeIndex]);
+
     var sessionID_ = settings.getString("sessionID");
     if (sessionID_ == null) {
       sessionID = "";
@@ -330,7 +328,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var currentProject;
     try {
       currentProject = await context
-          .read<ProjectCubit>()
+          .read<ProjectsState>()
           .loadItems(currentProjectID: projectID);
     } catch (e) {
       print(e.toString());

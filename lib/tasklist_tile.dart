@@ -349,16 +349,12 @@ class TaskListTile extends StatelessWidget {
 
   Future<void> onTap(
       Task task, TasksState taskListProvider, BuildContext context) async {
-    // msgListProvider.clear(true);
-    // msgListProvider.taskID = task.ID;
-    // msgListProvider.task = task;
-
     task.read = true;
     task.unreadMessages = 0;
 
-    if (isDesktopMode) {
-      taskListProvider.setCurrentTask(task, context);
-    } else {
+    taskListProvider.setCurrentTask(task, context);
+
+    if (!isDesktopMode) {
       openTask(context, task);
     }
     taskListProvider.refresh();

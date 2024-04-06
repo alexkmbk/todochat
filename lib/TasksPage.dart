@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todochat/models/task.dart';
+import 'package:todochat/state/settings.dart';
 import 'package:todochat/state/tasks.dart';
 import 'package:todochat/taskpage_appbar.dart';
 import 'tasklist.dart';
@@ -68,6 +70,7 @@ class Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settingsState = context.watch<SettingsState>();
     if (isDesktopMode) {
       return MultiSplitViewTheme(
           data: MultiSplitViewThemeData(

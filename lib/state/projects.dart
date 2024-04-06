@@ -1,24 +1,29 @@
 import 'dart:convert';
-
-import 'package:bloc/bloc.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:todochat/HttpClient.dart';
 import 'package:todochat/models/project.dart';
 import 'package:todochat/todochat.dart';
 
-class ProjectCubit extends Cubit<Project> {
+class ProjectsState extends ChangeNotifier {
   List<Project> items = [];
   Project currentProject = Project();
-
-  ProjectCubit() : super(Project());
 
   void setCurrentProject(Project? value) {
     if (value == null)
       currentProject = Project();
     else
       currentProject = value;
-    emit(currentProject);
+    notifyListeners();
+  }
+
+  void setCurrentProjectByID(int? ID) {
+    if (ID == null || ID == 0)
+      currentProject = Project();
+    else
+      currentProject = items.lastWhere((e) => e.ID == ID);
+    notifyListeners();
   }
 
   Future<Project> loadItems(
@@ -51,18 +56,10 @@ class ProjectCubit extends Cubit<Project> {
       } else if (currentProject.isEmpty ||
           items.firstWhereOrNull((e) => e.ID == currentProject.ID) == null)
         currentProject = items.first;
-    } else {
-      addError(Exception('projects request error'), StackTrace.current);
     }
     if (refresh) {
-      emit(currentProject);
+      notifyListeners();
     }
     return currentProject;
-  }
-
-  @override
-  void onError(Object error, StackTrace stackTrace) {
-    print('$error, $stackTrace');
-    super.onError(error, stackTrace);
   }
 }

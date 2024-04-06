@@ -656,14 +656,14 @@ class _RestartWidgetState extends State<RestartWidget> {
     });
   }
 
-  void rebuildAllChildren(BuildContext context) {
-    void rebuild(Element el) {
-      el.markNeedsBuild();
-      el.visitChildren(rebuild);
-    }
+  // void rebuildAllChildren(BuildContext context) {
+  //   void rebuild(Element el) {
+  //     el.markNeedsBuild();
+  //     el.visitChildren(rebuild);
+  //   }
 
-    (context as Element).visitChildren(rebuild);
-  }
+  //   (context as Element).visitChildren(rebuild);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -713,7 +713,6 @@ class TextInCircle extends StatelessWidget {
 class NumberInStadium extends StatelessWidget {
   final int number;
   const NumberInStadium({Key? key, required this.number}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -743,6 +742,10 @@ class Label extends StatelessWidget {
   final Color? backgroundColor;
   final VoidCallback? onPressed;
   final bool clickableCursor;
+  static const TextStyle textStyle = const TextStyle(fontSize: 14, height: 1);
+  static const shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.all(Radius.circular(5)));
+  static const padding = EdgeInsets.symmetric(horizontal: 10, vertical: 3);
 
   const Label(
       {Key? key,
@@ -757,11 +760,10 @@ class Label extends StatelessWidget {
     if (onPressed != null || clickableCursor) {
       return AbsorbPointer(
           child: ActionChip(
-        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+        padding: padding,
         visualDensity: const VisualDensity(horizontal: 0.0, vertical: -4),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(5))),
+        shape: shape,
         backgroundColor: backgroundColor,
         onPressed: onPressed ?? () {},
         label: Text(
@@ -769,18 +771,18 @@ class Label extends StatelessWidget {
         ),
       ));
     } else {
-      return IntrinsicWidth(
+      return UnconstrainedBox(
         child: Container(
+          //width: calcTextSize(text, context, style: textStyle).width + 28,
           //color: backgroundColor,
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+          padding: padding,
           decoration: ShapeDecoration(
             color: backgroundColor,
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(5))),
+            shape: shape,
           ),
-          alignment: Alignment.topLeft,
+          alignment: Alignment.center,
           child: Text(
-            style: TextStyle(fontSize: 14, height: 1),
+            style: textStyle,
             text,
           ),
         ),

@@ -37,11 +37,9 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
   @override
   Widget build(BuildContext context) {
     if (isDesktopMode) {
-      return Consumer<MsgListProvider>(builder: (context, provider, child) {
-        return MsgList(
-          scrollController: scrollController,
-        );
-      });
+      return MsgList(
+        scrollController: scrollController,
+      );
     } else {
       return Scaffold(
           appBar: isDesktopMode ? null : const MessagesAppBar(),
@@ -57,7 +55,7 @@ class MessagesAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tasks = context.watch<TasksState>();
+    final task = context.watch<MsgListProvider>().task;
     return AppBar(
       leading: const MainMenu(),
       backgroundColor: const Color.fromARGB(240, 255, 255, 255),
@@ -72,7 +70,7 @@ class MessagesAppBar extends StatelessWidget implements PreferredSizeWidget {
                   color: Colors.black,
                 ),
                 label: Text(
-                  tasks.currentTask?.description ?? "",
+                  task.description,
                   style: const TextStyle(color: Colors.black, fontSize: 18),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
@@ -83,5 +81,5 @@ class MessagesAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   // TODO: implement preferredSize
-  Size get preferredSize => throw UnimplementedError();
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:todochat/SettingsPage.dart';
+import 'package:todochat/settings_page.dart';
 import 'LoginRegistrationPage.dart';
 import 'customWidgets.dart';
 import 'utils.dart';
