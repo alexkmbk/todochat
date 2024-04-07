@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:todochat/msglist_provider.dart';
 import 'package:todochat/projects_menu.dart';
 import 'package:todochat/searchField.dart';
 import 'package:provider/provider.dart';
 import 'package:todochat/state/tasks.dart';
 import 'main_menu.dart';
-import 'ProjectsList.dart';
+import 'projects_list.dart';
 import 'todochat.dart';
 
 class TasksPageAppBar extends StatefulWidget implements PreferredSizeWidget {
@@ -20,43 +21,6 @@ class TasksPageAppBar extends StatefulWidget implements PreferredSizeWidget {
 class _TasksPageAppBarState extends State<TasksPageAppBar> {
   TextEditingController searchController = TextEditingController();
   bool showSearch = isDesktopMode;
-  Widget getProjectField() {
-    return const ProjectsMenu();
-    // final taskListProvider =
-    //     Provider.of<TaskListProvider>(context, listen: false);
-    // return Align(
-    //     alignment: Alignment.topLeft,
-    //     child: TextButton.icon(
-    //       onPressed: () async {
-    //         var res = await Navigator.push(
-    //           context,
-    //           MaterialPageRoute(builder: (context) => ProjectsPage()),
-    //         );
-    //         if (res != null && taskListProvider.project != res) {
-    //           taskListProvider.project = res;
-    //           taskListProvider.projectID = res.ID;
-    //           taskListProvider.clear(context);
-    //           await taskListProvider.requestTasks(context, true);
-    //           //taskListProvider.setProjectID(res.ID);
-    //           await settings.setInt("projectID", res.ID);
-    //         }
-    //         setState(() {});
-    //       },
-
-    //       label: taskListProvider.project == null
-    //           ? const Text("")
-    //           : Text(
-    //               taskListProvider.project?.Description ?? "",
-    //               style: const TextStyle(color: Colors.black, fontSize: 15),
-    //             ),
-    //       icon: const Icon(
-    //         Icons.keyboard_arrow_down,
-    //         color: Colors.black,
-    //       ),
-    //       //style: TextStyle(color: Colors.white),
-    //     ));
-  }
-
   Widget getAppBarTitle() {
     if (isDesktopMode) {
       return Row(children: [
@@ -73,14 +37,14 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
         Flexible(
             fit: FlexFit.tight,
             //flex: 6,
-            child: getProjectField())
+            child: ProjectField())
       ]);
     } else if (showSearch) {
       return SearchField(
         searchController: searchController,
       );
     } else {
-      return getProjectField();
+      return ProjectField();
     }
   }
 
@@ -199,5 +163,46 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
           )
       ],
     );
+  }
+}
+
+class ProjectField extends StatefulWidget {
+  const ProjectField({super.key});
+
+  @override
+  State<ProjectField> createState() => _ProjectFieldState();
+}
+
+class _ProjectFieldState extends State<ProjectField> {
+  @override
+  Widget build(BuildContext context) {
+    var tasks = context.read<TasksState>();
+    return Align(
+        alignment: Alignment.topLeft,
+        child: TextButton.icon(
+          onPressed: () async {
+            var res = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ProjectsPage(
+                        currentItem: tasks.project,
+                      )),
+            );
+            if (res != null) {
+              tasks.setCurrentProject(res, context);
+            }
+            setState(() {});
+          },
+
+          label: Text(
+            tasks.project.Description,
+            style: const TextStyle(color: Colors.black, fontSize: 15),
+          ),
+          icon: const Icon(
+            Icons.keyboard_arrow_down,
+            color: Colors.black,
+          ),
+          //style: TextStyle(color: Colors.white),
+        ));
   }
 }

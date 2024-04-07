@@ -66,6 +66,16 @@ class TasksState extends ChangeNotifier {
     }
   }
 
+  void setCurrentProject(Project? currentProject, BuildContext context) {
+    if (this.project != currentProject) {
+      this.project = currentProject ?? Project();
+      settings.setInt("projectID", this.project.ID);
+
+      clear(context);
+      requestTasks(context);
+    }
+  }
+
   void clear(BuildContext context) {
     items.clear();
     lastID = 0;

@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:todochat/models/project.dart';
+import 'package:todochat/projects_list.dart';
 import 'package:todochat/state/projects.dart';
 import 'package:todochat/state/settings.dart';
 import 'package:todochat/state/tasks.dart';
@@ -335,30 +337,24 @@ class _MyHomePageState extends State<MyHomePage> {
       await openLoginPage(context);
     }
 
-    final projectID = settings.getInt("projectID") ?? 0;
-
-    var currentProject;
-    try {
-      currentProject = await context
-          .read<ProjectsState>()
-          .loadItems(currentProjectID: projectID);
-    } catch (e) {
-      print(e.toString());
-    }
-
     final tasklist = context.read<TasksState>();
-    tasklist.project = currentProject;
-    tasklist.showClosed = settings.getBool("showCompleted") ?? true;
 
     if (isServerURI && sessionID.isNotEmpty) {
-      if (tasklist.project.isNotEmpty) {
-        await tasklist.requestTasks(context);
-      }
-
       connectWebSocketChannel(serverURI).then((value) {
         listenWs(tasklist, context);
       });
     }
+
+    final projectID = settings.getInt("projectID") ?? 0;
+
+    Project? currentProject;
+    currentProject = (await getProject(projectID));
+    if (currentProject == null || currentProject.isEmpty) {
+      currentProject = await requestFirstItem();
+    }
+
+    tasklist.showClosed = settings.getBool("showCompleted") ?? true;
+    tasklist.setCurrentProject(currentProject, context);
 
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       reconnect(tasklist, context);

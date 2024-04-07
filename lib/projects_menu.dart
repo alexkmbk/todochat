@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:todochat/ProjectsList.dart';
+import 'package:todochat/projects_list.dart';
 import 'package:todochat/customWidgets.dart';
 import 'package:todochat/models/project.dart';
 import 'package:todochat/state/projects.dart';
