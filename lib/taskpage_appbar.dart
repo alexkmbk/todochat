@@ -180,38 +180,28 @@ class _ProjectFieldState extends State<ProjectField> {
   @override
   Widget build(BuildContext context) {
     var tasks = context.read<TasksState>();
-
-    return ActionChip(
-      onPressed: () async {
-        final res = await ProjectsPage.choice(context: context);
-        if (res != null) {
-          tasks.setCurrentProject(res, context);
-        }
-        setState(() {});
-      },
-      label: Text(tasks.project.Description),
-    );
+    return Padding(
+        padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+        child: Align(
+            alignment: Alignment.centerLeft,
+            child: new RichText(
+              text: new TextSpan(
+                children: [
+                  new TextSpan(
+                    text: tasks.project.Description,
+                    style: new TextStyle(
+                        color: Color.fromRGBO(51, 102, 204, 1.0), fontSize: 16),
+                    recognizer: new TapGestureRecognizer()
+                      ..onTap = () async {
+                        final res = await ProjectsPage.choice(context: context);
+                        if (res != null) {
+                          tasks.setCurrentProject(res, context);
+                        }
+                        setState(() {});
+                      },
+                  ),
+                ],
+              ),
+            )));
   }
-  //   return Align(
-  //       alignment: Alignment.centerLeft,
-  //       child: new RichText(
-  //         text: new TextSpan(
-  //           children: [
-  //             new TextSpan(
-  //               text: tasks.project.Description,
-  //               style: new TextStyle(
-  //                   color: Color.fromRGBO(51, 102, 204, 1.0), fontSize: 16),
-  //               recognizer: new TapGestureRecognizer()
-  //                 ..onTap = () async {
-  //                   final res = await ProjectsPage.choice(context: context);
-  //                   if (res != null) {
-  //                     tasks.setCurrentProject(res, context);
-  //                   }
-  //                   setState(() {});
-  //                 },
-  //             ),
-  //           ],
-  //         ),
-  //       ));
-  // }
 }
