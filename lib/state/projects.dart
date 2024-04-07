@@ -62,4 +62,40 @@ class ProjectsState extends ChangeNotifier {
     }
     return currentProject;
   }
+
+  void addNewInEditMode({bool OnStartPosiiton = false}) {
+    items.insert(OnStartPosiiton ? 0 : items.length,
+        Project(editMode: true, isNewItem: true));
+  }
+
+  Future<Project?> createProject(String Description) async {
+    if (sessionID == "") {
+      return null;
+    }
+
+    Project project = Project(Description: Description);
+
+    Response response;
+    try {
+      response = await httpClient.post(
+          setUriProperty(serverURI, path: 'createProject'),
+          body: jsonEncode(project));
+    } catch (e) {
+      return null;
+    }
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body) as Map<String, dynamic>;
+      project.ID = data["ID"];
+      items.insert(0, project);
+      //setCurrentProject(project);
+      return project;
+    }
+
+    return null;
+  }
+
+  void deleteEditorItem() {
+    items.removeWhere((item) => item.editMode == true);
+  }
 }

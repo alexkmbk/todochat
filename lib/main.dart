@@ -18,31 +18,32 @@ import 'todochat.dart';
 Timer? timer;
 
 void main() {
-  runApp(
-    RestartWidget(
-      builder: () {
-        return MyApp();
-      },
-      beforeRestart: () {
-        if (timer != null) {
-          timer!.cancel();
-        }
-        appInitialized = false;
-        sessionID = "";
-        if (ws != null) {
-          ws!.sink.close(1001);
-          ws = null;
-          httpClient.close();
-          isWSConnected = false;
+  runApp(MyApp());
+  // runApp(
+  //   RestartWidget(
+  //     builder: () {
+  //       return MyApp();
+  //     },
+  //     beforeRestart: () {
+  //       if (timer != null) {
+  //         timer!.cancel();
+  //       }
+  //       appInitialized = false;
+  //       sessionID = "";
+  //       if (ws != null) {
+  //         ws!.sink.close(1001);
+  //         ws = null;
+  //         httpClient.close();
+  //         isWSConnected = false;
 
-          ///final context = getGlobalContext();
-          /*if (context != null) {
-            Provider.of<MsgListProvider>(context, listen: false).dispose();
-          }*/
-        }
-      },
-    ),
-  );
+  //         ///final context = getGlobalContext();
+  //         /*if (context != null) {
+  //           Provider.of<MsgListProvider>(context, listen: false).dispose();
+  //         }*/
+  //       }
+  //     },
+  //   ),
+  // );
 }
 
 class MyApp extends StatelessWidget {
@@ -271,6 +272,17 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<bool> initApp(BuildContext context) async {
     if (appInitialized) return true;
 
+    if (timer != null) {
+      timer!.cancel();
+    }
+    appInitialized = false;
+    sessionID = "";
+    if (ws != null) {
+      ws!.sink.close(1001);
+      ws = null;
+      httpClient.close();
+      isWSConnected = false;
+    }
     settings = await SharedPreferences.getInstance();
 
     var screenModeIndex =

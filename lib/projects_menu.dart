@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:todochat/ProjectsList.dart';
+import 'package:todochat/customWidgets.dart';
 import 'package:todochat/models/project.dart';
 import 'package:todochat/state/projects.dart';
 import 'package:choice/choice.dart';
@@ -26,38 +27,40 @@ class _ProjectsMenuState extends State<ProjectsMenu> {
   @override
   Widget build(BuildContext context) {
     return Consumer<ProjectsState>(builder: (context, state, child) {
-      return TapRegion(
-        onTapOutside: (tap) => _tooltipController.hide(),
-        child: CompositedTransformTarget(
-          link: _link,
-          child: OverlayPortal(
-            controller: _tooltipController,
-            overlayChildBuilder: (BuildContext context) {
-              return CompositedTransformFollower(
-                link: _link,
-                targetAnchor: Alignment.bottomCenter,
-                followerAnchor: Alignment.topCenter,
+      return CompositedTransformTarget(
+        link: _link,
+        child: OverlayPortal(
+          controller: _tooltipController,
+          overlayChildBuilder: (BuildContext context) {
+            return CompositedTransformFollower(
+              link: _link,
+              targetAnchor: Alignment.bottomCenter,
+              followerAnchor: Alignment.topCenter,
+              child: TapRegion(
+                onTapOutside: (tap) {
+                  _tooltipController.hide();
+                },
                 child: ProjectsMenuOverlayForm(
                   controller: _tooltipController,
                   state: state,
                 ),
-              );
-            },
-            child: Align(
-                alignment: Alignment.topCenter,
-                child: TextButton.icon(
-                  onPressed: onTap,
-                  label: Text(
-                    state.currentProject.Description,
-                    style: const TextStyle(color: Colors.black, fontSize: 15),
-                  ),
-                  icon: const Icon(
-                    Icons.keyboard_arrow_down,
-                    color: Colors.black,
-                  ),
-                  //style: TextStyle(color: Colors.white),
-                )),
-          ),
+              ),
+            );
+          },
+          child: Align(
+              alignment: Alignment.topCenter,
+              child: TextButton.icon(
+                onPressed: onTap,
+                label: Text(
+                  state.currentProject.Description,
+                  style: const TextStyle(color: Colors.black, fontSize: 15),
+                ),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down,
+                  color: Colors.black,
+                ),
+                //style: TextStyle(color: Colors.white),
+              )),
         ),
       );
     });
@@ -81,10 +84,12 @@ class ProjectsMenuOverlayForm extends StatefulWidget {
 }
 
 class _ProjectsMenuOverlayFormState extends State<ProjectsMenuOverlayForm> {
+  bool editMode = false;
+  final TextEditingController controller = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     final projects = widget.state;
-
     return Align(
       alignment: Alignment.topCenter,
       child: Container(
@@ -123,12 +128,42 @@ class _ProjectsMenuOverlayFormState extends State<ProjectsMenuOverlayForm> {
                 },
                 itemCount: projects.items.length,
                 itemBuilder: (selection, i) {
+                  final item = projects.items[i];
+                  if (item.editMode) {
+                    controller.text = item.Description;
+                  }
                   return ChoiceChip(
-                    selected: selection.selected(projects.items[i]),
-                    onSelected: selection.onSelected(projects.items[i]),
-                    label: Text(projects.items[i].Description),
+                    selected: selection.selected(item),
+                    onSelected: selection.onSelected(item),
+                    label: item.editMode
+                        ? TextFieldEx(
+                            controller: controller,
+                            onFieldSubmitted: (value) {
+                              final description = value.trim();
+                              if (description.isNotEmpty)
+                                projects.createProject(value.trim());
+                              setState(() {
+                                editMode = false;
+                                projects.deleteEditorItem();
+                              });
+                            },
+                          )
+                        : Text(item.Description),
                   );
                 },
+                trailingBuilder: editMode
+                    ? null
+                    : (state) {
+                        return IconButton(
+                            tooltip: 'Add project',
+                            icon: const Icon(Icons.add_circle_outline),
+                            onPressed: () {
+                              setState(() {
+                                projects.addNewInEditMode();
+                                editMode = true;
+                              });
+                            });
+                      },
                 listBuilder: ChoiceList.createWrapped(
                   spacing: 10,
                   runSpacing: 10,
