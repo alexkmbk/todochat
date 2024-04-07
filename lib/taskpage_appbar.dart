@@ -1,4 +1,7 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_settings_ui/flutter_settings_ui.dart';
+import 'package:todochat/customWidgets.dart';
 import 'package:todochat/msglist_provider.dart';
 import 'package:todochat/projects_menu.dart';
 import 'package:todochat/searchField.dart';
@@ -32,12 +35,12 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
             )),
         const Text(
           "Project: ",
-          style: TextStyle(fontSize: 15, color: Colors.black),
+          style: const TextStyle(fontSize: 15, color: Colors.black),
         ),
         Flexible(
-            fit: FlexFit.tight,
+            //fit: FlexFit.tight,
             //flex: 6,
-            child: ProjectField())
+            child: const ProjectField())
       ]);
     } else if (showSearch) {
       return SearchField(
@@ -177,33 +180,38 @@ class _ProjectFieldState extends State<ProjectField> {
   @override
   Widget build(BuildContext context) {
     var tasks = context.read<TasksState>();
-    return Align(
-        alignment: Alignment.topLeft,
-        child: TextButton.icon(
-          onPressed: () async {
-            var res = await ProjectsPage.choice(context: context);
-            // await Navigator.push(
-            //   context,
-            //   MaterialPageRoute(
-            //       builder: (context) => ProjectsPage(
-            //             currentItem: tasks.project,
-            //           )),
-            // );
-            if (res != null) {
-              tasks.setCurrentProject(res, context);
-            }
-            setState(() {});
-          },
 
-          label: Text(
-            tasks.project.Description,
-            style: const TextStyle(color: Colors.black, fontSize: 15),
-          ),
-          icon: const Icon(
-            Icons.keyboard_arrow_down,
-            color: Colors.black,
-          ),
-          //style: TextStyle(color: Colors.white),
-        ));
+    return ActionChip(
+      onPressed: () async {
+        final res = await ProjectsPage.choice(context: context);
+        if (res != null) {
+          tasks.setCurrentProject(res, context);
+        }
+        setState(() {});
+      },
+      label: Text(tasks.project.Description),
+    );
   }
+  //   return Align(
+  //       alignment: Alignment.centerLeft,
+  //       child: new RichText(
+  //         text: new TextSpan(
+  //           children: [
+  //             new TextSpan(
+  //               text: tasks.project.Description,
+  //               style: new TextStyle(
+  //                   color: Color.fromRGBO(51, 102, 204, 1.0), fontSize: 16),
+  //               recognizer: new TapGestureRecognizer()
+  //                 ..onTap = () async {
+  //                   final res = await ProjectsPage.choice(context: context);
+  //                   if (res != null) {
+  //                     tasks.setCurrentProject(res, context);
+  //                   }
+  //                   setState(() {});
+  //                 },
+  //             ),
+  //           ],
+  //         ),
+  //       ));
+  // }
 }

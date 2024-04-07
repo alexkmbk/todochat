@@ -85,7 +85,8 @@ class TasksState extends ChangeNotifier {
     if (isDesktopMode) {
       final msgListProvider =
           Provider.of<MsgListProvider>(context, listen: false);
-      msgListProvider.clear();
+      msgListProvider.task = Task();
+      msgListProvider.clear(true);
     }
   }
 
