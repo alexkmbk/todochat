@@ -181,13 +181,14 @@ class _ProjectFieldState extends State<ProjectField> {
         alignment: Alignment.topLeft,
         child: TextButton.icon(
           onPressed: () async {
-            var res = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => ProjectsPage(
-                        currentItem: tasks.project,
-                      )),
-            );
+            var res = await ProjectsPage.choice(context: context);
+            // await Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //       builder: (context) => ProjectsPage(
+            //             currentItem: tasks.project,
+            //           )),
+            // );
             if (res != null) {
               tasks.setCurrentProject(res, context);
             }

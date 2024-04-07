@@ -72,7 +72,7 @@ class TasksState extends ChangeNotifier {
       settings.setInt("projectID", this.project.ID);
 
       clear(context);
-      requestTasks(context);
+      requestTasks(context, true);
     }
   }
 
