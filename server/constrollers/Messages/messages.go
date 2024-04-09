@@ -192,13 +192,13 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	for i := range messages {
-		data, err_read := os.ReadFile(filepath.Join(FileStoragePath, messages[i].SmallImageName))
-		if err_read == nil {
-			messages[i].PreviewSmallImageBase64 = ToBase64(data)
-		}
+	// for i := range messages {
+	// 	data, err_read := os.ReadFile(filepath.Join(FileStoragePath, messages[i].SmallImageName))
+	// 	if err_read == nil {
+	// 		messages[i].PreviewSmallImageBase64 = ToBase64(data)
+	// 	}
 
-	}
+	// }
 
 	pw := bufio.NewWriterSize(w, 100000) // Bigger writer of 10kb
 	Log(fmt.Sprintln("Buffer size", pw.Size()))
@@ -369,11 +369,11 @@ func CreateMessageWithFile(w http.ResponseWriter, r *http.Request) {
 					Log("Resize image error: " + err.Error())
 				}
 
-				previewSmallImageData, err, _, _ := ResizeImageByHeight(smallImageData, 30)
+				// previewSmallImageData, err, _, _ := ResizeImageByHeight(smallImageData, 30)
 
-				if err == nil {
-					message.PreviewSmallImageBase64 = ToBase64(previewSmallImageData)
-				}
+				// if err == nil {
+				// 	message.PreviewSmallImageBase64 = ToBase64(previewSmallImageData)
+				// }
 
 			}
 			//buf := new(bytes.Buffer)

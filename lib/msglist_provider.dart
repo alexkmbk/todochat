@@ -59,7 +59,7 @@ class Message {
   String parentsmallImageName = "";
   String smallImageName = "";
   bool isImage = false;
-  Uint8List? previewSmallImageData;
+  //Uint8List? previewSmallImageData;
   int smallImageWidth = 0;
   int smallImageHeight = 0;
   bool isTaskDescriptionItem = false;
@@ -133,7 +133,6 @@ class Message {
       'isImage': isImage,
       'smallImageName': smallImageName,
       'localFileName': localFileName,
-      'previewSmallImageBase64': toBase64(previewSmallImageData),
       'smallImageWidth': smallImageWidth,
       'smallImageHeight': smallImageHeight,
       'isTaskDescriptionItem': isTaskDescriptionItem,
@@ -162,10 +161,10 @@ class Message {
     localFileName = json['LocalFileName'];
     smallImageWidth = json['SmallImageWidth'];
     smallImageHeight = json['SmallImageHeight'];
-    var previewSmallImageBase64 = json['PreviewSmallImageBase64'];
-    if (previewSmallImageBase64 != null && previewSmallImageBase64 != "") {
-      previewSmallImageData = fromBase64(previewSmallImageBase64);
-    }
+    // var previewSmallImageBase64 = json['PreviewSmallImageBase64'];
+    // if (previewSmallImageBase64 != null && previewSmallImageBase64 != "") {
+    //   previewSmallImageData = fromBase64(previewSmallImageBase64);
+    // }
     value = json['IsTaskDescriptionItem'];
     isTaskDescriptionItem = value ?? false;
     tempID = json["TempID"];

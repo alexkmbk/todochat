@@ -22,7 +22,7 @@ class Task {
   String fileName = "";
   int fileSize = 0;
   String localFileName = "";
-  Uint8List? previewSmallImageData;
+  //Uint8List? previewSmallImageData;
 
   Task(
       {this.ID = 0,
@@ -49,7 +49,7 @@ class Task {
       'FileName': fileName,
       'FileSize': fileSize,
       'LocalFileName': localFileName,
-      'previewSmallImageBase64': toBase64(previewSmallImageData),
+      //'previewSmallImageBase64': toBase64(previewSmallImageData),
     };
   }
 
@@ -96,6 +96,6 @@ class Task {
     fileName = task.fileName;
     fileSize = task.fileSize;
     localFileName = task.localFileName;
-    previewSmallImageData = task.previewSmallImageData;
+    //previewSmallImageData = task.previewSmallImageData;
   }
 }

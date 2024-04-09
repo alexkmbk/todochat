@@ -34,12 +34,12 @@ class ActionsMenu extends StatelessWidget {
                 TextSpan(text: "Remove the ", children: <InlineSpan>[
               WidgetSpan(
                 alignment: PlaceholderAlignment.middle,
-                child: Label(
+                child: const Label(
                   text: "Done",
                   backgroundColor: Colors.green,
                 ),
               ),
-              WidgetSpan(child: Text("label"))
+              WidgetSpan(child: const Text("label"))
             ])),
             onTap: () {
               msglist.createMessage(
@@ -103,7 +103,7 @@ Widget getMessageActionDescription(Message message) {
       return Text.rich(TextSpan(text: "The task was ", children: <InlineSpan>[
         const WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child: Label(
+          child: const Label(
             text: "Reopened",
             backgroundColor: Colors.orange,
           ),
@@ -120,7 +120,7 @@ Widget getMessageActionDescription(Message message) {
           TextSpan(text: "The task was marked as ", children: <InlineSpan>[
         const WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child: Label(
+          child: const Label(
             text: "Cancelled",
             backgroundColor: Colors.grey,
           ),
@@ -135,7 +135,7 @@ Widget getMessageActionDescription(Message message) {
           TextSpan(text: "The task was marked as ", children: <InlineSpan>[
         const WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child: Label(text: "Done", backgroundColor: Colors.green),
+          child: const Label(text: "Done", backgroundColor: Colors.green),
         ),
         const WidgetSpan(child: Text(" by ")),
         WidgetSpan(
@@ -146,7 +146,7 @@ Widget getMessageActionDescription(Message message) {
       return Text.rich(TextSpan(text: "The task was ", children: <InlineSpan>[
         const WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child: Label(
+          child: const Label(
             text: "Closed",
             backgroundColor: Colors.green,
           ),
@@ -161,7 +161,7 @@ Widget getMessageActionDescription(Message message) {
       return Text.rich(TextSpan(text: "The lable ", children: <InlineSpan>[
         const WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child: Label(
+          child: const Label(
             text: "Done",
             backgroundColor: Colors.green,
           ),

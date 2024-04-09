@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -311,21 +312,20 @@ class _GestureDetectorWithMenuState extends State<GestureDetectorWithMenu> {
   }
 }
 
-class NetworkImageWithMenu extends StatelessWidget {
-  TapDownDetails? _tapDownDetails;
-  String src;
-  Map<String, String>? headers;
-  GestureTapCallback? onTap;
-  Function? onCopy;
-  Function? onReply;
-  Function? onDelete;
-  Function? onCopyOriginal;
-  double? width;
-  double? height;
-  Uint8List? previewImageData;
-  List<PopupMenuEntry>? addMenuItems;
+class NetworkImageWithMenu extends StatefulWidget {
+  final String src;
+  final Map<String, String>? headers;
+  final GestureTapCallback? onTap;
+  final Function? onCopy;
+  final Function? onReply;
+  final Function? onDelete;
+  final Function? onCopyOriginal;
+  final double? width;
+  final double? height;
+  final Uint8List? previewImageData;
+  final List<PopupMenuEntry>? addMenuItems;
 
-  NetworkImageWithMenu(this.src,
+  const NetworkImageWithMenu(this.src,
       {this.headers,
       this.onCopy,
       this.onTap,
@@ -339,6 +339,13 @@ class NetworkImageWithMenu extends StatelessWidget {
       Key? key})
       : super(key: key);
 
+  @override
+  State<NetworkImageWithMenu> createState() => _NetworkImageWithMenuState();
+}
+
+class _NetworkImageWithMenuState extends State<NetworkImageWithMenu> {
+  TapDownDetails? _tapDownDetails;
+
   void onSecondaryTapDown(TapDownDetails details, BuildContext context) async {
     final x = details.globalPosition.dx;
     final y = details.globalPosition.dy;
@@ -348,28 +355,28 @@ class NetworkImageWithMenu extends StatelessWidget {
       context: context,
       position: RelativeRect.fromLTRB(x, y, x, y),
       items: [
-        if (onCopy != null)
+        if (widget.onCopy != null)
           PopupMenuItem<String>(
               child: const Text('Copy'),
               onTap: () async {
-                if (onCopy != null) {
-                  onCopy!();
+                if (widget.onCopy != null) {
+                  widget.onCopy!();
                 }
               }),
-        if (onCopyOriginal != null)
+        if (widget.onCopyOriginal != null)
           const PopupMenuItem<String>(
             value: "CopyOriginal",
             child: Text('Copy original quality picture'),
           ),
-        if (onReply != null)
+        if (widget.onReply != null)
           PopupMenuItem<String>(
               child: const Text('Reply'),
               onTap: () async {
-                if (onReply != null) {
-                  onReply!();
+                if (widget.onReply != null) {
+                  widget.onReply!();
                 }
               }),
-        if (onDelete != null)
+        if (widget.onDelete != null)
           const PopupMenuItem<String>(
             value: 'Delete',
             child: Text('Delete'),
@@ -379,13 +386,13 @@ class NetworkImageWithMenu extends StatelessWidget {
     if (res == "Delete") {
       var res = await confirmDismissDlg(context);
       if (res ?? false) {
-        if (onDelete != null) {
-          onDelete!();
+        if (widget.onDelete != null) {
+          widget.onDelete!();
         }
       }
     } else if (res == "CopyOriginal") {
-      if (onCopyOriginal != null) {
-        onCopyOriginal!();
+      if (widget.onCopyOriginal != null) {
+        widget.onCopyOriginal!();
       }
     }
   }
@@ -394,7 +401,7 @@ class NetworkImageWithMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     try {
       return GestureDetector(
-          onTap: onTap,
+          onTap: widget.onTap,
           onTapDown: (details) {
             _tapDownDetails = details;
           },
@@ -405,30 +412,30 @@ class NetworkImageWithMenu extends StatelessWidget {
           child: ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
               child: Image.network(
-                src,
-                height: height,
-                headers: headers,
+                widget.src,
+                height: widget.height,
+                headers: widget.headers,
                 errorBuilder: (BuildContext context, Object exception,
                     StackTrace? stackTrace) {
                   return Image.asset(
                     'assets/images/image_error.png',
-                    height: height ?? 200,
-                    width: width,
+                    height: widget.height ?? 200,
+                    width: widget.width,
                   );
                 },
                 loadingBuilder: (BuildContext context, Widget child,
                     ImageChunkEvent? loadingProgress) {
                   if (loadingProgress == null) return child;
                   return SizedBox(
-                      width: width,
-                      height: height,
+                      width: widget.width,
+                      height: widget.height,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8.0),
-                        child: previewImageData != null
+                        child: widget.previewImageData != null
                             ? Image.memory(
-                                previewImageData!,
-                                width: width,
-                                height: height,
+                                widget.previewImageData!,
+                                width: widget.width,
+                                height: widget.height,
                                 fit: BoxFit.fill,
                               )
                             : null,
@@ -443,8 +450,8 @@ class NetworkImageWithMenu extends StatelessWidget {
     } catch (e) {
       return Image.asset(
         'assets/images/image_error.png',
-        height: height ?? 200,
-        width: width,
+        height: widget.height ?? 200,
+        width: widget.width,
       );
     }
   }
@@ -472,34 +479,33 @@ Widget networkImage(String src,
             : null,
         child: ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
-            child: Image.network(
-              src,
+            child: CachedNetworkImage(
+              fadeOutDuration: const Duration(milliseconds: 0),
+              fadeInDuration: const Duration(milliseconds: 0),
+              imageUrl: src,
               height: height,
-              headers: headers,
-              errorBuilder: (BuildContext context, Object exception,
-                  StackTrace? stackTrace) {
+              httpHeaders: headers,
+              errorWidget: (context, url, error) {
                 return Image.asset(
                   'assets/images/image_error.png',
                   height: height ?? 200,
                   width: width,
                 );
               },
-              loadingBuilder: (BuildContext context, Widget child,
-                  ImageChunkEvent? loadingProgress) {
-                if (loadingProgress == null) return child;
+              placeholder: (context, url) {
                 return SizedBox(
                     width: width,
                     height: height,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8.0),
-                      child: previewImageData != null
-                          ? Image.memory(
-                              previewImageData,
-                              width: width,
-                              height: height,
-                              fit: BoxFit.fill,
-                            )
-                          : null,
+                      // child: previewImageData != null
+                      //     ? Image.memory(
+                      //         previewImageData,
+                      //         width: width,
+                      //         height: height,
+                      //         fit: BoxFit.fill,
+                      //       )
+                      //     : null,
                     )); /*CircularProgressIndicator(
                     value: loadingProgress.expectedTotalBytes != null
                         ? loadingProgress.cumulativeBytesLoaded /

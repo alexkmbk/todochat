@@ -115,9 +115,10 @@ class TaskListTile extends StatelessWidget {
           ]),
           if (task.fileSize > 0) ...[
             const Expanded(child: Divider()),
-            if (task.previewSmallImageData != null)
-              Image.memory(task.previewSmallImageData as Uint8List)
-            else if (task.fileName.isNotEmpty)
+            // if (task.previewSmallImageData != null)
+            //   Image.memory(task.previewSmallImageData as Uint8List)
+            // else
+            if (task.fileName.isNotEmpty)
               DecoratedBox(
                   // chat bubble decoration
                   decoration: BoxDecoration(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:sn_progress_dialog/sn_progress_dialog.dart';
+import 'package:todochat/ui_components/network_image_with_menu.dart';
 //import 'package:text_selection_controls/text_selection_controls.dart';
 import 'msglist_actions_menu.dart';
 //import 'text_selection_controls.dart';
@@ -16,7 +17,7 @@ import 'msglist_provider.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 
 class MsgListTile extends StatefulWidget {
-  MsgListTile(
+  const MsgListTile(
       {Key? key,
       required this.message,
       required this.onDismissed,
@@ -344,7 +345,7 @@ class _MsgListTileState extends State<MsgListTile> {
                         //value: progress,
                       ))
               ])
-            : NetworkImageWithMenu(
+            : CachedNetworkImageWithMenu(
                 '${serverURI.scheme}://${serverURI.authority}/FileStorage/${widget.message.smallImageName}',
                 headers: {"sessionID": sessionID},
                 onTap: () {
@@ -383,8 +384,7 @@ class _MsgListTileState extends State<MsgListTile> {
                   widget.msgListProvider.refresh();
                 },
                 width: widget.message.smallImageWidth.toDouble(),
-                height: widget.message.smallImageHeight.toDouble(),
-                previewImageData: widget.message.previewSmallImageData);
+                height: widget.message.smallImageHeight.toDouble());
       } else {
         // File bubble
         return GestureDetectorWithMenu(

@@ -55,27 +55,26 @@ const (
 )
 
 type Message struct {
-	ID                      int64 `gorm:"primary_key"`
-	TaskID                  int64 `gorm:"index"`
-	ParentMessageID         int64
-	ProjectID               int64
-	Text                    string
-	QuotedText              string `gorm:"default:''"`
-	UserID                  int64
-	UserName                string
-	PreviewSmallImageBase64 string
-	SmallImageWidth         int
-	SmallImageHeight        int
-	FileName                string
-	LocalFileName           string
-	FileSize                int64 `gorm:"default:0"`
-	SmallImageName          string
-	ParentsmallImageName    string `gorm:"default:''"`
-	IsImage                 bool
-	Created_at              time.Time
-	IsTaskDescriptionItem   bool `gorm:"default:false"`
-	TempID                  string
-	LoadinInProcess         bool
+	ID                    int64 `gorm:"primary_key"`
+	TaskID                int64 `gorm:"index"`
+	ParentMessageID       int64
+	ProjectID             int64
+	Text                  string
+	QuotedText            string `gorm:"default:''"`
+	UserID                int64
+	UserName              string
+	SmallImageWidth       int
+	SmallImageHeight      int
+	FileName              string
+	LocalFileName         string
+	FileSize              int64 `gorm:"default:0"`
+	SmallImageName        string
+	ParentsmallImageName  string `gorm:"default:''"`
+	IsImage               bool
+	Created_at            time.Time
+	IsTaskDescriptionItem bool `gorm:"default:false"`
+	TempID                string
+	LoadinInProcess       bool
 
 	MessageAction MessageAction `gorm:"default:0"`
 }
