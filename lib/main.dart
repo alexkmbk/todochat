@@ -20,7 +20,7 @@ import 'todochat.dart';
 Timer? timer;
 
 void main() {
-  runApp(MyApp());
+  runApp(AppLifecyclePage(child: MyApp()));
   // runApp(
   //   RestartWidget(
   //     builder: () {

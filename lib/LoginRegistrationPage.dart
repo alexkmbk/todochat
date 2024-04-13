@@ -485,7 +485,26 @@ Future<bool> checkLogin() async {
   }
 
   if (response.statusCode == 200) {
-    currentUserName = jsonDecode(response.body).toString();
+    final data = jsonDecode(response.body);
+    try {
+      currentUserName = data["username"];
+      currentUserID = data["userid"];
+    } catch (e) {}
+    return true;
+  }
+
+  return false;
+}
+
+Future<bool> logoff() async {
+  http.Response response;
+  try {
+    response = await httpClient.get(setUriProperty(serverURI, path: "logoff"));
+  } catch (e) {
+    return Future.error(e.toString());
+  }
+
+  if (response.statusCode == 200) {
     return true;
   }
 

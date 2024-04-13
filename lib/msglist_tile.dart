@@ -209,19 +209,24 @@ class _MsgListTileState extends State<MsgListTile> {
             //toast("Text copied to clipboard", context, 500);
           });
         },
-        onReply: () async {
+        onReply: () {
           message.isSelected = false;
           msgListProvider.quotedText = message.isTaskDescriptionItem
               ? msgListProvider.task.description
               : message.text;
           msgListProvider.currentParentMessageID = message.ID;
 
+          msgListProvider.refresh();
           //msgListProvider.refresh();
           //FocusScope.of(context).unfocus();
-          searchFocusNode.unfocus();
+//          searchFocusNode.unfocus();
           //widget.messageTextFieldFocusNode.dispose();
-          widget.messageTextFieldFocusNode.requestFocus();
-          msgListProvider.refresh();
+          //widget.messageTextFieldFocusNode.requestFocus();
+          WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+            // FocusScope.of(context)
+            //     .requestFocus(widget.messageTextFieldFocusNode);
+            widget.messageTextFieldFocusNode.requestFocus();
+          });
         },
         onDelete: () => msgListProvider.deleteMesage(message.ID),
         onQuoteSelection: () async {
