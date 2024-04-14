@@ -40,6 +40,78 @@ bool GetDesktopMode(ScreenModes screenMode) {
   return false;
 }
 
+class AppLifecyclePageOld extends StatefulWidget {
+  final Widget child;
+  const AppLifecyclePageOld({required this.child, super.key});
+
+  @override
+  State<AppLifecyclePageOld> createState() => _AppLifecyclePageOldState();
+}
+
+class _AppLifecyclePageOldState extends State<AppLifecyclePageOld>
+    // Use the WidgetsBindingObserver mixin
+    with
+        WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+
+    // Register your State class as a binding observer
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    // Unregister your State class as a binding observer
+    WidgetsBinding.instance.removeObserver(this);
+
+    super.dispose();
+  }
+
+  // Override the didChangeAppLifecycleState method and
+  // listen to the app lifecycle state changes
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.detached:
+        _onDetached();
+        break;
+      case AppLifecycleState.resumed:
+        _onResumed();
+        break;
+      case AppLifecycleState.inactive:
+        _onInactive();
+        break;
+      case AppLifecycleState.hidden:
+        _onHidden();
+        break;
+      case AppLifecycleState.paused:
+        _onPaused();
+    }
+  }
+
+  void _onDetached() {
+    if (!autoLogin) {
+      logoff();
+    }
+  }
+
+  void _onResumed() => print('resumed');
+
+  void _onInactive() => print('inactive');
+
+  void _onHidden() => print('hidden');
+
+  void _onPaused() => print('paused');
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
+  }
+}
+
 class AppLifecyclePage extends StatefulWidget {
   final Widget child;
   const AppLifecyclePage({required this.child, super.key});
@@ -74,16 +146,16 @@ class _AppLifecyclePageState extends State<AppLifecyclePage> {
     switch (state) {
       case AppLifecycleState.detached:
         _onDetached();
-        break;
+        return;
       case AppLifecycleState.resumed:
         _onResumed();
-        break;
+        return;
       case AppLifecycleState.inactive:
         _onInactive();
-        break;
+        return;
       case AppLifecycleState.hidden:
         _onHidden();
-        break;
+        return;
       case AppLifecycleState.paused:
         _onPaused();
     }
@@ -95,7 +167,7 @@ class _AppLifecyclePageState extends State<AppLifecyclePage> {
     }
   }
 
-  void _onResumed() {}
+  void _onResumed() => print('resumed');
 
   void _onInactive() => print('inactive');
 

@@ -164,6 +164,15 @@ class _SettingsPageState extends State<SettingsPage> {
                             getConnectionIcon(),
                           ]),
                     ),
+                    SettingsTile.switchTile(
+                      initialValue: autoLogin,
+                      title: Text("Auto login"),
+                      onToggle: (val) {
+                        autoLogin = val;
+                        settings.setBool("autoLogin", autoLogin);
+                        setState(() {});
+                      },
+                    ),
                   ],
                 ),
               ],

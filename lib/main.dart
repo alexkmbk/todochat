@@ -301,7 +301,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var httpScheme = settings.getString("httpScheme");
     var host = settings.getString("host");
     var port = settings.getInt("port");
-
+    autoLogin = settings.getBool("autoLogin") ?? true;
     if (isWeb() && (host == null || host.isEmpty)) {
       host = Uri.base.host;
       port = Uri.base.port;
@@ -325,7 +325,7 @@ class _MyHomePageState extends State<MyHomePage> {
       serverURI = Uri(scheme: httpScheme, host: host, port: port);
     }
     bool login = false;
-    if (sessionID.isNotEmpty) {
+    if (sessionID.isNotEmpty && autoLogin) {
       httpClient.defaultHeaders = {"sessionID": sessionID};
       try {
         login = await checkLogin();
