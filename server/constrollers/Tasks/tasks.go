@@ -66,6 +66,57 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func MarkAllRead(w http.ResponseWriter, r *http.Request) {
+
+	UserID := Sessions.GetUserID(w, r)
+	if UserID == 0 {
+		return
+	}
+	queryStr := "select id from tasks where id NOT in (select task_id from seen_tasks where user_id = @user_id)"
+	rows, err := DB.Raw(queryStr, sql.Named("user_id", UserID)).Rows()
+	var seenTasks []*SeenTask
+
+	if err == nil {
+		for rows.Next() {
+			var taskID int64
+			rows.Scan(&taskID)
+			seenTasks = append(seenTasks, &SeenTask{UserID: UserID, TaskID: taskID})
+		}
+		if rows != nil {
+			rows.Close()
+		}
+
+		for i := range seenTasks {
+			if DB.Find(seenTasks[i]).RowsAffected == 0 {
+				DB.Create(seenTasks[i])
+			}
+		}
+	}
+
+	var seenMessages []*SeenMessage
+
+	queryStr = "select id, task_id from messages where messages.id NOT in (select task_id from seen_messages where user_id = @user_id)"
+	rows, err = DB.Raw(queryStr, sql.Named("user_id", UserID)).Rows()
+	if err == nil {
+		for rows.Next() {
+			var taskID int64
+			var messageID int64
+			rows.Scan(&messageID, &taskID)
+			seenMessages = append(seenMessages, &SeenMessage{UserID: UserID, TaskID: taskID, MessageID: messageID})
+		}
+
+		if rows != nil {
+			rows.Close()
+		}
+
+		for i := range seenMessages {
+			if DB.Find(seenMessages[i]).RowsAffected == 0 {
+				DB.Create(seenMessages[i])
+			}
+		}
+	}
+}
+
 func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var task Task

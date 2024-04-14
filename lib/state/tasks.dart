@@ -31,6 +31,7 @@ class TasksState extends ChangeNotifier {
   List<String> searchHighlightedWords = [];
   String search = "";
   Task? currentTask;
+  int currentTaskID = 0;
   AutoScrollController? scrollController;
 
   TextEditingController textEditingController = TextEditingController(text: "");
@@ -62,6 +63,10 @@ class TasksState extends ChangeNotifier {
           msgListProvider.requestMessages(this, context);
         }
         //msgListProvider.refresh();
+      }
+      if (this.currentTask != null) {
+        currentTaskID = this.currentTask!.ID;
+        settings.setInt("currentTaskID", currentTaskID);
       }
     }
   }
@@ -389,7 +394,19 @@ class TasksState extends ChangeNotifier {
           res.add(Task.fromJson(item));
         }
 
-        if (currentTask == null || currentTask!.projectID != project.ID) {
+        if (res.isNotEmpty) {
+          items = [...items, ...res];
+        }
+
+        if (currentTaskID != 0 && currentTask == null) {
+          final found =
+              items.where((element) => element.ID == currentTaskID).firstOrNull;
+          if (found != null) {
+            setCurrentTask(found, context);
+          } else
+            setCurrentTask(res[0], context);
+        } else if (currentTask == null ||
+            currentTask!.projectID != project.ID) {
           setCurrentTask(res[0], context);
           // currentTask = Task.fromJson(tasks[0]);
           // res[0].read = true;
@@ -414,7 +431,6 @@ class TasksState extends ChangeNotifier {
     }
     loading = false;
     if (res.isNotEmpty || forceRefresh) {
-      items = [...items, ...res];
       refresh();
     }
   }
@@ -482,5 +498,31 @@ class TasksState extends ChangeNotifier {
       items = [...items, ...res];
     }
     refresh();
+  }
+
+  Future<bool> markAllRead(BuildContext context) async {
+    if (sessionID == "") {
+      return false;
+    }
+
+    Response response;
+
+    try {
+      response =
+          await httpClient.post(setUriProperty(serverURI, path: 'markallread'));
+
+      if (response.statusCode == 200) {
+        items.where((element) => element.unreadMessages > 0).forEach((element) {
+          element.unreadMessages = 0;
+          element.read = true;
+        });
+        refresh();
+        return true;
+      }
+    } catch (e) {
+      reconnect(this, context, true);
+    }
+
+    return false;
   }
 }

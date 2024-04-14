@@ -354,6 +354,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     tasklist.showClosed = settings.getBool("showCompleted") ?? true;
+    tasklist.currentTaskID = settings.getInt("currentTaskID") ?? 0;
     tasklist.setCurrentProject(currentProject, context);
 
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {

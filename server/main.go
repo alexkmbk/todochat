@@ -35,10 +35,12 @@ func runMain() {
 	DBHost_ := flag.String("DBHost", "", "DBHost")
 	DBPort_ := flag.String("DBPort", "", "DBPort")
 	DBTimeZone_ := flag.String("DBTimeZone", "", "DBTimeZone")
+	DebugMode_ := flag.Bool("debug", false, "debug")
 	logs_ := flag.Bool("logs", false, "logs")
 
 	flag.Parse()
 
+	DebugMode := *DebugMode_
 	port := *port_
 	DB.DBMS = *DBMS_
 	DBUserName := *DBUserName_
@@ -74,7 +76,12 @@ func runMain() {
 		port = val
 	}
 
-	err = http.ListenAndServe(":"+port, GetRoutesHandler())
+	if DebugMode {
+		err = http.ListenAndServe("localhost:"+port, GetRoutesHandler())
+	} else {
+		err = http.ListenAndServe(":"+port, GetRoutesHandler())
+	}
+
 	//err = http.ListenAndServeTLS(":"+port, "./keys/localhost.crt", "./keys/localhost.key", GetRoutesHandler())
 	//}
 	if err != nil {

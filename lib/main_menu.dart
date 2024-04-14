@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:todochat/settings_page.dart';
+import 'package:todochat/state/tasks.dart';
 import 'LoginRegistrationPage.dart';
 import 'customWidgets.dart';
 import 'utils.dart';
@@ -38,14 +40,14 @@ class MainMenu extends StatelessWidget {
         onTap: () async {
           await Future.delayed(Duration.zero);
           await openSettings(context, restartAppOnChange: true);
-          // await Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //       builder: (context) => SettingsPage(
-          //             key: UniqueKey(),
-          //             restartAppOnChange: true,
-          //           )),
-          // );
+        },
+      ),
+      PopupMenuItem(
+        child: const Text("Mark all read"),
+        onTap: () async {
+          await Future.delayed(Duration.zero);
+          final tasks = context.read<TasksState>();
+          tasks.markAllRead(context);
         },
       )
     ];
