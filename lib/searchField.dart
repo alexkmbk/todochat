@@ -34,14 +34,14 @@ class SearchField extends StatelessWidget {
             taskListProvider.refresh();
             taskListProvider.requestTasks(context);
           },
-          onFieldSubmitted: (value) async {
+          onFieldSubmitted: (value) {
             taskListProvider.search = value;
             if (value.isNotEmpty) {
               //msgListProvider.clear();
               taskListProvider.searchMode = true;
               taskListProvider.clear(context);
               taskListProvider.refresh();
-              await taskListProvider.searchTasks(value, context);
+              taskListProvider.searchTasks(value, context);
               // if (isDesktopMode) {
               //   msgListProvider.task = taskListProvider.currentTask ?? Task();
               //   msgListProvider.requestMessages(taskListProvider, context);

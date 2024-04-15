@@ -124,42 +124,42 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (appInitialized) {
-      return const Scaffold(body: const TasksPage());
-    } else {
-      return Scaffold(
-        backgroundColor: Colors.transparent, //Colors.orange[600],
-        body: FutureBuilder<bool>(
-          future: initApp(context), // function where you call your api
-          builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-            // AsyncSnapshot<Your object type>
-            if (snapshot.data != null && snapshot.data as bool) {
-              return const TasksPage();
-            } else {
-              return Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.white, Colors.white],
-                        /*colors: [
+    return Consumer<SettingsState>(
+      builder: (context, provider, child) {
+        if (appInitialized) {
+          return const TasksPage();
+        } else {
+          return FutureBuilder<bool>(
+            future: initApp(context), // function where you call your api
+            builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+              // AsyncSnapshot<Your object type>
+              if (snapshot.data != null && snapshot.data as bool) {
+                return const TasksPage();
+              } else {
+                return Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.white, Colors.white],
+                          /*colors: [
                           Color.fromARGB(
                               255, 87, 108, 245), //Color(0xFF3366FF),
                           Color.fromARGB(
                               255, 109, 164, 246), //Color(0xFF00CCFF),
                         ],*/
-                        stops: [0.0, 1.0],
-                        tileMode: TileMode.clamp),
-                  ),
-                  child: Center(
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const SizedBox(
-                            height: 50,
-                          ),
-                          /*RichText(
+                          stops: [0.0, 1.0],
+                          tileMode: TileMode.clamp),
+                    ),
+                    child: Center(
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const SizedBox(
+                              height: 50,
+                            ),
+                            /*RichText(
                               text: TextSpan(children: [
                             TextSpan(
                               text: "ToDo\n",
@@ -181,94 +181,102 @@ class _MyHomePageState extends State<MyHomePage> {
                                 fontWeight: FontWeight.bold)*/
                             ),
                           ])),*/
-                          Image.asset(
-                            "assets/images/todochat_logo.png",
-                            width: 200,
-                          ),
-                          // TextInCircle(
-                          //   width: 200,
-                          //   color: Colors.white,
-                          //   borderColor: Colors.green,
-                          //   textWidget: TextSpan(
-                          //     children: [
-                          //       TextSpan(
-                          //         text: "ToDo\n",
-                          //         style: GoogleFonts.righteous(
-                          //             fontSize: 56, color: Colors.green),
-                          //       ),
-                          //       TextSpan(
-                          //         text: "Chat",
-                          //         style: GoogleFonts.righteous(
-                          //             height: 1.0,
-                          //             fontSize: 56,
-                          //             color: Colors.orangeAccent),
-                          //         //00116d
-                          //         //1a6ce3
-                          //         /*TextStyle(
-                          //       height: 1.0,
-                          //       color: Colors.orangeAccent,
-                          //       fontSize: 50,
-                          //       fontWeight: FontWeight.bold)*/
-                          //       ),
-                          //     ],
-                          //   ),
-                          // ),
-                          const Spacer(),
-                          if (snapshot.hasError)
-                            IconButton(
-                                iconSize: 40,
-                                padding: const EdgeInsets.all(0.0),
-                                onPressed: () => setState(() {}),
-                                icon: const Icon(
-                                  Icons.refresh,
-                                  color: Color.fromARGB(255, 203, 202, 202),
-                                )),
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting)
-                            const Text('Connecting...',
-                                style: TextStyle(
-                                    color: Color.fromARGB(255, 203, 202, 202)),
-                                textDirection: TextDirection.ltr),
-                          const Spacer(),
-                          SizedBox(
+                            Image.asset(
+                              "assets/images/todochat_logo.png",
                               width: 200,
-                              height: 50,
-                              child: ElevatedButton(
-                                  style: OutlinedButton.styleFrom(
-                                    backgroundColor:
-                                        const Color.fromARGB(255, 20, 125, 199),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(15)),
-                                  ),
-                                  onPressed: () async {
-                                    final res = await openSettings(context,
-                                        restartAppOnChange: true);
-                                    // await Navigator.push(
-                                    //   context,
-                                    //   MaterialPageRoute(
-                                    //       builder: (context) => SettingsPage(
-                                    //             key: UniqueKey(),
-                                    //             restartAppOnChange: true,
-                                    //           )),
-                                    // );
-                                    if (res) setState(() {});
-                                  },
-                                  child: const Text(
-                                    "Settings",
-                                    style: TextStyle(
-                                        fontSize: 16, color: Colors.white),
-                                  ))),
-                          const SizedBox(
-                            height: 30,
-                          )
-                        ]),
-                  ));
-            }
-          },
-        ),
-      );
-    }
+                            ),
+                            // TextInCircle(
+                            //   width: 200,
+                            //   color: Colors.white,
+                            //   borderColor: Colors.green,
+                            //   textWidget: TextSpan(
+                            //     children: [
+                            //       TextSpan(
+                            //         text: "ToDo\n",
+                            //         style: GoogleFonts.righteous(
+                            //             fontSize: 56, color: Colors.green),
+                            //       ),
+                            //       TextSpan(
+                            //         text: "Chat",
+                            //         style: GoogleFonts.righteous(
+                            //             height: 1.0,
+                            //             fontSize: 56,
+                            //             color: Colors.orangeAccent),
+                            //         //00116d
+                            //         //1a6ce3
+                            //         /*TextStyle(
+                            //       height: 1.0,
+                            //       color: Colors.orangeAccent,
+                            //       fontSize: 50,
+                            //       fontWeight: FontWeight.bold)*/
+                            //       ),
+                            //     ],
+                            //   ),
+                            // ),
+                            const Spacer(),
+                            if (snapshot.hasError &&
+                                snapshot.connectionState !=
+                                    ConnectionState.waiting)
+                              IconButton(
+                                  iconSize: 40,
+                                  padding: const EdgeInsets.all(0.0),
+                                  onPressed: () => setState(() {}),
+                                  icon: const Icon(
+                                    Icons.refresh,
+                                    color: Color.fromARGB(255, 203, 202, 202),
+                                  )),
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting)
+                              const Text(
+                                'Connecting...',
+                                style: TextStyle(
+                                    decoration: TextDecoration.none,
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 16,
+                                    color: Color.fromARGB(255, 203, 202, 202)),
+                              ),
+                            const Spacer(),
+                            SizedBox(
+                                width: 200,
+                                height: 50,
+                                child: ElevatedButton(
+                                    style: OutlinedButton.styleFrom(
+                                      backgroundColor: const Color.fromARGB(
+                                          255, 20, 125, 199),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(15)),
+                                    ),
+                                    onPressed: () async {
+                                      final res = await openSettings(context,
+                                          restartAppOnChange: true);
+                                      // await Navigator.push(
+                                      //   context,
+                                      //   MaterialPageRoute(
+                                      //       builder: (context) => SettingsPage(
+                                      //             key: UniqueKey(),
+                                      //             restartAppOnChange: true,
+                                      //           )),
+                                      // );
+                                      if (res) setState(() {});
+                                    },
+                                    child: const Text(
+                                      "Settings",
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.white),
+                                    ))),
+                            const SizedBox(
+                              height: 30,
+                            )
+                          ]),
+                    ));
+              }
+            },
+            //),
+          );
+        }
+      },
+    );
   }
 
   Future<bool> initApp(BuildContext context) async {
