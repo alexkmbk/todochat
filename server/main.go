@@ -77,9 +77,9 @@ func runMain() {
 	}
 
 	if DebugMode {
-		err = http.ListenAndServe("localhost:"+port, GetRoutesHandler())
+		err = http.ListenAndServe("localhost:"+port, GetRoutesHandler(DebugMode))
 	} else {
-		err = http.ListenAndServe(":"+port, GetRoutesHandler())
+		err = http.ListenAndServe(":"+port, GetRoutesHandler(DebugMode))
 	}
 
 	//err = http.ListenAndServeTLS(":"+port, "./keys/localhost.crt", "./keys/localhost.key", GetRoutesHandler())

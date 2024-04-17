@@ -183,15 +183,15 @@ class BoolRef {
 }
 
 class GestureDetectorWithMenu extends StatefulWidget {
-  Widget child;
-  GestureTapCallback? onTap;
-  GestureTapDownCallback? onSecondaryTapDown;
-  Function? onCopy;
-  Function? onEdit;
-  Function? onReply;
-  Function? onDelete;
-  Function? onQuoteSelection;
-  List<PopupMenuEntry>? addMenuItems;
+  final Widget child;
+  final GestureTapCallback? onTap;
+  final GestureTapDownCallback? onSecondaryTapDown;
+  final Function? onCopy;
+  final Function? onEdit;
+  final Function? onReply;
+  final Function? onDelete;
+  final Function? onQuoteSelection;
+  final List<PopupMenuEntry>? addMenuItems;
   bool? isQuoteSelected;
 
   GestureDetectorWithMenu(

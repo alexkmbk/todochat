@@ -59,7 +59,7 @@ func originRequest(r *http.Request, origin string) bool {
 }
 
 // GetRoutesHandler inits router
-func GetRoutesHandler() http.Handler {
+func GetRoutesHandler(DebugMode bool) http.Handler {
 
 	router := mux.NewRouter()
 
@@ -91,7 +91,7 @@ func GetRoutesHandler() http.Handler {
 
 	//router.HandleFunc("/initMessagesWS", WS.InitMessagesWS).Methods("GET")
 	router.HandleFunc("/initMessagesWS", func(w http.ResponseWriter, r *http.Request) {
-		WS.ServeWs(WS.WSHub, w, r)
+		WS.ServeWs(WS.WSHub, w, r, DebugMode)
 	}).Methods("GET")
 	//router.HandleFunc("/echo", WS.Echo).Methods("GET")
 	router.HandleFunc("/getFile", CommonHandler(Messages.GetFile)).Methods("GET")
@@ -114,17 +114,20 @@ func GetRoutesHandler() http.Handler {
 	router.PathPrefix("/").HandlerFunc(corsHandler).Methods("OPTIONS")
 
 	// CORS
-	handler := cors.New(cors.Options{
-		AllowedHeaders: []string{"Accept", "Content-Type", "Bearer", "content-type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Passwordhash", "Username", "Origin", "sessionID", "limit"},
-		//AllowedHeaders:     []string{"Content-Type", "Bearer", "Bearer ", "content-type", "Origin", "Accept"},
-		AllowedOrigins:     []string{"*"},
-		AllowedMethods:     []string{"GET", "POST", "DELETE", "PATCH", "OPTIONS"},
-		AllowCredentials:   true,
-		OptionsPassthrough: true,
-		//Debug:                  true,
-		AllowOriginFunc:        origin,
-		AllowOriginRequestFunc: originRequest,
-	}).Handler(router)
+	if DebugMode {
+		return cors.New(cors.Options{
+			AllowedHeaders: []string{"Accept", "Content-Type", "Bearer", "content-type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Passwordhash", "Username", "Origin", "sessionID", "limit"},
+			//AllowedHeaders:     []string{"Content-Type", "Bearer", "Bearer ", "content-type", "Origin", "Accept"},
+			AllowedOrigins:     []string{"*"},
+			AllowedMethods:     []string{"GET", "POST", "DELETE", "PATCH", "OPTIONS"},
+			AllowCredentials:   true,
+			OptionsPassthrough: true,
+			//Debug:                  true,
+			AllowOriginFunc:        origin,
+			AllowOriginRequestFunc: originRequest,
+		}).Handler(router)
+	} else {
+		return router
+	}
 
-	return handler
 }

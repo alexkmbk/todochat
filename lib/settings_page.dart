@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
@@ -10,8 +11,8 @@ import 'HttpClient.dart';
 import 'customWidgets.dart';
 import 'todochat.dart';
 import 'utils.dart';
-import 'package:flutter_settings_ui/flutter_settings_ui.dart';
-import 'package:sticky_headers/sticky_headers.dart';
+//import 'package:flutter_settings_ui/flutter_settings_ui.dart';
+//import 'package:sticky_headers/sticky_headers.dart';
 
 Future<bool> openSettings(BuildContext context,
     {bool restartAppOnChange = true}) async {
@@ -71,21 +72,6 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-      // child: Scaffold(
-      //   appBar: AppBar(
-      //     shape: const Border(bottom: BorderSide(color: Colors.grey, width: 3)),
-      //     automaticallyImplyLeading: false,
-      //     elevation: 0,
-      //     backgroundColor: appBarColor,
-      //     actions: const [TextButton(onPressed: ExitApp, child: Text("Exit"))],
-      //     title: const Text("SETTINGS",
-      //         style: TextStyle(
-      //           color: Colors.grey,
-      //           fontSize: 24,
-      //         )),
-      //   ),
-      //   backgroundColor: Colors.white,
-      //   body:
       child: AlertDialog(
         title: Row(children: [
           Text("Settings"),
@@ -98,135 +84,95 @@ class _SettingsPageState extends State<SettingsPage> {
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
         //backgroundColor: Color(ColorResources.BLACK_ALPHA_65),
         content: Form(
-          canPop: false,
-          key: _formKey,
-          child: SizedBox(
-            width: isDesktopMode ? 400 : screenWidth - 20,
-            child: SettingsList(
-              sections: [
-                SettingsSection(
-                  title: const Text(
-                    'Interface',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  tiles: [
-                    SettingsTile.navigation(
-                      title: const Text('Screen mode'),
-                      value: Text(screenMode.name),
-                      leading: const Icon(Icons.screenshot_monitor),
-                      onPressed: (BuildContext context) async {
-                        final res = await RadioSelectDialog.choice<ScreenModes>(
-                            context: context,
-                            choiceMap: {
-                              ScreenModes.Auto: "Auto",
-                              ScreenModes.Desktop: "Desktop",
-                              ScreenModes.Mobile: "Mobile",
-                            },
-                            currentValue: screenMode);
-                        if (res != null)
-                          setState(() {
-                            if (!changed) {
-                              changed = screenMode != res;
-                            }
-                            screenMode = res;
-                          });
-                      },
-                    ),
-                  ],
-                ),
-                SettingsSection(
-                  title: const Text(
-                    'Server',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  tiles: [
-                    SettingsTile(
-                      title: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Expanded(
-                                child: TextFieldEx(
-                                    //labelText: "Server address",
-                                    border: const UnderlineInputBorder(),
-                                    //width: 300,
-                                    onFieldSubmitted: (value) {
-                                      checkingConnection = true;
-                                      setState(() {});
-                                      checkConnectionAndUpdateState();
+            canPop: false,
+            key: _formKey,
+            child: SizedBox(
+              width: isDesktopMode ? 400 : screenWidth - 20,
+              child: CupertinoPageScaffold(
+                child: Column(
+                  children: [
+                    CupertinoListSection.insetGrouped(
+                      header: Text("Interface"),
+                      children: [
+                        CupertinoListTile(
+                          title: const Text('Screen mode'),
+                          trailing: Text(screenMode.name),
+                          leading: const Icon(Icons.screenshot_monitor),
+                          onTap: () async {
+                            final res =
+                                await RadioSelectDialog.choice<ScreenModes>(
+                                    context: context,
+                                    choiceMap: {
+                                      ScreenModes.Auto: "Auto",
+                                      ScreenModes.Desktop: "Desktop",
+                                      ScreenModes.Mobile: "Mobile",
                                     },
-                                    controller: serverAddressController,
-                                    textAlign: TextAlign.center,
-                                    hintText: 'Server address',
-                                    validator: (value) =>
-                                        validateEmpty(value, 'Server address'),
-                                    choiceList:
-                                        settings.getStringList("addresses"))),
-                            getConnectionIcon(),
-                          ]),
+                                    currentValue: screenMode);
+                            if (res != null)
+                              setState(() {
+                                if (!changed) {
+                                  changed = screenMode != res;
+                                }
+                                screenMode = res;
+                              });
+                          },
+                        ),
+                      ],
                     ),
-                    SettingsTile.switchTile(
-                      initialValue: autoLogin,
-                      title: Text("Auto login"),
-                      onToggle: (val) {
-                        autoLogin = val;
-                        settings.setBool("autoLogin", autoLogin);
-                        setState(() {});
-                      },
+                    CupertinoListSection.insetGrouped(
+                      header: Text("Server"),
+                      children: [
+                        CupertinoListTile(
+                          leadingToTitle: 0.0,
+                          leadingSize: 0.0,
+                          title: Column(
+                            children: [
+                              Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                        child: TextFieldEx(
+                                            //labelText: "Server address",
+                                            border:
+                                                const UnderlineInputBorder(),
+                                            //width: 300,
+                                            onFieldSubmitted: (value) {
+                                              checkingConnection = true;
+                                              setState(() {});
+                                              checkConnectionAndUpdateState();
+                                            },
+                                            controller: serverAddressController,
+                                            textAlign: TextAlign.center,
+                                            hintText: 'Server address',
+                                            validator: (value) => validateEmpty(
+                                                value, 'Server address'),
+                                            choiceList: settings
+                                                .getStringList("addresses"))),
+                                    getConnectionIcon(),
+                                  ]),
+                              Row(
+                                children: [
+                                  Spacer(),
+                                  const Text('Auto login'),
+                                  Checkbox(
+                                    value: autoLogin,
+                                    onChanged: (value) {
+                                      autoLogin = value ?? false;
+                                      settings.setBool("autoLogin", autoLogin);
+                                      setState(() {});
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          // Column(
-          //     mainAxisSize: MainAxisSize.max,
-          //     mainAxisAlignment: MainAxisAlignment.start,
-          //     crossAxisAlignment: CrossAxisAlignment.start,
-          //     children: [
-          //       Row(
-          //         children: [
-          //           Text("Screen mode:"),
-          //           DropdownButtonHideUnderline(
-          //               child: DropdownButton<ScreenModes>(
-          //                   value: screenMode,
-          //                   onChanged: (newValue) {
-          //                     if (newValue != null) {
-          //                       setState(() {
-          //                         screenMode = newValue;
-          //                       });
-          //                     }
-          //                   },
-          //                   items:
-          //                       ScreenModes.values.map((ScreenModes classType) {
-          //                     return DropdownMenuItem<ScreenModes>(
-          //                         value: classType,
-          //                         child: Text(classType.name));
-          //                   }).toList())),
-          //         ],
-          //       ),
-          //       SizedBox(
-          //         height: 20,
-          //       ),
-          //       Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          //         TextFieldEx(
-          //             labelText: "Server address",
-          //             border: const UnderlineInputBorder(),
-          //             width: 300,
-          //             onFieldSubmitted: (value) {
-          //               checkingConnection = true;
-          //               setState(() {});
-          //               checkConnectionAndUpdateState();
-          //             },
-          //             controller: serverAddressController,
-          //             textAlign: TextAlign.center,
-          //             hintText: 'Server address',
-          //             validator: (value) =>
-          //                 validateEmpty(value, 'Server address'),
-          //             choiceList: settings.getStringList("addresses")),
-          //         getConnectionIcon(),
-          //       ]),
-          //     ]),
-        ),
+              ),
+            )),
         actions: [
           TextButton(
             child: const Text(
