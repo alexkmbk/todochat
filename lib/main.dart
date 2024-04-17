@@ -10,7 +10,7 @@ import 'HttpClient.dart';
 import 'LoginRegistrationPage.dart';
 import 'settings_page.dart';
 import 'customWidgets.dart';
-import 'msglist_provider.dart';
+import 'state/msglist_provider.dart';
 import 'TasksPage.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';

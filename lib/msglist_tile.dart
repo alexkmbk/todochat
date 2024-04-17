@@ -12,7 +12,7 @@ import 'package:todochat/todochat.dart';
 import 'package:todochat/utils.dart';
 
 import 'customWidgets.dart';
-import 'msglist_provider.dart';
+import 'state/msglist_provider.dart';
 
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 

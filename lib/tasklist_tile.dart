@@ -11,7 +11,7 @@ import "customWidgets.dart";
 import "highlight_text.dart";
 import "state/tasks.dart";
 import "tasklist.dart";
-import 'msglist_provider.dart';
+import 'state/msglist_provider.dart';
 
 class TaskListTile extends StatelessWidget {
   final int index;
@@ -102,7 +102,8 @@ class TaskListTile extends StatelessWidget {
                                           tempTask.description.substring(0,
                                               tempTask.description.length - 1);
                                     }
-                                    var res = await updateTask(tempTask);
+                                    var res =
+                                        await updateTask(context, tempTask);
                                     if (res) {
                                       task.description = tempTask.description;
                                       task.editMode = false;
@@ -231,7 +232,10 @@ class TaskListTile extends StatelessWidget {
                   fillColor: MaterialStateProperty.resolveWith((states) {
                     if (task.cancelled) {
                       return Colors.grey;
-                    } else if (task.closed) return Colors.green;
+                    } else if (task.closed)
+                      return Colors.green;
+                    else
+                      return null;
                   }),
                   value: task.closed,
                   onChanged: (value) => taskClosedOnChanged(

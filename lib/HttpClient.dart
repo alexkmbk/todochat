@@ -5,13 +5,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:todochat/models/task.dart';
+import 'package:todochat/state/settings.dart';
 import 'package:todochat/state/tasks.dart';
 import 'package:todochat/utils.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'msglist_provider.dart';
+import 'state/msglist_provider.dart';
 import 'todochat.dart';
 import 'LoginRegistrationPage.dart';
-import 'customWidgets.dart';
 
 //import 'TaskMessagesPage.dart';
 import 'package:provider/provider.dart';
@@ -171,14 +171,14 @@ void listenWs(TasksState taskListProvider, BuildContext context) {
         if (kDebugMode) {
           print(error.toString());
         }
-        RestartWidget.restartApp();
+        context.read<SettingsState>().redrawWidgetTree();
       });
     } catch (e) {
       if (kDebugMode) {
         print(e.toString());
       }
       Future.delayed(const Duration(seconds: 2))
-          .then((value) => RestartWidget.restartApp());
+          .then((value) => context.read<SettingsState>().redrawWidgetTree());
     }
   }
 }
@@ -204,12 +204,12 @@ Future<void> reconnect(TasksState taskListProvider, BuildContext context,
               listenWs(taskListProvider, context);
             });
           } else {
-            RestartWidget.restartApp();
+            context.read<SettingsState>().redrawWidgetTree();
           }
         });
       }
     }).onError((error, stackTrace) {
-      RestartWidget.restartApp();
+      context.read<SettingsState>().redrawWidgetTree();
     });
   }
 }

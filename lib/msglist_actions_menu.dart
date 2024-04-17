@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:todochat/models/task.dart';
-import 'package:todochat/state/tasks.dart';
+import 'package:todochat/state/msglist_provider.dart';
 
 import 'customWidgets.dart';
-import 'msglist_provider.dart';
 
 class ActionsMenu extends StatelessWidget {
   final MsgListProvider msglist;

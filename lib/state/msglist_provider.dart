@@ -14,16 +14,16 @@ import 'package:todochat/state/tasks.dart';
 //import 'package:http/http.dart';
 //import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import 'HttpClient.dart' as HTTPClient;
+import '../HttpClient.dart' as HTTPClient;
 
 import 'package:http/http.dart' as http;
-import 'HttpClient.dart';
-import 'customWidgets.dart';
-import 'utils.dart';
+import '../HttpClient.dart';
+import '../customWidgets.dart';
+import '../utils.dart';
 import 'package:path/path.dart' as path;
 import 'package:collection/collection.dart';
 //import 'package:text_selection_controls/text_selection_controls.dart';
-import 'todochat.dart';
+import '../todochat.dart';
 
 class UploadingFilesStruct {
   late HTTPClient.MultipartRequest? multipartRequest;

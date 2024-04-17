@@ -6,6 +6,7 @@ import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:todochat/models/task.dart';
+import 'package:todochat/state/settings.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
 //import 'package:scroll_to_index/scroll_to_index.dart';
 
@@ -15,7 +16,7 @@ import 'customWidgets.dart';
 import 'todochat.dart';
 import 'state/tasks.dart';
 import 'tasklist_tile.dart';
-import 'msglist_provider.dart';
+import 'state/msglist_provider.dart';
 
 class TaskList extends StatefulWidget {
   const TaskList({Key? key}) : super(key: key);
@@ -80,7 +81,7 @@ class TaskListState extends State<TaskList> {
   }
 }
 
-Future<bool> updateTask(Task task) async {
+Future<bool> updateTask(BuildContext context, Task task) async {
   if (sessionID == "") {
     return false;
   }
@@ -92,7 +93,7 @@ Future<bool> updateTask(Task task) async {
         setUriProperty(serverURI, path: 'updateTask'),
         body: jsonEncode(task));
   } catch (e) {
-    RestartWidget.restartApp();
+    context.read<SettingsState>().redrawWidgetTree();
     return false;
   }
 

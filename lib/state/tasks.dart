@@ -1,12 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:todochat/models/task.dart';
-import 'package:todochat/state/projects.dart';
 import 'package:todochat/models/project.dart';
 import 'package:todochat/tasklist.dart';
 import 'package:todochat/utils.dart';
@@ -15,7 +13,7 @@ import '../LoginRegistrationPage.dart';
 import 'package:collection/collection.dart';
 import '../highlight_text.dart';
 import '../todochat.dart';
-import '../msglist_provider.dart';
+import 'msglist_provider.dart';
 
 class TasksState extends ChangeNotifier {
   Project project = Project();
@@ -328,7 +326,7 @@ class TasksState extends ChangeNotifier {
           tempTask.description = tempTask.description
               .substring(0, tempTask.description.length - 1);
         }
-        var res = await updateTask(tempTask);
+        var res = await updateTask(context, tempTask);
         if (res) {
           editingTask.description = tempTask.description;
           editingTask.editMode = false;
@@ -512,7 +510,9 @@ class TasksState extends ChangeNotifier {
           await httpClient.post(setUriProperty(serverURI, path: 'markallread'));
 
       if (response.statusCode == 200) {
-        items.where((element) => element.unreadMessages > 0).forEach((element) {
+        items
+            .where((element) => element.unreadMessages > 0 || !element.read)
+            .forEach((element) {
           element.unreadMessages = 0;
           element.read = true;
         });

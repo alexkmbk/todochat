@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-//import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
-import 'package:todochat/models/task.dart';
-import 'package:todochat/state/tasks.dart';
 import 'main_menu.dart';
 import 'package:provider/provider.dart';
 import 'msglist.dart';
-import 'msglist_provider.dart';
+import 'state/msglist_provider.dart';
 import 'todochat.dart';
 
 class TaskMessagesPage extends StatefulWidget {
@@ -80,6 +77,5 @@ class MessagesAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  // TODO: implement preferredSize
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

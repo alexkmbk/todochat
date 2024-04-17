@@ -5,11 +5,11 @@ import 'package:super_clipboard/super_clipboard.dart';
 import 'package:http/http.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:todochat/state/msglist_provider.dart';
 import 'package:todochat/todochat.dart';
 
 import 'msglist_actions_menu.dart';
 import 'customWidgets.dart';
-import 'msglist_provider.dart';
 import 'utils.dart';
 
 class EditMessageBox extends StatelessWidget {

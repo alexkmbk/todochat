@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:mime/mime.dart';
 import 'package:file_saver/file_saver.dart';
 //import 'package:open_file/open_file.dart';

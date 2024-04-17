@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:todochat/models/task.dart';
 import 'package:todochat/state/settings.dart';
 import 'package:todochat/state/tasks.dart';
 import 'package:todochat/taskpage_appbar.dart';

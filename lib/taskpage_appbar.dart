@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:todochat/customWidgets.dart';
-import 'package:todochat/msglist_provider.dart';
+import 'package:todochat/state/msglist_provider.dart';
 import 'package:todochat/projects_menu.dart';
 import 'package:todochat/searchField.dart';
 import 'package:provider/provider.dart';

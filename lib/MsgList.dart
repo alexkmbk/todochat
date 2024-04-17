@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 //import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:todochat/state/msglist_provider.dart';
 import 'package:todochat/state/tasks.dart';
 
 //import 'package:loadmore_listview/loadmore_listview.dart';
@@ -11,7 +12,6 @@ import 'package:very_good_infinite_list/very_good_infinite_list.dart';
 
 import 'package:todochat/todochat.dart';
 import 'editMessageBox.dart';
-import 'msglist_provider.dart';
 import 'msglist_tile.dart';
 
 class MsgList extends StatefulWidget {
