@@ -1,10 +1,13 @@
+import 'dart:io';
 import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'utils.dart';
+import 'package:simple_gesture_detector/simple_gesture_detector.dart';
 
 class TextFieldEx extends StatelessWidget {
   final TextEditingController? controller;
@@ -185,7 +188,7 @@ class BoolRef {
 class GestureDetectorWithMenu extends StatefulWidget {
   final Widget child;
   final GestureTapCallback? onTap;
-  final GestureTapDownCallback? onSecondaryTapDown;
+  //final GestureTapDownCallback? onSecondaryTapDown;
   final Function? onCopy;
   final Function? onEdit;
   final Function? onReply;
@@ -196,7 +199,7 @@ class GestureDetectorWithMenu extends StatefulWidget {
 
   GestureDetectorWithMenu(
       {required this.child,
-      this.onSecondaryTapDown,
+      //this.onSecondaryTapDown,
       this.onCopy,
       this.onEdit,
       this.onTap,
@@ -216,12 +219,12 @@ class GestureDetectorWithMenu extends StatefulWidget {
 class _GestureDetectorWithMenuState extends State<GestureDetectorWithMenu> {
   TapDownDetails? _tapDownDetails;
 
-  void _onSecondaryTapDown(TapDownDetails details, BuildContext context) async {
-    if (widget.onSecondaryTapDown != null) {
-      widget.onSecondaryTapDown!(details);
-    }
-    final x = details.globalPosition.dx;
-    final y = details.globalPosition.dy;
+  void _onSecondaryTapDown(Offset position, BuildContext context) async {
+    // if (widget.onSecondaryTapDown != null) {
+    //   widget.onSecondaryTapDown!(details);
+    // }
+    final x = position.dx;
+    final y = position.dy;
     List<PopupMenuEntry> items = [
       if (widget.onCopy != null)
         PopupMenuItem<String>(
@@ -297,18 +300,35 @@ class _GestureDetectorWithMenuState extends State<GestureDetectorWithMenu> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-        onTap: widget.onTap,
-        onTapDown: (details) {
-          _tapDownDetails = details;
-        },
-        onSecondaryTapDown: (details) => _onSecondaryTapDown(details, context),
-        onLongPress: () {
-          if (_tapDownDetails != null && Platform().isAndroid) {
-            _onSecondaryTapDown(_tapDownDetails!, context);
+    if (Platform().isAndroid)
+      return GestureDetector(
+          onTap: widget.onTap,
+          onTapDown: (details) {
+            _tapDownDetails = details;
+          },
+          onSecondaryTapDown: (details) =>
+              _onSecondaryTapDown(details.globalPosition, context),
+          onLongPress: () {
+            if (_tapDownDetails != null && Platform().isAndroid) {
+              _onSecondaryTapDown(_tapDownDetails!.globalPosition, context);
+            }
+          },
+          child: widget.child);
+    else
+      return Listener(
+        onPointerDown: (PointerDownEvent? event) {
+          if (event != null && event.buttons == kSecondaryMouseButton) {
+            // final RenderBox renderBox = _key.currentContext.findRenderObject();
+            // final position = renderBox.localToGlobal(Offset.zero);
+            _onSecondaryTapDown(event.position, context);
+          } else if (event != null &&
+              event.buttons == kPrimaryMouseButton &&
+              widget.onTap != null) {
+            widget.onTap!();
           }
         },
-        child: widget.child);
+        child: widget.child,
+      );
   }
 }
 

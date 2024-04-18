@@ -290,24 +290,25 @@ class MsgListProvider extends ChangeNotifier {
   }
 
   void unselectItems() {
-    for (var element in items) {
-      if (element.isSelected) {
-        element.isSelected = false;
-      }
-    }
-    refresh();
+    // for (var element in items) {
+    //   if (element.isSelected) {
+    //     element.isSelected = false;
+    //   }
+    // }
+
+    // refresh();
   }
 
   void selectItem(Message message, [bool multiselect = false]) {
-    if (!multiselect) {
-      int foundIndex =
-          items.indexWhere((element) => element.isSelected == true);
-      if (foundIndex >= 0) {
-        items[foundIndex].isSelected = false;
-      }
-    }
-    message.isSelected = true;
-    refresh();
+    // if (!multiselect) {
+    //   int foundIndex =
+    //       items.indexWhere((element) => element.isSelected == true);
+    //   if (foundIndex >= 0) {
+    //     items[foundIndex].isSelected = false;
+    //   }
+    // }
+    // message.isSelected = true;
+    // refresh();
   }
 
   bool addItem(Message message) {

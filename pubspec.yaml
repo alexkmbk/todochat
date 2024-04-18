@@ -87,6 +87,7 @@ dependencies:
   flutter_settings_ui: ^3.0.1
   sticky_headers: ^0.3.0+2
   fluent_ui: ^1.2.3
+  simple_gesture_detector: ^0.2.1
   
 
 # dependency_overrides:

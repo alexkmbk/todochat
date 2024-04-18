@@ -74,38 +74,35 @@ class _MsgListState extends State<MsgList> {
         }
         return Column(children: <Widget>[
           Expanded(
-            child: GestureDetector(
-              onTap: () => msglist.unselectItems(),
-              child: InfiniteList(
-                scrollController: widget.scrollController,
-                reverse: true,
-                itemCount: msglist.items.length,
-                isLoading: msglist.loading,
-                onFetchData: () {
-                  msglist.requestMessages(
-                      Provider.of<TasksState>(context, listen: false), context);
-                },
-                emptyBuilder: (context) => Text("No any task was selected"),
-                itemBuilder: (context, index) {
-                  var item = msglist.items[index];
-                  return AutoScrollTag(
-                      key: ValueKey(index),
-                      controller: widget.scrollController,
+            child: InfiniteList(
+              scrollController: widget.scrollController,
+              reverse: true,
+              itemCount: msglist.items.length,
+              isLoading: msglist.loading,
+              onFetchData: () {
+                msglist.requestMessages(
+                    Provider.of<TasksState>(context, listen: false), context);
+              },
+              emptyBuilder: (context) => Text("No any task was selected"),
+              itemBuilder: (context, index) {
+                var item = msglist.items[index];
+                return AutoScrollTag(
+                    key: ValueKey(index),
+                    controller: widget.scrollController,
+                    index: index,
+                    child: MsgListTile(
                       index: index,
-                      child: MsgListTile(
-                        index: index,
-                        isCurrentUser: item.userID == currentUserID,
-                        message: item,
-                        msgListProvider: msglist,
-                        messageTextFieldFocusNode: messageTextFieldFocusNode,
-                        onDismissed: (direction) async {
-                          if (await msglist.deleteMesage(item.ID)) {
-                            msglist.deleteItem(item.ID);
-                          }
-                        },
-                      ));
-                },
-              ),
+                      isCurrentUser: item.userID == currentUserID,
+                      message: item,
+                      msgListProvider: msglist,
+                      messageTextFieldFocusNode: messageTextFieldFocusNode,
+                      onDismissed: (direction) async {
+                        if (await msglist.deleteMesage(item.ID)) {
+                          msglist.deleteItem(item.ID);
+                        }
+                      },
+                    ));
+              },
             ),
           ),
           EditMessageBox(

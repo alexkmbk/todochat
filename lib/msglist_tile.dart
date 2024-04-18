@@ -1,4 +1,5 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pasteboard/pasteboard.dart';
@@ -128,11 +129,9 @@ class _MsgListTileState extends State<MsgListTile> {
         child: DecoratedBox(
           // chat bubble decoration
           decoration: BoxDecoration(
-            border: widget.message.isSelected
-                ? Border.all(color: Colors.blueAccent, width: 3)
-                : Border.all(color: const Color.fromARGB(255, 228, 232, 233)),
+            border: Border.all(color: const Color.fromARGB(255, 228, 232, 233)),
             color: const Color.fromARGB(255, 228, 232, 233),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
           ),
           child: Padding(
               padding: const EdgeInsets.all(12),
@@ -145,7 +144,13 @@ class _MsgListTileState extends State<MsgListTile> {
       final text = widget.message.isTaskDescriptionItem
           ? widget.msgListProvider.task.description
           : widget.message.text;
-      final textSpan = TextSpan(text: text);
+      final textSpan = TextSpan(
+        text: text,
+        // recognizer: TapGestureRecognizer()
+        //   ..onSecondaryTapDown = (value) {
+        //     print('Tap Here onTap');
+        //   },
+      );
       //BoolRef isQuoteSelected = BoolRef();
       final textWidget = SelectableText.rich(
         textSpan,
@@ -192,9 +197,6 @@ class _MsgListTileState extends State<MsgListTile> {
 
       textGestureDetectorWithMenu = GestureDetectorWithMenu(
         isQuoteSelected: textWidgetSelection.start != 0,
-        onSecondaryTapDown: (details) {
-          widget.msgListProvider.selectItem(widget.message);
-        },
         onCopy: () {
           message.isSelected = false;
           var text = message.isTaskDescriptionItem
@@ -247,9 +249,7 @@ class _MsgListTileState extends State<MsgListTile> {
         child: DecoratedBox(
           // chat bubble decoration
           decoration: BoxDecoration(
-            border: widget.message.isSelected
-                ? Border.all(color: Colors.blueAccent, width: 3)
-                : Border.all(color: const Color.fromARGB(255, 228, 232, 233)),
+            border: Border.all(color: const Color.fromARGB(255, 228, 232, 233)),
             color: getBubbleColor(),
             borderRadius: BorderRadius.circular(
                 widget.message.isTaskDescriptionItem ? 0 : 8),
@@ -394,9 +394,6 @@ class _MsgListTileState extends State<MsgListTile> {
         // File bubble
         return GestureDetectorWithMenu(
             onTap: () => onTapOnFileMessage(widget.message, context),
-            onSecondaryTapDown: (details) {
-              widget.msgListProvider.selectItem(widget.message);
-            },
             onDelete: () =>
                 widget.msgListProvider.deleteMesage(widget.message.ID),
             addMenuItems: [
@@ -486,7 +483,6 @@ class _MsgListTileState extends State<MsgListTile> {
   }
 
   void onTapOnFileMessage(Message message, context) async {
-    widget.msgListProvider.selectItem(message);
     if (message.isImage && message.localFileName.isNotEmpty) {
       // var res = await getFile(message.localFileName);
       var res = NetworkImage(
