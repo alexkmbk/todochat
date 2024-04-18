@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:todochat/models/message.dart';
 import 'package:todochat/models/task.dart';
 import 'package:todochat/state/settings.dart';
 import 'package:todochat/state/tasks.dart';
@@ -134,6 +135,9 @@ void listenWs(TasksState taskListProvider, BuildContext context) {
           var message = Message.fromJson(wsMsg.data);
           final created = msgListProvider.addItem(message);
           taskListProvider.updateLastMessage(message.taskID, message, created);
+        } else if (wsMsg.command == "updateMessage") {
+          var message = Message.fromJson(wsMsg.data);
+          final created = msgListProvider.updateItem(message);
         } else if (wsMsg.command == "deleteMessage") {
           var message = Message.fromJson(wsMsg.data);
           msgListProvider.deleteItem(message.ID);

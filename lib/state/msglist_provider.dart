@@ -178,6 +178,21 @@ class MsgListProvider extends ChangeNotifier {
     return created;
   }
 
+  bool updateItem(Message message) {
+    if (message.taskID != task.ID || !isOpen) {
+      return false;
+    }
+    bool updated = false;
+
+    int foundIndex = items.indexWhere((element) => element.ID == message.ID);
+    if (foundIndex >= 0) {
+      items[foundIndex] = message;
+      updated = true;
+      notifyListeners();
+    }
+    return updated;
+  }
+
   void deleteItem(int messageID) async {
     items.removeWhere((item) => item.ID == messageID);
     notifyListeners();
@@ -372,7 +387,6 @@ class MsgListProvider extends ChangeNotifier {
 
   Future<bool> updateMessage({
     required String text,
-// task could be different from the current one
   }) async {
     if (editingMessage == null) return false;
 

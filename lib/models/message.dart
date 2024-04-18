@@ -34,7 +34,6 @@ class Message {
   //Uint8List? loadingFileData;
   bool loadinInProcess = false;
   String tempID = "";
-  bool editMode = false;
   //bool isSelected = false;
 
   MessageAction messageAction = MessageAction.CreateUpdateMessageAction;

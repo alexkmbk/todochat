@@ -68,10 +68,13 @@ class EditMessageBox extends StatelessWidget {
                   const SingleActivator(LogicalKeyboardKey.enter,
                       control: false): () {
                     if (msglist.messageInputController.text.isNotEmpty) {
-                      msglist.createMessage(
-                        text: msglist.messageInputController.text,
-                        task: msglist.task,
-                      );
+                      if (msglist.editMode) {
+                        msglist.updateMessage(
+                            text: msglist.messageInputController.text);
+                      } else
+                        msglist.createMessage(
+                            text: msglist.messageInputController.text,
+                            task: msglist.task);
                       msglist.messageInputController.text = "";
                     }
                   },

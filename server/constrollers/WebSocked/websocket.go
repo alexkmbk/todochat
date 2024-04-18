@@ -72,6 +72,11 @@ func SendWSMessage(message *Message) {
 	WSHub.broadcast <- &WSMessage{"createMessage", message, 0}
 }
 
+func SendWSUpdateMessage(message *Message) {
+
+	WSHub.broadcast <- &WSMessage{"updateMessage", message, 0}
+}
+
 func SendDeleteMessage(message *Message) {
 
 	WSHub.broadcast <- &WSMessage{"deleteMessage", message, 0}

@@ -312,6 +312,49 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func UpdateMessage(w http.ResponseWriter, r *http.Request) {
+
+	userID := Sessions.GetUserID(w, r)
+	if userID == 0 {
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var message Message
+
+	err := decoder.Decode(&message)
+	if err != nil {
+		http.Error(w, "Json decode error", http.StatusInternalServerError)
+		return
+	}
+
+	//user, success := Sessions.GetUserByID(userID)
+
+	/*message.LocalFileName = fileName
+	message.SmallImageName = smallImageFileName
+	message.FileSize = fileSize*/
+
+	task, _ := Tasks.GetItemByID(message.TaskID)
+
+	message.ProjectID = task.ProjectID
+	DB.Create(&message)
+
+	// if userID != 0 {
+	// 	seenMessage := SeenMessage{UserID: userID, TaskID: task.ID, MessageID: message.ID}
+	// 	if DB.Find(&seenMessage).RowsAffected == 0 {
+	// 		DB.Create(&seenMessage)
+	// 	}
+
+	// 	seenTask := SeenTask{UserID: userID, TaskID: task.ID}
+
+	// 	if DB.Find(&seenTask).RowsAffected == 0 { // not found
+	// 		DB.Create(&seenTask)
+	// 	}
+	// }
+
+	go WS.SendWSUpdateMessage(&message)
+}
+
 func CreateMessageWithFile(w http.ResponseWriter, r *http.Request) {
 
 	userID := Sessions.GetUserID(w, r)
