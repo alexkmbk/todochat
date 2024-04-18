@@ -73,6 +73,11 @@ class MyApp extends StatelessWidget {
         navigatorKey: NavigationService.navigatorKey,
         title: 'ToDo Chat',
         theme: ThemeData(
+          textSelectionTheme: const TextSelectionThemeData(
+            selectionColor:
+                Color(0xff7bb4fc), //Color.fromARGB(255, 48, 141, 252),
+            selectionHandleColor: Colors.white,
+          ),
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           buttonTheme: ButtonThemeData(
             buttonColor: Colors.white,

@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:pasteboard/pasteboard.dart";
 import "package:provider/provider.dart";
+import "package:todochat/models/message.dart";
 import "package:todochat/models/task.dart";
 import "package:todochat/todochat.dart";
 import "package:todochat/utils.dart";

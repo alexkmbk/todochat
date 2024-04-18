@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:todochat/models/message.dart';
 import 'package:todochat/models/task.dart';
 import 'package:todochat/models/project.dart';
 import 'package:todochat/tasklist.dart';

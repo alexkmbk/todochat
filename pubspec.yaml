@@ -88,6 +88,7 @@ dependencies:
   sticky_headers: ^0.3.0+2
   fluent_ui: ^1.2.3
   simple_gesture_detector: ^0.2.1
+  chat_bubbles: ^1.6.0
   
 
 # dependency_overrides:

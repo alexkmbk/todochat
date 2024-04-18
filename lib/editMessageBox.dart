@@ -5,6 +5,7 @@ import 'package:super_clipboard/super_clipboard.dart';
 import 'package:http/http.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:todochat/models/message.dart';
 import 'package:todochat/state/msglist_provider.dart';
 import 'package:todochat/todochat.dart';
 
@@ -15,7 +16,6 @@ import 'utils.dart';
 class EditMessageBox extends StatelessWidget {
   final MsgListProvider msglist;
   final messageTextFieldFocusNode;
-  final _messageInputController = TextEditingController();
 
   EditMessageBox(
       {required this.msglist,
@@ -67,12 +67,12 @@ class EditMessageBox extends StatelessWidget {
                 bindings: {
                   const SingleActivator(LogicalKeyboardKey.enter,
                       control: false): () {
-                    if (_messageInputController.text.isNotEmpty) {
+                    if (msglist.messageInputController.text.isNotEmpty) {
                       msglist.createMessage(
-                        text: _messageInputController.text,
+                        text: msglist.messageInputController.text,
                         task: msglist.task,
                       );
-                      _messageInputController.text = "";
+                      msglist.messageInputController.text = "";
                     }
                   },
                   const SingleActivator(LogicalKeyboardKey.escape,
@@ -92,11 +92,12 @@ class EditMessageBox extends StatelessWidget {
                         data.text != null &&
                         data.text!.trim().isNotEmpty) {
                       String text = data.text ?? "";
-                      _messageInputController.text =
-                          _messageInputController.text + text.trim();
-                      _messageInputController.selection =
+                      msglist.messageInputController.text =
+                          msglist.messageInputController.text + text.trim();
+                      msglist.messageInputController.selection =
                           TextSelection.fromPosition(TextPosition(
-                              offset: _messageInputController.text.length));
+                              offset:
+                                  msglist.messageInputController.text.length));
                     } else {
                       final bytes = await Pasteboard.image;
                       if (bytes != null) {
@@ -157,10 +158,11 @@ class EditMessageBox extends StatelessWidget {
                                       response.bodyBytes);
                                 }
                               } else {
-                                _messageInputController.text = html.trim();
-                                _messageInputController.selection =
+                                msglist.messageInputController.text =
+                                    html.trim();
+                                msglist.messageInputController.selection =
                                     TextSelection.fromPosition(TextPosition(
-                                        offset: _messageInputController
+                                        offset: msglist.messageInputController
                                             .text.length));
                               }
                             }
@@ -173,7 +175,7 @@ class EditMessageBox extends StatelessWidget {
                 child: TextField(
                   focusNode: messageTextFieldFocusNode,
                   autofocus: true,
-                  controller: _messageInputController,
+                  controller: msglist.messageInputController,
                   keyboardType: TextInputType.multiline,
                   maxLines: null,
                   decoration: const InputDecoration(
@@ -190,10 +192,15 @@ class EditMessageBox extends StatelessWidget {
             ),
             IconButton(
               onPressed: () {
-                if (_messageInputController.text.isNotEmpty) {
-                  msglist.createMessage(
-                      text: _messageInputController.text, task: msglist.task);
-                  _messageInputController.text = "";
+                if (msglist.messageInputController.text.isNotEmpty) {
+                  if (msglist.editMode) {
+                    msglist.updateMessage(
+                        text: msglist.messageInputController.text);
+                  } else
+                    msglist.createMessage(
+                        text: msglist.messageInputController.text,
+                        task: msglist.task);
+                  msglist.messageInputController.text = "";
                 }
               },
               tooltip: 'New message',
@@ -224,7 +231,7 @@ class EditMessageBox extends StatelessWidget {
                             loadingFile: true,
                             isImage: isImageFile(fileName)),
                         res);
-                    _messageInputController.text = "";
+                    msglist.messageInputController.text = "";
                   }
                 } else if (result.files.single.bytes != null &&
                     result.files.single.bytes!.isNotEmpty) {
@@ -237,7 +244,7 @@ class EditMessageBox extends StatelessWidget {
                           loadingFile: true,
                           isImage: isImageFile(fileName)),
                       result.files.single.bytes!);
-                  _messageInputController.text = "";
+                  msglist.messageInputController.text = "";
                 }
               },
               tooltip: 'Add file',

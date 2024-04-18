@@ -1,20 +1,16 @@
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:sn_progress_dialog/sn_progress_dialog.dart';
+import 'package:todochat/models/message.dart';
+import 'package:todochat/ui_components/chat_text_bubble.dart';
 import 'package:todochat/ui_components/network_image_with_menu.dart';
-//import 'package:text_selection_controls/text_selection_controls.dart';
 import 'msglist_actions_menu.dart';
-//import 'text_selection_controls.dart';
-//import 'package:todochat/tasklist_provider.dart';
 import 'package:todochat/todochat.dart';
 import 'package:todochat/utils.dart';
-
 import 'customWidgets.dart';
 import 'state/msglist_provider.dart';
-
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 
 class MsgListTile extends StatefulWidget {
@@ -140,6 +136,34 @@ class _MsgListTileState extends State<MsgListTile> {
         onDelete: () => widget.msgListProvider.deleteMesage(widget.message.ID),
       );
       // Text bubble
+    } else if (widget.message.fileName.isEmpty &&
+        !widget.message.isTaskDescriptionItem) {
+      return ChatTextBubble(
+        text: widget.message.text,
+        backgroundColor: getBubbleColor(),
+        headers: {"sessionID": sessionID},
+        onCopy: () => Clipboard.setData(ClipboardData(text: message.text)),
+        onReply: () {
+          //message.isSelected = false;
+          msgListProvider.quotedText = message.text;
+          msgListProvider.currentParentMessageID = message.ID;
+          msgListProvider.refresh();
+        },
+        onDelete: () => msgListProvider.deleteMesage(message.ID),
+        onQuoteSelection: (selectedText) async {
+          msgListProvider.quotedText = selectedText;
+          msgListProvider.currentParentMessageID = message.ID;
+          //searchFocusNode.unfocus();
+          msgListProvider.refresh();
+        },
+        onEdit: () {
+          msgListProvider.editMode = true;
+          msgListProvider.quotedText = message.text;
+          msgListProvider.messageInputController.text = message.text;
+          msgListProvider.editingMessage = message;
+          msgListProvider.refresh();
+        },
+      );
     } else if (widget.message.fileName.isEmpty) {
       final text = widget.message.isTaskDescriptionItem
           ? widget.msgListProvider.task.description
@@ -159,6 +183,7 @@ class _MsgListTileState extends State<MsgListTile> {
           textGestureDetectorWithMenu.isQuoteSelected = true;
         },
         contextMenuBuilder: null,
+
         // contextMenuBuilder: (context, editableTextState) {
         //   final TextEditingValue value = editableTextState.textEditingValue;
         //   final List<ContextMenuButtonItem> buttonItems =
@@ -198,7 +223,7 @@ class _MsgListTileState extends State<MsgListTile> {
       textGestureDetectorWithMenu = GestureDetectorWithMenu(
         isQuoteSelected: textWidgetSelection.start != 0,
         onCopy: () {
-          message.isSelected = false;
+          //message.isSelected = false;
           var text = message.isTaskDescriptionItem
               ? msgListProvider.task.description
               : message.text;
@@ -212,7 +237,7 @@ class _MsgListTileState extends State<MsgListTile> {
           });
         },
         onReply: () {
-          message.isSelected = false;
+          //message.isSelected = false;
           msgListProvider.quotedText = message.isTaskDescriptionItem
               ? msgListProvider.task.description
               : message.text;
@@ -224,15 +249,15 @@ class _MsgListTileState extends State<MsgListTile> {
 //          searchFocusNode.unfocus();
           //widget.messageTextFieldFocusNode.dispose();
           //widget.messageTextFieldFocusNode.requestFocus();
-          WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-            // FocusScope.of(context)
-            //     .requestFocus(widget.messageTextFieldFocusNode);
-            widget.messageTextFieldFocusNode.requestFocus();
-          });
+          // WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+          //   // FocusScope.of(context)
+          //   //     .requestFocus(widget.messageTextFieldFocusNode);
+          //   widget.messageTextFieldFocusNode.requestFocus();
+          // });
         },
         onDelete: () => msgListProvider.deleteMesage(message.ID),
         onQuoteSelection: () async {
-          message.isSelected = false;
+          //message.isSelected = false;
           var text = message.isTaskDescriptionItem
               ? msgListProvider.task.description
               : message.text;
@@ -432,10 +457,8 @@ class _MsgListTileState extends State<MsgListTile> {
                     ? Colors.blue
                     : const Color.fromARGB(255, 224, 224, 224),
                 borderRadius: BorderRadius.circular(8),
-                border: widget.message.isSelected
-                    ? Border.all(color: Colors.blueAccent, width: 3)
-                    : Border.all(
-                        color: const Color.fromARGB(255, 228, 232, 233)),
+                border:
+                    Border.all(color: const Color.fromARGB(255, 228, 232, 233)),
               ),
               //child: GestureDetector(
               //onTap: () => onTapOnFileMessage(message, context),

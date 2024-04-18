@@ -220,6 +220,11 @@ class _GestureDetectorWithMenuState extends State<GestureDetectorWithMenu> {
   TapDownDetails? _tapDownDetails;
 
   void _onSecondaryTapDown(Offset position, BuildContext context) async {
+    FocusScopeNode currentFocus = FocusScope.of(context);
+    if (!currentFocus.hasPrimaryFocus) {
+      currentFocus.focusedChild?.unfocus();
+    }
+
     // if (widget.onSecondaryTapDown != null) {
     //   widget.onSecondaryTapDown!(details);
     // }
@@ -300,35 +305,49 @@ class _GestureDetectorWithMenuState extends State<GestureDetectorWithMenu> {
 
   @override
   Widget build(BuildContext context) {
-    if (Platform().isAndroid)
-      return GestureDetector(
-          onTap: widget.onTap,
-          onTapDown: (details) {
-            _tapDownDetails = details;
-          },
-          onSecondaryTapDown: (details) =>
-              _onSecondaryTapDown(details.globalPosition, context),
-          onLongPress: () {
-            if (_tapDownDetails != null && Platform().isAndroid) {
-              _onSecondaryTapDown(_tapDownDetails!.globalPosition, context);
-            }
-          },
-          child: widget.child);
-    else
-      return Listener(
-        onPointerDown: (PointerDownEvent? event) {
-          if (event != null && event.buttons == kSecondaryMouseButton) {
-            // final RenderBox renderBox = _key.currentContext.findRenderObject();
-            // final position = renderBox.localToGlobal(Offset.zero);
-            _onSecondaryTapDown(event.position, context);
-          } else if (event != null &&
-              event.buttons == kPrimaryMouseButton &&
-              widget.onTap != null) {
-            widget.onTap!();
+    return GestureDetector(
+        onTap: widget.onTap,
+        onTapDown: (details) {
+          _tapDownDetails = details;
+        },
+        onSecondaryTapDown: (details) =>
+            _onSecondaryTapDown(details.globalPosition, context),
+        onLongPress: () {
+          if (_tapDownDetails != null && Platform().isAndroid) {
+            _onSecondaryTapDown(_tapDownDetails!.globalPosition, context);
           }
         },
-        child: widget.child,
-      );
+        child: widget.child);
+    // if (Platform().isAndroid)
+    //   return GestureDetector(
+    //       onTap: widget.onTap,
+    //       onTapDown: (details) {
+    //         _tapDownDetails = details;
+    //       },
+    //       onSecondaryTapDown: (details) =>
+    //           _onSecondaryTapDown(details.globalPosition, context),
+    //       onLongPress: () {
+    //         if (_tapDownDetails != null && Platform().isAndroid) {
+    //           _onSecondaryTapDown(_tapDownDetails!.globalPosition, context);
+    //         }
+    //       },
+    //       child: widget.child);
+    // else
+    //   return Listener(
+    //     behavior: HitTestBehavior.deferToChild,
+    //     onPointerDown: (PointerDownEvent? event) {
+    //       if (event != null && event.buttons == kSecondaryMouseButton) {
+    //         // final RenderBox renderBox = _key.currentContext.findRenderObject();
+    //         // final position = renderBox.localToGlobal(Offset.zero);
+    //         _onSecondaryTapDown(event.position, context);
+    //       } else if (event != null &&
+    //           event.buttons == kPrimaryMouseButton &&
+    //           widget.onTap != null) {
+    //         //widget.onTap!();
+    //       }
+    //     },
+    //     child: widget.child,
+    //   );
   }
 }
 
