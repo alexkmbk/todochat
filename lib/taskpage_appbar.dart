@@ -93,7 +93,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
         ],
       ),
       actions: [
-        if (!isDesktopMode && showSearch)
+        if (!isDesktopMode && !showSearch)
           IconButton(
             onPressed: () {
               setState(() {
