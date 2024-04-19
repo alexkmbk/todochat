@@ -19,23 +19,30 @@ class MessagesAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ), //const MainMenu(),
       backgroundColor: const Color.fromARGB(240, 255, 255, 255),
-      title: Row(children: [
-        Text(
-          "Task:",
-          style: const TextStyle(fontSize: 18),
-        ),
-        Flexible(
-            child: TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text(
-                  task.description,
-                  style: const TextStyle(color: hyperrefColor, fontSize: 18),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ))),
-      ]),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Task:",
+            style: const TextStyle(
+              fontSize: 16,
+              color: hyperrefColor,
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Flexible(
+                  child: Text(
+                task.description,
+                style: const TextStyle(fontSize: 16),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              )),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
