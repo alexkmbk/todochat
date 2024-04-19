@@ -189,8 +189,7 @@ class _ProjectFieldState extends State<ProjectField> {
                 children: [
                   new TextSpan(
                     text: tasks.project.Description,
-                    style: new TextStyle(
-                        color: Color.fromRGBO(51, 102, 204, 1.0), fontSize: 16),
+                    style: const TextStyle(color: hyperrefColor, fontSize: 16),
                     recognizer: new TapGestureRecognizer()
                       ..onTap = () async {
                         final res = await ProjectsPage.choice(context: context);

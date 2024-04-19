@@ -11,11 +11,15 @@ bool isDesktopMode = false;
 double screenWidth = 0;
 double screenHeight = 0;
 bool appInitialized = false;
+
+// Colors
+
 const Color closedTaskColor = Color.fromARGB(255, 183, 242, 176);
 //const Color uncompletedTaskColor = Color.fromARGB(255, 248, 248, 147);
 const Color uncompletedTaskColor = Colors.white;
 const Color appBarColor = Color.fromARGB(240, 255, 255, 255);
 const Color unreadTaskColor = Color.fromARGB(255, 250, 161, 27);
+const Color hyperrefColor = Color.fromRGBO(51, 102, 204, 1.0);
 late SharedPreferences settings;
 
 final searchFocusNode = FocusNode();
