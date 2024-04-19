@@ -181,7 +181,9 @@ class EditMessageBox extends StatelessWidget {
                 },
                 child: TextField(
                   focusNode: messageTextFieldFocusNode,
-                  autofocus: (!isDesktopMode && msglist.quotedText.isEmpty)
+                  autofocus: (!isDesktopMode &&
+                          msglist.quotedText.isEmpty &&
+                          msglist.parentsmallImageName.isEmpty)
                       ? false
                       : true,
                   controller: msglist.messageInputController,
