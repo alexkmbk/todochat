@@ -366,7 +366,7 @@ class _MyHomePageState extends State<MyHomePage> {
       currentProject = await requestFirstItem();
     }
 
-    tasks.showClosed = settings.getBool("showCompleted") ?? true;
+    tasks.showClosed = settings.getBool("showClosed") ?? true;
     tasks.currentTaskID = settings.getInt("currentTaskID") ?? 0;
     tasks.setCurrentProject(currentProject, context, false);
 

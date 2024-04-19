@@ -149,7 +149,6 @@ class _MsgListTileState extends State<MsgListTile> {
         headers: {"sessionID": sessionID},
         onCopy: () => Clipboard.setData(ClipboardData(text: message.text)),
         onReply: () {
-          //message.isSelected = false;
           msgListProvider.quotedText = message.text;
           msgListProvider.currentParentMessageID = message.ID;
           msgListProvider.refresh();
