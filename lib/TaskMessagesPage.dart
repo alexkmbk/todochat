@@ -19,7 +19,7 @@ class TaskMessagesPage extends StatefulWidget {
 }
 
 class _TaskMessagesPageState extends State<TaskMessagesPage> {
-  AutoScrollController scrollController = AutoScrollController();
+  //AutoScrollController scrollController = AutoScrollController();
 
   @override
   void initState() {
@@ -34,14 +34,12 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
   @override
   Widget build(BuildContext context) {
     if (isDesktopMode) {
-      return MsgList(
-        scrollController: scrollController,
-      );
+      return const MsgList();
     } else {
       return Scaffold(
           appBar: isDesktopMode ? null : const MessagesAppBar(),
           body: Center(
-            child: MsgList(scrollController: scrollController),
+            child: const MsgList(),
           ));
     }
   }

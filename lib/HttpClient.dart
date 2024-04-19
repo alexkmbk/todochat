@@ -175,14 +175,14 @@ void listenWs(TasksState taskListProvider, BuildContext context) {
         if (kDebugMode) {
           print(error.toString());
         }
-        context.read<SettingsState>().redrawWidgetTree();
+        context.read<SettingsState>().redrawWidgetTree(context);
       });
     } catch (e) {
       if (kDebugMode) {
         print(e.toString());
       }
-      Future.delayed(const Duration(seconds: 2))
-          .then((value) => context.read<SettingsState>().redrawWidgetTree());
+      Future.delayed(const Duration(seconds: 2)).then(
+          (value) => context.read<SettingsState>().redrawWidgetTree(context));
     }
   }
 }
@@ -208,12 +208,12 @@ Future<void> reconnect(TasksState taskListProvider, BuildContext context,
               listenWs(taskListProvider, context);
             });
           } else {
-            context.read<SettingsState>().redrawWidgetTree();
+            context.read<SettingsState>().redrawWidgetTree(context);
           }
         });
       }
     }).onError((error, stackTrace) {
-      context.read<SettingsState>().redrawWidgetTree();
+      context.read<SettingsState>().redrawWidgetTree(context);
     });
   }
 }

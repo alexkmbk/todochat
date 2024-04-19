@@ -244,7 +244,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     if (changed && widget.restartAppOnChange) {
       //RestartWidget.restartApp(context);
-      context.read<SettingsState>().redrawWidgetTree();
+      context.read<SettingsState>().redrawWidgetTree(context);
     }
 
     Navigator.pop(context, true);

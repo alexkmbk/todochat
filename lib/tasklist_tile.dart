@@ -375,7 +375,7 @@ class TaskListTile extends StatelessWidget {
     if (!isDesktopMode) {
       openTask(context, task);
     }
-    taskListProvider.refresh();
+    //taskListProvider.refresh();
   }
 
   void onLongPress(Task task, TasksState taskListProvider) {

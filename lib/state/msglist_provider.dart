@@ -42,7 +42,7 @@ class MsgListProvider extends ChangeNotifier {
   //int taskID = 0;
   Task task = Task();
   int foundMessageID = 0;
-  AutoScrollController? scrollController;
+  AutoScrollController scrollController = AutoScrollController();
   bool isOpen = isDesktopMode;
   String quotedText = "";
   String parentsmallImageName = "";

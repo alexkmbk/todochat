@@ -70,23 +70,26 @@ class TasksState extends ChangeNotifier {
     }
   }
 
-  void setCurrentProject(Project? currentProject, BuildContext context) {
+  void setCurrentProject(Project? currentProject, BuildContext context,
+      [bool doRequestTasks = true]) {
     if (this.project != currentProject) {
       this.project = currentProject ?? Project();
       settings.setInt("projectID", this.project.ID);
 
-      clear(context);
-      requestTasks(context, true);
+      if (doRequestTasks) {
+        clear(context);
+        requestTasks(context, true);
+      }
     }
   }
 
-  void clear(BuildContext context) {
+  void clear(BuildContext context, [bool updateMessages = true]) {
     items.clear();
     lastID = 0;
     lastCreation_date = null;
     taskEditMode = false;
     currentTask = null;
-    if (isDesktopMode) {
+    if (isDesktopMode && updateMessages) {
       final msgListProvider =
           Provider.of<MsgListProvider>(context, listen: false);
       msgListProvider.task = Task();

@@ -350,11 +350,11 @@ class _MyHomePageState extends State<MyHomePage> {
       await openLoginPage(context);
     }
 
-    final tasklist = context.read<TasksState>();
+    final tasks = context.read<TasksState>();
 
     if (isServerURI && sessionID.isNotEmpty) {
       connectWebSocketChannel(serverURI).then((value) {
-        listenWs(tasklist, context);
+        listenWs(tasks, context);
       });
     }
 
@@ -366,12 +366,12 @@ class _MyHomePageState extends State<MyHomePage> {
       currentProject = await requestFirstItem();
     }
 
-    tasklist.showClosed = settings.getBool("showCompleted") ?? true;
-    tasklist.currentTaskID = settings.getInt("currentTaskID") ?? 0;
-    tasklist.setCurrentProject(currentProject, context);
+    tasks.showClosed = settings.getBool("showCompleted") ?? true;
+    tasks.currentTaskID = settings.getInt("currentTaskID") ?? 0;
+    tasks.setCurrentProject(currentProject, context, false);
 
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      reconnect(tasklist, context);
+      reconnect(tasks, context);
     });
 
     appInitialized = true;

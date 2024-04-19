@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 //import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:todochat/msglist_editbox.dart';
 import 'package:todochat/state/msglist_provider.dart';
 import 'package:todochat/state/tasks.dart';
 
@@ -11,14 +12,13 @@ import 'package:todochat/state/tasks.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
 
 import 'package:todochat/todochat.dart';
-import 'editMessageBox.dart';
 import 'msglist_tile.dart';
 
 class MsgList extends StatefulWidget {
   //final MsgListProvider msglist;
-  final AutoScrollController scrollController;
+  //final AutoScrollController scrollController;
 
-  const MsgList({Key? key, required this.scrollController}) : super(key: key);
+  const MsgList({Key? key}) : super(key: key);
 
   @override
   State<MsgList> createState() {
@@ -31,20 +31,6 @@ class _MsgListState extends State<MsgList> {
 
   @override
   void initState() {
-    // if (!isDesktopMode) {
-    //   widget.msglist.requestMessages(
-    //       Provider.of<TaskListProvider>(context, listen: false), context);
-    // }
-    // widget.flutterListViewController.sliverController
-    //     .onPaintItemPositionsCallback = (height, positions) {
-    //   // height is widget's height
-    //   // positions is the items which render in viewports
-    //   if (positions.last.index >= widget.msglist.items.length - 5) {
-    //     final tasklist = Provider.of<TaskListProvider>(context, listen: false);
-
-    //     widget.msglist.requestMessages(tasklist, context);
-    //   }
-    // };
     super.initState();
   }
 
@@ -52,7 +38,7 @@ class _MsgListState extends State<MsgList> {
   Widget build(BuildContext context) {
     return Consumer<MsgListProvider>(builder: (context, provider, child) {
       final msglist = provider;
-      msglist.scrollController = widget.scrollController;
+      //msglist.scrollController = widget.scrollController;
       if (msglist.task.ID == 0) {
         return const Center(child: Text("No any task was selected"));
       } else {
@@ -75,7 +61,7 @@ class _MsgListState extends State<MsgList> {
         return Column(children: <Widget>[
           Expanded(
             child: InfiniteList(
-              scrollController: widget.scrollController,
+              scrollController: msglist.scrollController,
               reverse: true,
               itemCount: msglist.items.length,
               isLoading: msglist.loading,
@@ -88,7 +74,7 @@ class _MsgListState extends State<MsgList> {
                 var item = msglist.items[index];
                 return AutoScrollTag(
                     key: ValueKey(index),
-                    controller: widget.scrollController,
+                    controller: msglist.scrollController,
                     index: index,
                     child: MsgListTile(
                       index: index,

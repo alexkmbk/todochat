@@ -16,7 +16,7 @@ class TasksPage extends StatefulWidget {
 }
 
 class _TasksPageState extends State<TasksPage> {
-  late FloatingActionButton floatingActionButton;
+  //late FloatingActionButton floatingActionButton;
 
   @override
   void initState() {
@@ -27,17 +27,21 @@ class _TasksPageState extends State<TasksPage> {
     return SizedBox(
         width: 100,
         child: FloatingActionButton(
+          backgroundColor: Colors.blue,
           shape: const StadiumBorder(),
           onPressed: () {
             provider.saveEditingItem(context);
           },
-          child: const Text("Save"),
+          child: const Text(
+            "Save",
+            style: TextStyle(color: Colors.white),
+          ),
         ));
   }
 
   @override
   Widget build(BuildContext context) {
-    final tasks = context.read<TasksState>();
+    final tasks = context.watch<TasksState>();
     return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
       Expanded(
           child: Scaffold(
@@ -47,6 +51,8 @@ class _TasksPageState extends State<TasksPage> {
                   ? tasks.taskEditMode
                       ? floatingActionButtonToSave(tasks, context)
                       : FloatingActionButton(
+                          shape: const CircleBorder(),
+                          backgroundColor: Colors.blue,
                           onPressed: () {
                             if (!tasks.taskEditMode) {
                               tasks.addEditorItem();

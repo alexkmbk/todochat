@@ -93,7 +93,7 @@ Future<bool> updateTask(BuildContext context, Task task) async {
         setUriProperty(serverURI, path: 'updateTask'),
         body: jsonEncode(task));
   } catch (e) {
-    context.read<SettingsState>().redrawWidgetTree();
+    context.read<SettingsState>().redrawWidgetTree(context);
     return false;
   }
 
@@ -107,6 +107,7 @@ Future<bool> updateTask(BuildContext context, Task task) async {
 void openTask(BuildContext context, Task task) async {
   final msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
   msgListProvider.isOpen = true;
+  msgListProvider.task = task;
   await Navigator.push(
     context,
     MaterialPageRoute(builder: (context) => const TaskMessagesPage()),
