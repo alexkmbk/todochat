@@ -1,23 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-//import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:todochat/msglist_editbox.dart';
 import 'package:todochat/state/msglist_provider.dart';
 import 'package:todochat/state/tasks.dart';
-
-//import 'package:loadmore_listview/loadmore_listview.dart';
-//import 'package:loadmore/loadmore.dart';
-//import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
-
 import 'package:todochat/todochat.dart';
 import 'msglist_tile.dart';
 
 class MsgList extends StatefulWidget {
-  //final MsgListProvider msglist;
-  //final AutoScrollController scrollController;
-
   const MsgList({Key? key}) : super(key: key);
 
   @override
@@ -38,7 +29,6 @@ class _MsgListState extends State<MsgList> {
   Widget build(BuildContext context) {
     return Consumer<MsgListProvider>(builder: (context, provider, child) {
       final msglist = provider;
-      //msglist.scrollController = widget.scrollController;
       if (msglist.task.ID == 0) {
         return const Center(child: Text("No any task was selected"));
       } else {
