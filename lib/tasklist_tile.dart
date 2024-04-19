@@ -34,6 +34,7 @@ class TaskListTile extends StatelessWidget {
           TextEditingController(text: task.description);
       return Card(
         color: Colors.white,
+        surfaceTintColor: Colors.white,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(8.0))),
         child: Column(children: [
@@ -83,6 +84,7 @@ class TaskListTile extends StatelessWidget {
                               controller:
                                   taskListProvider.textEditingController,
                               decoration: InputDecoration(
+                                  fillColor: Colors.white,
                                   border: InputBorder.none,
                                   hintText: taskListProvider.isNewItem
                                       ? "New task name"
@@ -122,7 +124,6 @@ class TaskListTile extends StatelessWidget {
             // else
             if (task.fileName.isNotEmpty)
               DecoratedBox(
-                  // chat bubble decoration
                   decoration: BoxDecoration(
                     color: Colors.blue,
                     borderRadius: BorderRadius.circular(8),
@@ -155,53 +156,64 @@ class TaskListTile extends StatelessWidget {
           Wrap(
             alignment: WrapAlignment.spaceAround,
             children: [
-              OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    shape: const StadiumBorder(
-                      side: BorderSide(width: 3.0, color: Colors.blue),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    minimumSize: Size(64,
+                        30) // put the width and height you want, standard ones are 64, 40
                     ),
-                  ),
-                  onPressed: taskListProvider.loading
-                      ? null
-                      : () async {
-                          taskListProvider.saveEditingItem(context);
-                        },
-                  child: isDesktopMode
-                      ? RichText(
-                          text: const TextSpan(
-                              text: "Save ",
-                              style: TextStyle(color: Colors.blue),
-                              children: [
-                              TextSpan(
-                                  text: "(Enter)",
-                                  style: TextStyle(
-                                      color: Colors.green,
-                                      fontSize: 8,
-                                      fontWeight: FontWeight.bold))
-                            ]))
-                      : const Text("Save")),
+                // style: OutlinedButton.styleFrom(
+                //   side: BorderSide(width: 1.0, color: Colors.blue),
+                //   shape: const StadiumBorder(),
+                // ),
+                onPressed: taskListProvider.loading
+                    ? null
+                    : () async {
+                        taskListProvider.saveEditingItem(context);
+                      },
+                child: RichText(
+                  text: TextSpan(
+                      text: "Save ",
+                      style: TextStyle(color: Colors.blue),
+                      children: [
+                        if (isDesktopMode)
+                          TextSpan(
+                              text: "(Enter)",
+                              style: TextStyle(
+                                  color: Colors.green,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold))
+                      ]),
+                ),
+              ),
               const SizedBox(width: 10),
-              OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    shape: const StadiumBorder(
-                      side: BorderSide(width: 3.0, color: Colors.blue),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    minimumSize: Size(64,
+                        30) // put the width and height you want, standard ones are 64, 40
                     ),
+                // style: OutlinedButton.styleFrom(
+                //   side: BorderSide(width: 1.0, color: Colors.blue),
+                //   shape: const StadiumBorder(),
+                // ),
+                onPressed: () {
+                  taskListProvider.taskEditMode = false;
+                  if (taskListProvider.isNewItem) {
+                    taskListProvider.deleteEditorItem();
+                  } else {
+                    task.editMode = false;
+                    taskListProvider.refresh();
+                  }
+                },
+                child: RichText(
+                  text: const TextSpan(
+                    text: "Cancel ",
+                    style: TextStyle(color: Colors.blue),
                   ),
-                  onPressed: () {
-                    taskListProvider.taskEditMode = false;
-                    if (taskListProvider.isNewItem) {
-                      taskListProvider.deleteEditorItem();
-                    } else {
-                      task.editMode = false;
-                      taskListProvider.refresh();
-                    }
-                  },
-                  child: const Text(
-                    "Cancel",
-                    style: TextStyle(color: Colors.blue, fontSize: 13),
-                  ))
+                ),
+              )
             ],
           ),
+          const SizedBox(height: 10),
         ]),
       );
     } else {
