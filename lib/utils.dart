@@ -173,7 +173,7 @@ extension SetCursorOnEnd on TextEditingController {
 
 String dateFormat(DateTime datetime, [String format = 'yyyy-MM-dd HH:mm']) {
   final DateFormat formatter = DateFormat(format);
-  return formatter.format(datetime);
+  return formatter.format(datetime.toLocal());
 }
 /*Map<String, HighlightedWord> getHighlightedWords(String? str) {
   Map<String, HighlightedWord> res = {};
@@ -193,7 +193,7 @@ DateTime formJsonToDate(String? jsonDateStr) {
   if (jsonDateStr == null) return DateTime.utc(0);
 
   DateTime res = DateTime.tryParse(jsonDateStr) ?? DateTime.utc(0);
-  res = res.toLocal();
+  //res = res.toLocal();
   return res;
 }
 
@@ -204,7 +204,8 @@ String formDateToJsonUtc(DateTime? date) {
   } else {
     utcDate = date.toUtc();
   }
-  return utcDate.add(DateTime.now().timeZoneOffset).toIso8601String();
+  //return utcDate.add(DateTime.now().timeZoneOffset).toIso8601String();
+  return utcDate.toIso8601String();
 }
 
 extension ListExtension<E> on List<E> {

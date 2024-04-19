@@ -337,7 +337,7 @@ func UpdateMessage(w http.ResponseWriter, r *http.Request) {
 	task, _ := Tasks.GetItemByID(message.TaskID)
 
 	message.ProjectID = task.ProjectID
-	DB.Create(&message)
+	DB.Updates(&message)
 
 	// if userID != 0 {
 	// 	seenMessage := SeenMessage{UserID: userID, TaskID: task.ID, MessageID: message.ID}

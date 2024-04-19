@@ -313,7 +313,8 @@ class _GestureDetectorWithMenuState extends State<GestureDetectorWithMenu> {
         onSecondaryTapDown: (details) =>
             _onSecondaryTapDown(details.globalPosition, context),
         onLongPress: () {
-          if (_tapDownDetails != null && Platform().isAndroid) {
+          if (_tapDownDetails != null &&
+              _tapDownDetails!.kind != PointerDeviceKind.mouse) {
             _onSecondaryTapDown(_tapDownDetails!.globalPosition, context);
           }
         },

@@ -185,7 +185,7 @@ class MsgListProvider extends ChangeNotifier {
     bool updated = false;
 
     int foundIndex = items.indexWhere((element) => element.ID == message.ID);
-    if (foundIndex >= 0) {
+    if (foundIndex >= 0 && items[foundIndex] != message) {
       items[foundIndex] = message;
       updated = true;
       notifyListeners();
@@ -409,6 +409,7 @@ class MsgListProvider extends ChangeNotifier {
       quotedText = "";
       parentsmallImageName = "";
       currentParentMessageID = 0;
+      updateItem(editingMessage!);
       return true;
     }
 

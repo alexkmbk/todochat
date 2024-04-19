@@ -1,4 +1,5 @@
 import 'package:todochat/models/task.dart';
+import 'package:todochat/utils.dart';
 
 enum MessageAction {
   CreateUpdateMessageAction,
@@ -14,7 +15,7 @@ class Message {
   int taskID = 0;
   int projectID = 0;
   Task? task;
-  DateTime? created_at;
+  DateTime? created_at = DateTime.utc(0);
   String text = "";
   String? quotedText = "";
   int parentMessageID = 0;
@@ -89,7 +90,7 @@ class Message {
       'ID': ID,
       'taskID': taskID == 0 ? task?.ID : taskID,
       'projectID': projectID,
-      'created_at': created_at,
+      'created_at': formDateToJsonUtc(created_at),
       'text': text,
       'quotedText': quotedText,
       'parentMessageID': parentMessageID,
