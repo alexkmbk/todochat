@@ -52,6 +52,10 @@ class EditMessageBox extends StatelessWidget {
                     onPressed: () {
                       msglist.quotedText = "";
                       msglist.parentsmallImageName = "";
+                      if (msglist.editMode) {
+                        msglist.editMode = false;
+                        msglist.messageInputController.text = "";
+                      }
                       msglist.refresh();
                     },
                     icon: const Icon(Icons.close)))
