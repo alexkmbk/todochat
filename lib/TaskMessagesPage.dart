@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:todochat/msglist_appbar.dart';
 import 'main_menu.dart';
 import 'package:provider/provider.dart';
 import 'msglist.dart';
@@ -43,37 +44,4 @@ class _TaskMessagesPageState extends State<TaskMessagesPage> {
           ));
     }
   }
-}
-
-class MessagesAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const MessagesAppBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final task = context.watch<MsgListProvider>().task;
-    return AppBar(
-      leading: const MainMenu(),
-      backgroundColor: const Color.fromARGB(240, 255, 255, 255),
-      title: Row(children: [
-        Flexible(
-            child: TextButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(
-                  Icons.keyboard_arrow_left,
-                  color: Colors.black,
-                ),
-                label: Text(
-                  task.description,
-                  style: const TextStyle(color: Colors.black, fontSize: 18),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ))),
-      ]),
-    );
-  }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
