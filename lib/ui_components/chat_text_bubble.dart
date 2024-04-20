@@ -69,6 +69,7 @@ class _ChatTextBubbleState extends State<ChatTextBubble> {
               selectedText.isNotEmpty ? widget.onQuoteSelection : null,
           onDelete: widget.onDelete,
           onEdit: widget.onEdit,
+          onCopy: widget.onCopy,
           onReply: widget.onReply,
         );
       },
