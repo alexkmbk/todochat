@@ -141,11 +141,13 @@ class _MsgListTileState extends State<MsgListTile> {
       return ChatTextBubble(
         text: widget.message.text,
         backgroundColor: getBubbleColor(),
-        quotedImageURL: serverURI.scheme +
-            '://' +
-            serverURI.authority +
-            "/FileStorage/" +
-            message.parentsmallImageName,
+        quotedImageURL: message.parentsmallImageName.isNotEmpty
+            ? serverURI.scheme +
+                '://' +
+                serverURI.authority +
+                "/FileStorage/" +
+                message.parentsmallImageName
+            : "",
         headers: {"sessionID": sessionID},
         onCopy: () => Clipboard.setData(ClipboardData(text: message.text)),
         onReply: () {
