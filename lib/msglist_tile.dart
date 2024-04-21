@@ -121,20 +121,12 @@ class _MsgListTileState extends State<MsgListTile> {
 
     if (widget.message.messageAction !=
         MessageAction.CreateUpdateMessageAction) {
-      return GestureDetectorWithMenu(
-        child: DecoratedBox(
-          // chat bubble decoration
-          decoration: BoxDecoration(
-            border: Border.all(color: const Color.fromARGB(255, 228, 232, 233)),
-            color: const Color.fromARGB(255, 228, 232, 233),
-            borderRadius: const BorderRadius.all(Radius.circular(8)),
-          ),
-          child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: getMessageActionDescription(widget.message)),
-        ),
+      return ChatTextBubble(
+        leading: getMessageActionDescription(widget.message),
         onDelete: () => widget.msgListProvider.deleteMesage(widget.message.ID),
+        backgroundColor: const Color.fromARGB(255, 228, 232, 233),
       );
+
       // Text bubble
     } else if (widget.message.fileName.isEmpty &&
         !widget.message.isTaskDescriptionItem) {

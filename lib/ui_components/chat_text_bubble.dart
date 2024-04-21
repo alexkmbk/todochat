@@ -20,7 +20,7 @@ class ChatTextBubble extends StatefulWidget {
 
   const ChatTextBubble(
       {super.key,
-      required this.text,
+      this.text = "",
       this.onTap,
       this.onCopy,
       this.onReply,
@@ -54,10 +54,6 @@ class _ChatTextBubbleState extends State<ChatTextBubble> {
   }
   @override
   Widget build(BuildContext context) {
-    final textWidget = Text(
-      widget.text,
-    );
-
     return SelectionArea(
       focusNode: focusNode,
       onSelectionChanged: (value) {
@@ -120,7 +116,7 @@ class _ChatTextBubbleState extends State<ChatTextBubble> {
                   )),
             if (widget.quotedText != null && widget.quotedText!.isNotEmpty)
               const Divider(),
-            textWidget,
+            if (widget.text.isNotEmpty) Text(widget.text),
           ]),
         ),
         //  ),
