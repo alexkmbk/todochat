@@ -203,8 +203,13 @@ class _NetworkImageWithMenuState extends State<NetworkImageWithMenu> {
     final x = details.globalPosition.dx;
     final y = details.globalPosition.dy;
     final res = await showMenu(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+        Radius.circular(10.0),
+      )),
       popUpAnimationStyle: AnimationStyle.noAnimation,
       color: Colors.white,
+      surfaceTintColor: Colors.white,
       context: context,
       position: RelativeRect.fromLTRB(x, y, x, y),
       items: [
