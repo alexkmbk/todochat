@@ -6,6 +6,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
+import 'package:todochat/ui_components/confirm_detele_dlg.dart';
 import 'utils.dart';
 import 'package:simple_gesture_detector/simple_gesture_detector.dart';
 
@@ -160,196 +161,8 @@ class TextFieldEx extends StatelessWidget {
   }
 }
 
-Future<bool?> confirmDismissDlg(BuildContext context) {
-  return showDialog<bool?>(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text("Confirm"),
-        content: const Text("Are you sure you wish to delete this item?"),
-        actions: <Widget>[
-          ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text("DELETE")),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text("CANCEL"),
-          ),
-        ],
-      );
-    },
-  );
-}
-
 class BoolRef {
   bool value = false;
-}
-
-class GestureDetectorWithMenu extends StatefulWidget {
-  final Widget child;
-  final GestureTapCallback? onTap;
-  //final GestureTapDownCallback? onSecondaryTapDown;
-  final Function? onCopy;
-  final Function? onEdit;
-  final Function? onReply;
-  final Function? onDelete;
-  final Function? onQuoteSelection;
-  final List<PopupMenuEntry>? addMenuItems;
-  bool? isQuoteSelected;
-
-  GestureDetectorWithMenu(
-      {required this.child,
-      //this.onSecondaryTapDown,
-      this.onCopy,
-      this.onEdit,
-      this.onTap,
-      this.onReply,
-      this.onDelete,
-      this.onQuoteSelection,
-      this.addMenuItems,
-      this.isQuoteSelected,
-      Key? key})
-      : super(key: key);
-
-  @override
-  State<GestureDetectorWithMenu> createState() =>
-      _GestureDetectorWithMenuState();
-}
-
-class _GestureDetectorWithMenuState extends State<GestureDetectorWithMenu> {
-  TapDownDetails? _tapDownDetails;
-
-  void _onSecondaryTapDown(Offset position, BuildContext context) async {
-    FocusScopeNode currentFocus = FocusScope.of(context);
-    if (!currentFocus.hasPrimaryFocus) {
-      currentFocus.focusedChild?.unfocus();
-    }
-
-    // if (widget.onSecondaryTapDown != null) {
-    //   widget.onSecondaryTapDown!(details);
-    // }
-    final x = position.dx;
-    final y = position.dy;
-    List<PopupMenuEntry> items = [
-      if (widget.onCopy != null)
-        PopupMenuItem<String>(
-            child: const Text('Copy'),
-            onTap: () async {
-              if (widget.onCopy != null) {
-                widget.onCopy!();
-              }
-            }),
-      if (widget.onEdit != null)
-        PopupMenuItem<String>(
-            child: const Text('Edit'),
-            onTap: () async {
-              if (widget.onEdit != null) {
-                widget.onEdit!();
-              }
-            }),
-      if (widget.onReply != null)
-        PopupMenuItem<String>(
-            child: const Text('Reply'),
-            onTap: () async {
-              if (widget.onReply != null) {
-                widget.onReply!();
-              }
-            }),
-      if (widget.onDelete != null)
-        const PopupMenuItem<String>(
-          value: 'Delete',
-          child: Text('Delete'),
-        ),
-      if (widget.isQuoteSelected != null && widget.isQuoteSelected!)
-        PopupMenuItem<String>(
-            child: const Text('Quote selection'),
-            onTap: () async {
-              if (widget.onQuoteSelection != null) {
-                widget.onQuoteSelection!();
-              }
-
-              /*message.isSelected = false;
-              var text = message.isTaskDescriptionItem
-                  ? msgListProvider.task?.description ?? ""
-                  : message.text;
-              text = text.substring(
-                  textWidgetSelection.start, textWidgetSelection.end);
-              msgListProvider.quotedText = text;
-              msgListProvider.currentParentMessageID = message.ID;
-              //FocusScope.of(context).unfocus();
-              searchFocusNode.unfocus();
-              //messageTextFieldFocusNode.dispose();
-              messageTextFieldFocusNode.requestFocus();
-              msgListProvider.refresh();*/
-            }),
-    ];
-    if (widget.addMenuItems != null) {
-      items = [...items, ...widget.addMenuItems!];
-    }
-    final res = await showMenu(
-      color: Colors.white,
-      popUpAnimationStyle: AnimationStyle.noAnimation,
-      context: context,
-      position: RelativeRect.fromLTRB(x, y, x, y),
-      items: items,
-    );
-    if (res == "Delete") {
-      var res = await confirmDismissDlg(context);
-      if (res ?? false) {
-        if (widget.onDelete != null) {
-          widget.onDelete!();
-        }
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-        onTap: widget.onTap,
-        onTapDown: (details) {
-          _tapDownDetails = details;
-        },
-        onSecondaryTapDown: (details) =>
-            _onSecondaryTapDown(details.globalPosition, context),
-        onLongPress: () {
-          if (_tapDownDetails != null &&
-              _tapDownDetails!.kind != PointerDeviceKind.mouse) {
-            _onSecondaryTapDown(_tapDownDetails!.globalPosition, context);
-          }
-        },
-        child: widget.child);
-    // if (Platform().isAndroid)
-    //   return GestureDetector(
-    //       onTap: widget.onTap,
-    //       onTapDown: (details) {
-    //         _tapDownDetails = details;
-    //       },
-    //       onSecondaryTapDown: (details) =>
-    //           _onSecondaryTapDown(details.globalPosition, context),
-    //       onLongPress: () {
-    //         if (_tapDownDetails != null && Platform().isAndroid) {
-    //           _onSecondaryTapDown(_tapDownDetails!.globalPosition, context);
-    //         }
-    //       },
-    //       child: widget.child);
-    // else
-    //   return Listener(
-    //     behavior: HitTestBehavior.deferToChild,
-    //     onPointerDown: (PointerDownEvent? event) {
-    //       if (event != null && event.buttons == kSecondaryMouseButton) {
-    //         // final RenderBox renderBox = _key.currentContext.findRenderObject();
-    //         // final position = renderBox.localToGlobal(Offset.zero);
-    //         _onSecondaryTapDown(event.position, context);
-    //       } else if (event != null &&
-    //           event.buttons == kPrimaryMouseButton &&
-    //           widget.onTap != null) {
-    //         //widget.onTap!();
-    //       }
-    //     },
-    //     child: widget.child,
-    //   );
-  }
 }
 
 class NetworkImageWithMenu extends StatefulWidget {
@@ -424,7 +237,7 @@ class _NetworkImageWithMenuState extends State<NetworkImageWithMenu> {
       ],
     );
     if (res == "Delete") {
-      var res = await confirmDismissDlg(context);
+      var res = await ConfirmDeleteDlg.show(context);
       if (res ?? false) {
         if (widget.onDelete != null) {
           widget.onDelete!();

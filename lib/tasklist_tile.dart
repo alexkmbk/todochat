@@ -6,6 +6,8 @@ import "package:provider/provider.dart";
 import "package:todochat/models/message.dart";
 import "package:todochat/models/task.dart";
 import "package:todochat/todochat.dart";
+import "package:todochat/ui_components/context_menu_detector.dart";
+import "package:todochat/ui_components/tile_menu.dart";
 import "package:todochat/utils.dart";
 
 import "customWidgets.dart";
@@ -217,16 +219,22 @@ class TaskListTile extends StatelessWidget {
         ]),
       );
     } else {
-      return GestureDetectorWithMenu(
-        onDelete: () async {
-          if (await taskListProvider.deleteTask(task.ID, context)) {
-            taskListProvider.deleteItem(task.ID, context);
-          }
+      return ContextMenuDetector(
+        onContextMenu: (Offset position) {
+          TileMenu.show(
+            context: context,
+            position: position,
+            onDelete: () async {
+              if (await taskListProvider.deleteTask(task.ID, context)) {
+                taskListProvider.deleteItem(task.ID, context);
+              }
+            },
+            onCopy: () {
+              Pasteboard.writeText(task.description);
+            },
+            onEdit: () => onLongPress(task, taskListProvider),
+          );
         },
-        onCopy: () {
-          Pasteboard.writeText(task.description);
-        },
-        onEdit: () => onLongPress(task, taskListProvider),
         child: Material(
           child: ListTile(
             splashColor: Colors.transparent,

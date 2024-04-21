@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:todochat/customWidgets.dart';
+import 'package:todochat/ui_components/confirm_detele_dlg.dart';
 
 class CachedNetworkImageWithMenu extends StatefulWidget {
   final String src;
@@ -78,7 +79,7 @@ class _CachedNetworkImageWithMenuState
       ],
     );
     if (res == "Delete") {
-      var res = await confirmDismissDlg(context);
+      var res = await ConfirmDeleteDlg.show(context);
       if (res ?? false) {
         if (widget.onDelete != null) {
           widget.onDelete!();

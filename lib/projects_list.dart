@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/src/response.dart';
 import 'package:todochat/models/project.dart';
+import 'package:todochat/ui_components/confirm_detele_dlg.dart';
 import 'HttpClient.dart';
 import 'customWidgets.dart';
 import 'utils.dart';
@@ -223,7 +224,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
           key: UniqueKey(),
           direction: DismissDirection.startToEnd,
           confirmDismiss: (direction) {
-            return confirmDismissDlg(context);
+            return ConfirmDeleteDlg.show(context);
           },
           onDismissed: (direction) async {
             await deleteProject(project.ID);
