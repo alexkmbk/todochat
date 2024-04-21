@@ -43,10 +43,15 @@ class _ChatTextBubbleState extends State<ChatTextBubble> {
   final FocusNode focusNode = FocusNode();
   String selectedText = "";
 
-  TextSelection textWidgetSelection =
-      const TextSelection(baseOffset: 0, extentOffset: 0);
-  late GestureDetectorWithMenu textGestureDetectorWithMenu;
+  // TextSelection textWidgetSelection =
+  //     const TextSelection(baseOffset: 0, extentOffset: 0);
+  // late GestureDetectorWithMenu textGestureDetectorWithMenu;
 
+  _ChatTextBubbleState() {
+    focusNode.addListener(() {
+      if (!focusNode.hasFocus) ContextMenuController.removeAny();
+    });
+  }
   @override
   Widget build(BuildContext context) {
     final textWidget = Text(
@@ -54,6 +59,7 @@ class _ChatTextBubbleState extends State<ChatTextBubble> {
     );
 
     return SelectionArea(
+      focusNode: focusNode,
       onSelectionChanged: (value) {
         if (value != null)
           selectedText = value.plainText;
