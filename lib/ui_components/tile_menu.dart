@@ -8,11 +8,10 @@ class TileMenu {
     selectedText = "",
     onCopy,
     onEdit,
-    onTap,
     onReply,
     onDelete,
     onQuoteSelection,
-    addMenuItems,
+    List<PopupMenuEntry>? addMenuItems,
   }) async {
     List<PopupMenuEntry> items = [];
     items = [
@@ -62,6 +61,9 @@ class TileMenu {
             }),
     ];
 
+    if (addMenuItems != null) {
+      items = [...items, ...addMenuItems];
+    }
     if (items.isEmpty) return;
 
     showMenu(

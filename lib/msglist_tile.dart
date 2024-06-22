@@ -259,13 +259,13 @@ class _MsgListTileState extends State<MsgListTile> {
       } else {
         // File bubble
         return ContextMenuDetector(
+            onTap: () => onTapOnFileMessage(widget.message, context),
             onContextMenu: (Offset position) {
               TileMenu.show(
                 context: context,
                 position: position,
-                onDelete:
+                onDelete: () =>
                     widget.msgListProvider.deleteMesage(widget.message.ID),
-                onTap: () => onTapOnFileMessage(widget.message, context),
                 addMenuItems: [
                   if (Platform().isWindows)
                     PopupMenuItem<String>(
