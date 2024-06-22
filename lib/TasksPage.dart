@@ -85,10 +85,9 @@ class Body extends StatelessWidget {
                 color: Colors.blueGrey.shade100,
               )),
           child: MultiSplitView(
-            initialAreas: [Area(weight: 0.3)],
-            children: [
-              const TaskList(),
-              const TaskMessagesPage(),
+            initialAreas: [
+              Area(flex: 0.4, builder: (context, area) => const TaskList()),
+              Area(builder: (context, area) => const TaskMessagesPage())
             ],
           ));
     } else {
