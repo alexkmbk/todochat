@@ -38,6 +38,7 @@ gorm.db
 /server/keys/
 /server/FileStorage/
 /server/WebClient/
+/resources/
 
 
 # Web related

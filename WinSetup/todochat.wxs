@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Product Id="05350072-003C-4F0D-9947-9563B1029E50" Name="ToDoChat" Language="1033" Version="1.2.0.0" Manufacturer="alexkmbk" UpgradeCode="374A7893-EE9A-4119-8C32-E9F236003009">
+        <Package Description="ToDoChat" Comments="ToDoChat" InstallerVersion="200" Compressed="yes" />
+        <Media Id="1" Cabinet="simple.cab" EmbedCab="yes" />
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="ProgramFilesFolder" Name="PFiles">
+                <Directory Id="todochat" Name="todochat">
+                    <Directory Id="DATA" Name="data">
+                        <Component Id="APP.SO" DiskId="1" Guid="9AC5A163-B6AC-4E86-830A-905960A1025E">
+                            <File Id="APP.SO" Name="app.so" Source="binfiles\data\app.so" />
+                        </Component>
+                        <Component Id="ICUDTL.DAT" DiskId="1" Guid="3410A1D1-3987-410C-885D-0F88F75EFCC6">
+                            <File Id="ICUDTL.DAT" Name="icudtl.dat" Source="binfiles\data\icudtl.dat" />
+                        </Component>
+                        <Directory Id="FLUTTER_ASSETS" Name="flutter_assets">
+                            <Component Id="ASSETMANIFEST.JSON" DiskId="1" Guid="A1083B29-F80A-4E69-99B9-72AE98F6B19F">
+                                <File Id="ASSETMANIFEST.JSON" Name="AssetManifest.json" Source="binfiles\data\flutter_assets\AssetManifest.json" />
+                            </Component>
+                            <Component Id="FONTMANIFEST.JSON" DiskId="1" Guid="8CF57753-E41B-4A5E-997B-B4B894162573">
+                                <File Id="FONTMANIFEST.JSON" Name="FontManifest.json" Source="binfiles\data\flutter_assets\FontManifest.json" />
+                            </Component>
+                            <Component Id="NOTICES" DiskId="1" Guid="7E7BA18C-1E0B-45D1-8D8B-EB018BF96BF9">
+                                <File Id="NOTICES" Name="NOTICES" Source="binfiles\data\flutter_assets\NOTICES" />
+                            </Component>
+                            <Component Id="NOTICES.Z" DiskId="1" Guid="CAB29A36-6ADC-43A5-8087-991EF12A505A">
+                                <File Id="NOTICES.Z" Name="NOTICES.Z" Source="binfiles\data\flutter_assets\NOTICES.Z" />
+                            </Component>
+                            <Directory Id="ASSETS" Name="assets">
+                                <Directory Id="IMAGES" Name="images">
+                                    <Component Id="IMAGE_ERROR.PNG" DiskId="1" Guid="27D76732-B232-4168-A73F-92AB823A336F">
+                                        <File Id="IMAGE_ERROR.PNG" Name="image_error.png" Source="binfiles\data\flutter_assets\assets\images\image_error.png" />
+                                    </Component>
+                                    <Component Id="TODOCHAT.ICO" DiskId="1" Guid="FD828E18-4B60-43D8-AAA4-AB70E17F817E">
+                                        <File Id="TODOCHAT.ICO" Name="todochat.ico" Source="binfiles\data\flutter_assets\assets\images\todochat.ico" />
+                                    </Component>
+                                    <Component Id="TODOCHAT_LOGO.PNG" DiskId="1" Guid="67A0AE4B-7414-4223-9DB6-1852E7CC013C">
+                                        <File Id="TODOCHAT_LOGO.PNG" Name="todochat_logo.png" Source="binfiles\data\flutter_assets\assets\images\todochat_logo.png" />
+                                    </Component>
+                                </Directory>
+                            </Directory>
+                            <Directory Id="FONTS" Name="fonts">
+                                <Component Id="MATERIALICONS_REGULAR.OTF" DiskId="1" Guid="4C20C5B4-8BD2-40D2-AC61-4EB2F80D8039">
+                                    <File Id="MATERIALICONS_REGULAR.OTF" Name="MaterialIcons-Regular.otf" Source="binfiles\data\flutter_assets\fonts\MaterialIcons-Regular.otf" />
+                                </Component>
+                            </Directory>
+                            <Directory Id="PACKAGES" Name="packages">
+                                <Directory Id="CUPERTINO_ICONS" Name="cupertino_icons">
+                                    <Directory Id="ASSETS_1" Name="assets">
+                                        <Component Id="CUPERTINOICONS.TTF" DiskId="1" Guid="1D25C5F2-3892-4FB9-93C1-E6C8A6DB9EE1">
+                                            <File Id="CUPERTINOICONS.TTF" Name="CupertinoIcons.ttf" Source="binfiles\data\flutter_assets\packages\cupertino_icons\assets\CupertinoIcons.ttf" />
+                                        </Component>
+                                    </Directory>
+                                </Directory>
+                            </Directory>
+                        </Directory>
+                    </Directory>
+                    <Component Id="FILE_SAVER_PLUGIN.DLL" DiskId="1" Guid="50C43BF2-CCE1-4BEE-8590-B9749653076C">
+                        <File Id="FILE_SAVER_PLUGIN.DLL" Name="file_saver_plugin.dll" Source="binfiles\file_saver_plugin.dll" />
+                    </Component>
+                    <Component Id="FLUTTER_SECURE_STORAGE_WINDOWS_PLUGIN.DLL" DiskId="1" Guid="5A7D30F3-B763-4338-B3CF-BD39E722DD48">
+                        <File Id="FLUTTER_SECURE_STORAGE_WINDOWS_PLUGIN.DLL" Name="flutter_secure_storage_windows_plugin.dll" Source="binfiles\flutter_secure_storage_windows_plugin.dll" />
+                    </Component>
+                    <Component Id="FLUTTER_WINDOWS.DLL" DiskId="1" Guid="41C27DE7-7CDB-4C80-BBF1-03C193484D69">
+                        <File Id="FLUTTER_WINDOWS.DLL" Name="flutter_windows.dll" Source="binfiles\flutter_windows.dll" />
+                    </Component>
+                    <Component Id="PASTEBOARD_PLUGIN.DLL" DiskId="1" Guid="567F6AF2-9B15-467C-9F24-98B32B7A897D">
+                        <File Id="PASTEBOARD_PLUGIN.DLL" Name="pasteboard_plugin.dll" Source="binfiles\pasteboard_plugin.dll" />
+                    </Component>
+                    <Component Id="TODOCHAT.EXE" DiskId="1" Guid="CC985F4C-A5FB-4DCA-B2B2-F8AA416F2B9E">
+                        <File Id="TODOCHAT.EXE" Name="todochat.exe" Source="binfiles\todochat.exe">
+                            <Shortcut Id="desktopShortcut" Directory="DesktopFolder" Name="ToDoChat" WorkingDirectory="INSTALLDIR" Advertise="yes" Icon="DesktopIcon.exe" IconIndex="0" />
+                            <Shortcut Id="ExeShortcut" Directory="ProgramMenuDir" Name="todochat.exe" Advertise="yes" Icon="DesktopIcon.exe" IconIndex="0" />
+                        </File>
+                    </Component>
+                    <Component Id="URL_LAUNCHER_WINDOWS_PLUGIN.DLL" DiskId="1" Guid="4212649F-BEB7-4F15-ABB1-0B063F9A566E">
+                        <File Id="URL_LAUNCHER_WINDOWS_PLUGIN.DLL" Name="url_launcher_windows_plugin.dll" Source="binfiles\url_launcher_windows_plugin.dll" />
+                    </Component>
+                    <Component Id="VCRUNTIME140_1.DLL" DiskId="1" Guid="FC228940-3820-454C-B8D5-A84D8FD79217">
+                        <File Id="VCRUNTIME140_1.DLL" Name="vcruntime140_1.dll" Source="binfiles\vcruntime140_1.dll" />
+                    </Component>
+                </Directory>
+            </Directory>
+            <Directory Id="DesktopFolder" />
+            <Directory Id="ProgramMenuFolder">
+                <Directory Id="ProgramMenuDir" Name="ToDoChat">
+                    <Component Id="StartMenuShortcuts" Guid="B33764A3-ED75-4275-9BBF-7019F9093A2E">
+                        <RemoveFolder Id="ProgramMenuDir" On="uninstall" />
+                        <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="" />
+                    </Component>
+                </Directory>
+            </Directory>
+        </Directory>
+        <UI></UI>
+        <CustomAction Id="EXECUTE_AFTER_FINALIZE" Execute="immediate" Impersonate="no" Return="asyncNoWait" FileKey="TODOCHAT.EXE" ExeCommand="" />
+        <InstallExecuteSequence>
+            <Custom Action="EXECUTE_AFTER_FINALIZE" After="InstallFinalize">NOT Installed</Custom>
+        </InstallExecuteSequence>
+        <Feature Id="todochat">
+            <ComponentRef Id="APP.SO" />
+            <ComponentRef Id="ICUDTL.DAT" />
+            <ComponentRef Id="ASSETMANIFEST.JSON" />
+            <ComponentRef Id="FONTMANIFEST.JSON" />
+            <ComponentRef Id="NOTICES" />
+            <ComponentRef Id="NOTICES.Z" />
+            <ComponentRef Id="IMAGE_ERROR.PNG" />
+			<ComponentRef Id="TODOCHAT.ICO" />
+			<ComponentRef Id="TODOCHAT_LOGO.PNG" />
+            <ComponentRef Id="MATERIALICONS_REGULAR.OTF" />
+            <ComponentRef Id="CUPERTINOICONS.TTF" />
+            <ComponentRef Id="FILE_SAVER_PLUGIN.DLL" />
+            <ComponentRef Id="FLUTTER_SECURE_STORAGE_WINDOWS_PLUGIN.DLL" />
+            <ComponentRef Id="FLUTTER_WINDOWS.DLL" />
+            <ComponentRef Id="PASTEBOARD_PLUGIN.DLL" />
+            <ComponentRef Id="TODOCHAT.EXE" />
+            <ComponentRef Id="URL_LAUNCHER_WINDOWS_PLUGIN.DLL" />
+            <ComponentRef Id="VCRUNTIME140_1.DLL" />
+            <ComponentRef Id="StartMenuShortcuts" />
+        </Feature>
+        <Icon Id="DesktopIcon.exe" SourceFile="binfiles\todochat.exe" />
+        <Icon Id="StartMenuIcon.exe" SourceFile="binfiles\todochat.exe" />
+    </Product>
+</Wix>
