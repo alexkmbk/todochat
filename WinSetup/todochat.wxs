@@ -20,12 +20,6 @@
                             <Component Id="FONTMANIFEST.JSON" DiskId="1" Guid="8CF57753-E41B-4A5E-997B-B4B894162573">
                                 <File Id="FONTMANIFEST.JSON" Name="FontManifest.json" Source="binfiles\data\flutter_assets\FontManifest.json" />
                             </Component>
-                            <Component Id="NOTICES" DiskId="1" Guid="7E7BA18C-1E0B-45D1-8D8B-EB018BF96BF9">
-                                <File Id="NOTICES" Name="NOTICES" Source="binfiles\data\flutter_assets\NOTICES" />
-                            </Component>
-                            <Component Id="NOTICES.Z" DiskId="1" Guid="CAB29A36-6ADC-43A5-8087-991EF12A505A">
-                                <File Id="NOTICES.Z" Name="NOTICES.Z" Source="binfiles\data\flutter_assets\NOTICES.Z" />
-                            </Component>
                             <Directory Id="ASSETS" Name="assets">
                                 <Directory Id="IMAGES" Name="images">
                                     <Component Id="IMAGE_ERROR.PNG" DiskId="1" Guid="27D76732-B232-4168-A73F-92AB823A336F">
@@ -101,8 +95,6 @@
             <ComponentRef Id="ICUDTL.DAT" />
             <ComponentRef Id="ASSETMANIFEST.JSON" />
             <ComponentRef Id="FONTMANIFEST.JSON" />
-            <ComponentRef Id="NOTICES" />
-            <ComponentRef Id="NOTICES.Z" />
             <ComponentRef Id="IMAGE_ERROR.PNG" />
 			<ComponentRef Id="TODOCHAT.ICO" />
 			<ComponentRef Id="TODOCHAT_LOGO.PNG" />

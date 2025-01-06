@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 import 'package:pasteboard/pasteboard.dart';
-import 'package:super_clipboard/super_clipboard.dart';
+//import 'package:super_clipboard/super_clipboard.dart';
 import 'package:http/http.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
@@ -93,6 +93,78 @@ class EditMessageBox extends StatelessWidget {
                   },
                   const SingleActivator(LogicalKeyboardKey.keyV, control: true):
                       () async {
+                    // final clipboard = SystemClipboard.instance;
+                    // if (clipboard == null) {
+                    //   return; // Clipboard API is not supported on this platform.
+                    // }
+                    // final reader = await clipboard.read();
+
+                    // if (reader.canProvide(Formats.htmlText)) {
+                    //   final html = await reader.readValue(Formats.htmlText);
+
+                    //   //var html = await Pasteboard.html;
+                    //   if (html != null && html.isNotEmpty) {
+                    //     String imageURL = getImageURLFromHTML(html);
+                    //     if (imageURL.isNotEmpty) {
+                    //       Response response;
+                    //       try {
+                    //         response = await get(Uri.parse(imageURL));
+                    //       } catch (e) {
+                    //         toast(e.toString(), context);
+                    //         return;
+                    //       }
+
+                    //       if (response.statusCode == 200) {
+                    //         msglist.addUploadingItem(
+                    //             Message(
+                    //                 taskID: msglist.task.ID,
+                    //                 userID: currentUserID,
+                    //                 fileName: "clipboard_image.png",
+                    //                 loadingFile: true,
+                    //                 isImage: true),
+                    //             response.bodyBytes);
+                    //       }
+                    //     }
+                    //   }
+                    // } else if ((reader.canProvide(Formats.plainText)) &&
+                    //     (reader.canProvide(Formats.plainText))) {
+                    //   final text =
+                    //       await reader.readValue(Formats.plainText) ?? "";
+                    //   msglist.messageInputController.text =
+                    //       msglist.messageInputController.text + text.trim();
+                    //   msglist.messageInputController.selection =
+                    //       TextSelection.fromPosition(TextPosition(
+                    //           offset:
+                    //               msglist.messageInputController.text.length));
+                    // }
+
+                    // /// Binary formats need to be read as streams
+                    // else if (reader.canProvide(Formats.png)) {
+                    //   reader.getFile(Formats.png, (file) {
+                    //     // Do something with the PNG image
+                    //     final stream = file.getStream();
+                    //     stream.fold<Uint8List>(Uint8List(0),
+                    //         (previous, element) {
+                    //       // Объединяем все Uint8List в один массив
+                    //       final newBuffer =
+                    //           Uint8List(previous.length + element.length);
+                    //       newBuffer.setRange(0, previous.length, previous);
+                    //       newBuffer.setRange(
+                    //           previous.length, newBuffer.length, element);
+                    //       return newBuffer;
+                    //     }).then((Uint8List result) {
+                    //       msglist.addUploadingItem(
+                    //           Message(
+                    //               taskID: msglist.task.ID,
+                    //               userID: currentUserID,
+                    //               fileName: "clipboard_image.png",
+                    //               loadingFile: true,
+                    //               isImage: true),
+                    //           result);
+                    //     });
+                    //   });
+                    // }
+
                     ClipboardData? data = await Clipboard.getData('text/plain');
 
                     if (data != null &&
@@ -133,45 +205,43 @@ class EditMessageBox extends StatelessWidget {
                             }
                           }
                         } else {
-                          final clipboard = SystemClipboard.instance;
-                          if (clipboard == null) {
-                            return; // Clipboard API is not supported on this platform.
-                          }
-                          final reader = await clipboard.read();
-                          if (reader.canProvide(Formats.htmlText)) {
-                            final html =
-                                await reader.readValue(Formats.htmlText);
+                          // final clipboard = SystemClipboard.instance;
+                          // if (clipboard == null) {
+                          //   return; // Clipboard API is not supported on this platform.
+                          // }
+                          // final reader = await clipboard.read();
+                          // if (reader.canProvide(Formats.htmlText)) {
+                          //   final html =
+                          //       await reader.readValue(Formats.htmlText);
 
-                            //var html = await Pasteboard.html;
-                            if (html != null && html.isNotEmpty) {
-                              String imageURL = getImageURLFromHTML(html);
-                              if (imageURL.isNotEmpty) {
-                                Response response;
-                                try {
-                                  response = await get(Uri.parse(imageURL));
-                                } catch (e) {
-                                  toast(e.toString(), context);
-                                  return;
-                                }
-
-                                if (response.statusCode == 200) {
-                                  msglist.addUploadingItem(
-                                      Message(
-                                          taskID: msglist.task.ID,
-                                          userID: currentUserID,
-                                          fileName: "clipboard_image.png",
-                                          loadingFile: true,
-                                          isImage: true),
-                                      response.bodyBytes);
-                                }
-                              } else {
-                                msglist.messageInputController.text =
-                                    html.trim();
-                                msglist.messageInputController.selection =
-                                    TextSelection.fromPosition(TextPosition(
-                                        offset: msglist.messageInputController
-                                            .text.length));
+                          var html = await Pasteboard.html;
+                          if (html != null && html.isNotEmpty) {
+                            String imageURL = getImageURLFromHTML(html);
+                            if (imageURL.isNotEmpty) {
+                              Response response;
+                              try {
+                                response = await get(Uri.parse(imageURL));
+                              } catch (e) {
+                                toast(e.toString(), context);
+                                return;
                               }
+
+                              if (response.statusCode == 200) {
+                                msglist.addUploadingItem(
+                                    Message(
+                                        taskID: msglist.task.ID,
+                                        userID: currentUserID,
+                                        fileName: "clipboard_image.png",
+                                        loadingFile: true,
+                                        isImage: true),
+                                    response.bodyBytes);
+                              }
+                            } else {
+                              msglist.messageInputController.text = html.trim();
+                              msglist.messageInputController.selection =
+                                  TextSelection.fromPosition(TextPosition(
+                                      offset: msglist
+                                          .messageInputController.text.length));
                             }
                           }
                         }

@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:todochat/utils.dart';
 
 class Task {
@@ -10,6 +8,7 @@ class Task {
   bool completed = false;
   bool cancelled = false;
   bool closed = false;
+  bool inHand = false;
 
   String description = "";
   String lastMessage = "";
@@ -36,6 +35,7 @@ class Task {
       'Completed': completed,
       'Cancelled': cancelled,
       'Closed': closed,
+      'InHand': inHand,
       'Description': description,
       'LastMessage': lastMessage,
       'LastMessageID': lastMessageID,
@@ -58,6 +58,7 @@ class Task {
     creation_date = formJsonToDate(json['Creation_date']);
     completed = json['Completed'];
     cancelled = json['Cancelled'];
+    inHand = json['InHand'] ?? false;
     closed = json['Closed'];
     description = json['Description'];
     lastMessage = json['LastMessage'];
@@ -84,6 +85,7 @@ class Task {
     creation_date = task.creation_date;
     completed = task.completed;
     cancelled = task.cancelled;
+    inHand = task.inHand;
     closed = task.closed;
     lastMessage = task.lastMessage;
     lastMessageID = task.lastMessageID;

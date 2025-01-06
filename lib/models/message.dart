@@ -8,6 +8,8 @@ enum MessageAction {
   CloseTaskAction,
   CancelTaskAction,
   RemoveCompletedLabelAction,
+  InHand,
+  RemoveInHand,
 }
 
 class Message {
@@ -83,7 +85,12 @@ class Message {
       case MessageAction.RemoveCompletedLabelAction:
         messageActionInt = 5;
         break;
-
+      case MessageAction.InHand:
+        messageActionInt = 6;
+        break;
+      case MessageAction.RemoveInHand:
+        messageActionInt = 7;
+        break;
       default:
     }
     return {
@@ -160,7 +167,12 @@ class Message {
       case 5:
         messageAction = MessageAction.RemoveCompletedLabelAction;
         break;
-
+      case 6:
+        messageAction = MessageAction.InHand;
+        break;
+      case 7:
+        messageAction = MessageAction.RemoveInHand;
+        break;
       default:
         messageAction = MessageAction.CreateUpdateMessageAction;
     }

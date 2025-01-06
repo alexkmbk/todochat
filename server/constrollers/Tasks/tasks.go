@@ -41,6 +41,7 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 			Completed:     false,
 			Closed:        false,
 			Cancelled:     false,
+			InHand:        false,
 			Creation_date: time.Now(),
 			AuthorID:      userID,
 			ProjectID:     projectID}

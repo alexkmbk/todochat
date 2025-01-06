@@ -133,6 +133,7 @@ class _MsgListTileState extends State<MsgListTile> {
       return ChatTextBubble(
         text: widget.message.text,
         backgroundColor: getBubbleColor(),
+        quotedText: message.quotedText,
         quotedImageURL: message.parentsmallImageName.isNotEmpty
             ? serverURI.scheme +
                 '://' +

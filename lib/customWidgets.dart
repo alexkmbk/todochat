@@ -552,10 +552,12 @@ class NumberInStadium extends StatelessWidget {
 }
 
 class Label extends StatelessWidget {
-  final String text;
+  final String? text;
   final Color? backgroundColor;
+  final Color? textColor;
   final VoidCallback? onPressed;
   final bool clickableCursor;
+  final Icon? icon;
   static const TextStyle textStyle = const TextStyle(fontSize: 14, height: 1);
   static const shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.all(Radius.circular(5)));
@@ -563,10 +565,12 @@ class Label extends StatelessWidget {
 
   const Label(
       {Key? key,
-      required this.text,
+      this.text,
       this.backgroundColor,
+      this.textColor,
       this.onPressed,
-      this.clickableCursor = false})
+      this.clickableCursor = false,
+      this.icon})
       : super(key: key);
 
   @override
@@ -580,40 +584,46 @@ class Label extends StatelessWidget {
         shape: shape,
         backgroundColor: backgroundColor,
         onPressed: onPressed ?? () {},
-        label: Text(
-          text,
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null)
+              Icon(icon!.icon,
+                  color: textColor,
+                  size: icon!.size != null ? icon!.size! / 1.5 : 20),
+            if (icon != null) const SizedBox(width: 4),
+            Text(
+              text ?? "",
+              style: TextStyle(color: textColor),
+            ),
+          ],
         ),
       ));
     } else {
       return UnconstrainedBox(
         child: Container(
-          //width: calcTextSize(text, context, style: textStyle).width + 28,
-          //color: backgroundColor,
           padding: padding,
           decoration: ShapeDecoration(
             color: backgroundColor,
             shape: shape,
           ),
           alignment: Alignment.center,
-          child: Text(
-            style: textStyle,
-            text,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null)
+                Icon(icon!.icon,
+                    color: textColor,
+                    size: icon!.size != null ? icon!.size! / 2 : 12),
+              if (icon != null) const SizedBox(width: 4),
+              Text(
+                style: textStyle.copyWith(color: textColor),
+                text ?? "",
+              ),
+            ],
           ),
         ),
       );
-      // return Chip(
-      //   //labelPadding: EdgeInsets.all(0.0),
-      //   padding: EdgeInsets.all(0.0),
-      //   visualDensity: const VisualDensity(horizontal: -4.0, vertical: -4.0),
-      //   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      //   shape: const RoundedRectangleBorder(
-      //       borderRadius: BorderRadius.all(Radius.circular(5))),
-      //   backgroundColor: backgroundColor,
-      //   label: Text(
-      //     style: TextStyle(fontSize: 14, height: 1),
-      //     text,
-      //   ),
-      // );
     }
   }
 }

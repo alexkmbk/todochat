@@ -191,7 +191,12 @@ class TasksState extends ChangeNotifier {
         case MessageAction.RemoveCompletedLabelAction:
           item.completed = false;
           break;
-
+        case MessageAction.InHand:
+          item.inHand = true;
+          break;
+        case MessageAction.RemoveInHand:
+          item.inHand = false;
+          break;
         default:
       }
       notifyListeners();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:todochat/models/message.dart';
 import 'package:todochat/models/task.dart';
 import 'package:todochat/state/msglist_provider.dart';
+import 'package:todochat/todochat.dart';
 
 import 'customWidgets.dart';
 
@@ -73,6 +74,33 @@ class ActionsMenu extends StatelessWidget {
                   task: msglist.task,
                   messageAction: MessageAction.ReopenTaskAction);
               msglist.task.cancelled = false;
+              msglist.task.completed = false;
+              msglist.task.closed = false;
+            }),
+      if (task.inHand)
+        PopupMenuItem(
+            child: const Label(
+              text: 'No longer in hand',
+            ),
+            onTap: () {
+              msglist.createMessage(
+                  text: "",
+                  task: msglist.task,
+                  messageAction: MessageAction.RemoveInHand);
+              msglist.task.inHand = false;
+            }),
+      if (!task.inHand)
+        PopupMenuItem(
+            child: const Label(
+              text: 'In hand',
+              backgroundColor: inHandTaskColor,
+            ),
+            onTap: () {
+              msglist.createMessage(
+                  text: "",
+                  task: msglist.task,
+                  messageAction: MessageAction.InHand);
+              msglist.task.inHand = true;
               msglist.task.completed = false;
               msglist.task.closed = false;
             }),
@@ -164,6 +192,39 @@ Widget getMessageActionDescription(Message message) {
           child: const Label(
             text: "Done",
             backgroundColor: Colors.green,
+          ),
+        ),
+        const WidgetSpan(child: Text(" was removed by ")),
+        WidgetSpan(
+            child: Text(
+          message.userName,
+          style: const TextStyle(color: Colors.blue),
+        )),
+      ]));
+    case MessageAction.InHand:
+      return Text.rich(
+          TextSpan(text: "The task was marked as ", children: <InlineSpan>[
+        const WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: const Label(
+            text: "In Hand",
+            icon: Icon(Icons.handshake),
+            textColor: Colors.green,
+            backgroundColor: inHandTaskColor,
+          ),
+        ),
+        const WidgetSpan(child: Text(" by ")),
+        WidgetSpan(
+            child: Text(message.userName,
+                style: const TextStyle(color: Colors.blue))),
+      ]));
+    case MessageAction.RemoveInHand:
+      return Text.rich(TextSpan(text: "The lable ", children: <InlineSpan>[
+        const WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: const Label(
+            text: "In hand",
+            backgroundColor: inHandTaskColor,
           ),
         ),
         const WidgetSpan(child: Text(" was removed by ")),

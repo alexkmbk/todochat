@@ -35,6 +35,7 @@ type Task struct {
 	Completed           bool `gorm:"default:false"`
 	Cancelled           bool `gorm:"default:false"`
 	Closed              bool `gorm:"default:false"`
+	InHand              bool `gorm:"default:false"`
 	AuthorID            int64
 	AuthorName          string
 	//Author        *User `gorm:"foreignKey:ID"`
@@ -47,11 +48,13 @@ type MessageAction int
 
 const (
 	CreateUpdateMessageAction  MessageAction = 0
-	CompleteTaskAction                       = 1
-	ReopenTaskAction                         = 2
-	CloseTaskAction                          = 3
-	CancelTaskAction                         = 4
-	RemoveCompletedLabelAction               = 5
+	CompleteTaskAction         MessageAction = 1
+	ReopenTaskAction           MessageAction = 2
+	CloseTaskAction            MessageAction = 3
+	CancelTaskAction           MessageAction = 4
+	RemoveCompletedLabelAction MessageAction = 5
+	InHand                     MessageAction = 6
+	RemoveInHand               MessageAction = 7
 )
 
 type Message struct {

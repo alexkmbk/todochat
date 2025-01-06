@@ -267,24 +267,27 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 		switch message.MessageAction {
 		case CompleteTaskAction:
 			task.Completed = true
-			break
+			task.InHand = false
 		case ReopenTaskAction:
 			task.Completed = false
 			task.Cancelled = false
 			task.Closed = false
-			break
 
 		case CloseTaskAction:
 			task.Closed = true
 			task.Completed = true
 			task.Cancelled = false
-			break
+			task.InHand = false
 		case CancelTaskAction:
 			task.Completed = false
 			task.Cancelled = true
-			break
+			task.InHand = false
 		case RemoveCompletedLabelAction:
 			task.Completed = false
+		case InHand:
+			task.InHand = true
+		case RemoveInHand:
+			task.InHand = false
 		}
 
 		DB.Save(&task)

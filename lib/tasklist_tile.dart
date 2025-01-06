@@ -337,8 +337,15 @@ class TaskListTile extends StatelessWidget {
                                 NumberInStadium(number: task.unreadMessages),
                             ]),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Spacer(),
+                    if (task.inHand)
+                      const Label(
+                        text: "In Hand",
+                        icon: Icon(Icons.handshake),
+                        backgroundColor: inHandTaskColor,
+                        textColor: Colors.green,
+                      ),
                     if (task.completed)
                       const Label(
                         text: "Done",
@@ -375,15 +382,24 @@ class TaskListTile extends StatelessWidget {
 
   Future<void> onTap(
       Task task, TasksState taskListProvider, BuildContext context) async {
-    task.read = true;
-    task.unreadMessages = 0;
+    bool refresh = false;
 
+    if (task.read == false) {
+      task.read = true;
+      refresh = true;
+    }
+    if (task.unreadMessages != 0) {
+      task.unreadMessages = 0;
+      refresh = true;
+    }
     taskListProvider.setCurrentTask(task, context);
 
     if (!isDesktopMode) {
       openTask(context, task);
     }
-    //taskListProvider.refresh();
+    if (refresh) {
+      taskListProvider.refresh();
+    }
   }
 
   void onLongPress(Task task, TasksState taskListProvider) {
