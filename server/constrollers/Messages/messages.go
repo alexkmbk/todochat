@@ -286,6 +286,7 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 			task.Completed = false
 		case InHand:
 			task.InHand = true
+			task.Completed = false
 		case RemoveInHand:
 			task.InHand = false
 		}
@@ -503,8 +504,46 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		DB.Delete(&message)
+		var lastMessage Message
+		task, success := Tasks.GetItemByID(message.TaskID)
+		if success {
+
+			DB.Order("ID desc").Where("task_id = ? AND ID < ?", task.ID, message.ID).First(&lastMessage)
+			if lastMessage.ID != 0 {
+				task.LastMessage = lastMessage.Text
+				task.LastMessageID = lastMessage.ID
+				task.LastMessageUserName = lastMessage.UserName
+
+				// Если действие сообщения не является CreateUpdateMessageAction, обновляем статус задачи
+				if message.MessageAction != CreateUpdateMessageAction {
+					var lastStatusMessage Message
+					if lastMessage.MessageAction != CreateUpdateMessageAction {
+						lastStatusMessage = lastMessage
+					} else {
+						DB.Order("ID desc").Where("task_id = ? AND message_action != ? AND ID < ?", task.ID, CreateUpdateMessageAction, lastMessage.ID).First(&lastStatusMessage)
+					}
+					if lastStatusMessage.ID != 0 {
+						task.Cancelled = lastStatusMessage.MessageAction == CancelTaskAction
+						task.Closed = lastStatusMessage.MessageAction == CloseTaskAction
+						task.Completed = lastStatusMessage.MessageAction == CompleteTaskAction
+						task.InHand = lastStatusMessage.MessageAction == InHand
+					} else {
+						task.Cancelled = false
+						task.Closed = false
+						task.Completed = false
+						task.InHand = false
+					}
+				}
+			} else {
+				task.LastMessage = ""
+				task.LastMessageID = 0
+				task.LastMessageUserName = ""
+			}
+			DB.Save(&task)
+		}
+
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		io.WriteString(w, `{"deleted": true}`)
-		go WS.SendDeleteMessage(message)
+		go WS.SendDeleteMessage(message, task)
 	}
 }

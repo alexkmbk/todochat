@@ -18,86 +18,137 @@
                         <File Id="UNINSTALL_SERVICE.BAT" Name="uninstall_service.bat" Source="..\uninstall_service.bat" />
                     </Component>
                     <Directory Id="WEBCLIENT" Name="WebClient">
-                        <Component Id="_.LAST_BUILD_ID" DiskId="1" Guid="6C7A7BBB-201C-470B-A490-2F87A49A8A3D">
+                        <Component Id="_.LAST_BUILD_ID" DiskId="1" Guid="4C51CB28-A1A3-4840-BD2F-D52131DC9D4C">
                             <File Id="_.LAST_BUILD_ID" Name=".last_build_id" Source="..\WebClient\.last_build_id" />
                         </Component>
-                        <Component Id="FAVICON.PNG" DiskId="1" Guid="C67A8696-9CBB-47CF-8F8D-A45EFFD97697">
+                        <Component Id="FAVICON.PNG" DiskId="1" Guid="06943D28-4AF3-4ACD-9183-EA22214B8DE4">
                             <File Id="FAVICON.PNG" Name="favicon.png" Source="..\WebClient\favicon.png" />
                         </Component>
-                        <Component Id="FLUTTER_SERVICE_WORKER.JS" DiskId="1" Guid="9E07FDF6-7E66-4EDE-9454-C5CC847A7F42">
+                        <Component Id="FLUTTER.JS" DiskId="1" Guid="7F0D5A77-F827-4FA9-9C16-EC3E0987D91E">
+                            <File Id="FLUTTER.JS" Name="flutter.js" Source="..\WebClient\flutter.js" />
+                        </Component>
+                        <Component Id="FLUTTER_BOOTSTRAP.JS" DiskId="1" Guid="89E3227A-DCC0-4437-8A97-9C06F95AAED5">
+                            <File Id="FLUTTER_BOOTSTRAP.JS" Name="flutter_bootstrap.js" Source="..\WebClient\flutter_bootstrap.js" />
+                        </Component>
+                        <Component Id="FLUTTER_SERVICE_WORKER.JS" DiskId="1" Guid="5EAA9D0C-F706-483C-BC83-6EB2C266B6FE">
                             <File Id="FLUTTER_SERVICE_WORKER.JS" Name="flutter_service_worker.js" Source="..\WebClient\flutter_service_worker.js" />
                         </Component>
-                        <Component Id="INDEX.HTML" DiskId="1" Guid="27577616-EECC-4120-A10C-6D50A8F6E413">
+                        <Component Id="INDEX.HTML" DiskId="1" Guid="BB30015D-D1E7-45A0-AEAC-5132E724B2D2">
                             <File Id="INDEX.HTML" Name="index.html" Source="..\WebClient\index.html" />
                         </Component>
-                        <Component Id="MAIN.DART.JS" DiskId="1" Guid="591905B3-BC87-43DF-9578-95214885D20F">
+                        <Component Id="MAIN.DART.JS" DiskId="1" Guid="ACDD5D17-4379-49D4-905B-2601D8A3129E">
                             <File Id="MAIN.DART.JS" Name="main.dart.js" Source="..\WebClient\main.dart.js" />
                         </Component>
-                        <Component Id="MANIFEST.JSON" DiskId="1" Guid="8CBAF6B2-E103-42BF-92FF-2322ECA851BC">
+                        <Component Id="MANIFEST.JSON" DiskId="1" Guid="5E5B6FF5-900A-4D07-A35D-B775FA366994">
                             <File Id="MANIFEST.JSON" Name="manifest.json" Source="..\WebClient\manifest.json" />
                         </Component>
-                        <Component Id="VERSION.JSON" DiskId="1" Guid="DD326017-934A-4A6A-946A-709FA87A976D">
+                        <Component Id="VERSION.JSON" DiskId="1" Guid="02396F5A-01D0-45D6-8D89-351B650DB4EC">
                             <File Id="VERSION.JSON" Name="version.json" Source="..\WebClient\version.json" />
                         </Component>
                         <Directory Id="ASSETS" Name="assets">
-                            <Component Id="ASSETMANIFEST.JSON" DiskId="1" Guid="50629BE3-4F2C-4743-980B-CC7B416900AE">
+                            <Component Id="ASSETMANIFEST.BIN" DiskId="1" Guid="DD6ADF63-FDE1-4142-B122-88920490385F">
+                                <File Id="ASSETMANIFEST.BIN" Name="AssetManifest.bin" Source="..\WebClient\assets\AssetManifest.bin" />
+                            </Component>
+                            <Component Id="ASSETMANIFEST.BIN.JSON" DiskId="1" Guid="E8FAF4FB-0C05-4563-85CF-4DF143D9333E">
+                                <File Id="ASSETMANIFEST.BIN.JSON" Name="AssetManifest.bin.json" Source="..\WebClient\assets\AssetManifest.bin.json" />
+                            </Component>
+                            <Component Id="ASSETMANIFEST.JSON" DiskId="1" Guid="FCAE9FE6-5B24-456D-97A7-806087E0DD81">
                                 <File Id="ASSETMANIFEST.JSON" Name="AssetManifest.json" Source="..\WebClient\assets\AssetManifest.json" />
                             </Component>
-                            <Component Id="FONTMANIFEST.JSON" DiskId="1" Guid="0F8F6461-A09D-47F9-A447-21B4EDC50FC7">
+                            <Component Id="FONTMANIFEST.JSON" DiskId="1" Guid="A359F0EA-E78E-47F5-B837-4DE588DCA23B">
                                 <File Id="FONTMANIFEST.JSON" Name="FontManifest.json" Source="..\WebClient\assets\FontManifest.json" />
                             </Component>
-                            <Component Id="NOTICES" DiskId="1" Guid="0BAA29BC-DC62-4502-A247-7FBED16DF07D">
+                            <Component Id="NOTICES" DiskId="1" Guid="9797A71D-4C54-4C59-A920-62E472E1DA19">
                                 <File Id="NOTICES" Name="NOTICES" Source="..\WebClient\assets\NOTICES" />
                             </Component>
                             <Directory Id="ASSETS_1" Name="assets">
                                 <Directory Id="IMAGES" Name="images">
-                                    <Component Id="IMAGE_ERROR.PNG" DiskId="1" Guid="9FC8DD0E-99F7-4AFD-BC62-4CB46E744D57">
+                                    <Component Id="IMAGE_ERROR.PNG" DiskId="1" Guid="E86273B9-40CB-4F32-94A3-EEEE09AA69D7">
                                         <File Id="IMAGE_ERROR.PNG" Name="image_error.png" Source="..\WebClient\assets\assets\images\image_error.png" />
+                                    </Component>
+                                    <Component Id="TODOCHAT.ICO" DiskId="1" Guid="6E2BE411-5155-414C-A851-0C134F22B200">
+                                        <File Id="TODOCHAT.ICO" Name="todochat.ico" Source="..\WebClient\assets\assets\images\todochat.ico" />
+                                    </Component>
+                                    <Component Id="TODOCHAT_LOGO.PNG" DiskId="1" Guid="ACCDA9BD-A837-4A59-9D81-403915AE5701">
+                                        <File Id="TODOCHAT_LOGO.PNG" Name="todochat_logo.png" Source="..\WebClient\assets\assets\images\todochat_logo.png" />
                                     </Component>
                                 </Directory>
                             </Directory>
                             <Directory Id="FONTS" Name="fonts">
-                                <Component Id="MATERIALICONS_REGULAR.OTF" DiskId="1" Guid="910E8CF8-287A-401C-9BB3-1F89A8134006">
+                                <Component Id="MATERIALICONS_REGULAR.OTF" DiskId="1" Guid="34140FD5-08E6-4924-B5DA-111A0F8D7135">
                                     <File Id="MATERIALICONS_REGULAR.OTF" Name="MaterialIcons-Regular.otf" Source="..\WebClient\assets\fonts\MaterialIcons-Regular.otf" />
                                 </Component>
                             </Directory>
                             <Directory Id="PACKAGES" Name="packages">
                                 <Directory Id="CUPERTINO_ICONS" Name="cupertino_icons">
                                     <Directory Id="ASSETS_2" Name="assets">
-                                        <Component Id="CUPERTINOICONS.TTF" DiskId="1" Guid="6A91C4B7-39EE-4801-9116-9303F215F682">
+                                        <Component Id="CUPERTINOICONS.TTF" DiskId="1" Guid="1620CE7F-2ED7-442B-8FD3-B0975277D83B">
                                             <File Id="CUPERTINOICONS.TTF" Name="CupertinoIcons.ttf" Source="..\WebClient\assets\packages\cupertino_icons\assets\CupertinoIcons.ttf" />
                                         </Component>
                                     </Directory>
                                 </Directory>
+                                <Directory Id="SN_PROGRESS_DIALOG" Name="sn_progress_dialog">
+                                    <Directory Id="IMAGES_1" Name="images">
+                                        <Component Id="CANCEL.PNG" DiskId="1" Guid="F81C13CF-BD07-4384-90F3-4FE63557E072">
+                                            <File Id="CANCEL.PNG" Name="cancel.png" Source="..\WebClient\assets\packages\sn_progress_dialog\images\cancel.png" />
+                                        </Component>
+                                        <Component Id="COMPLETED.PNG" DiskId="1" Guid="04B2A4D0-639D-4344-BF21-B6802E711F21">
+                                            <File Id="COMPLETED.PNG" Name="completed.png" Source="..\WebClient\assets\packages\sn_progress_dialog\images\completed.png" />
+                                        </Component>
+                                    </Directory>
+                                </Directory>
+                            </Directory>
+                            <Directory Id="SHADERS" Name="shaders">
+                                <Component Id="INK_SPARKLE.FRAG" DiskId="1" Guid="3881295B-B4B0-4788-AA4D-8925C466F38A">
+                                    <File Id="INK_SPARKLE.FRAG" Name="ink_sparkle.frag" Source="..\WebClient\assets\shaders\ink_sparkle.frag" />
+                                </Component>
                             </Directory>
                         </Directory>
                         <Directory Id="CANVASKIT" Name="canvaskit">
-                            <Component Id="CANVASKIT.JS" DiskId="1" Guid="96E79265-F6F6-4FB9-B8F8-1DF8B72048AE">
+                            <Component Id="CANVASKIT.JS" DiskId="1" Guid="1D0785EA-F62D-4895-ACB0-F6DC090B0962">
                                 <File Id="CANVASKIT.JS" Name="canvaskit.js" Source="..\WebClient\canvaskit\canvaskit.js" />
                             </Component>
-                            <Component Id="CANVASKIT.WASM" DiskId="1" Guid="0645F764-5CF6-48CA-B3CC-3F9227959C59">
+                            <Component Id="CANVASKIT.JS.SYMBOLS" DiskId="1" Guid="30F8FF08-78C7-4288-9E19-B33F4FD197A0">
+                                <File Id="CANVASKIT.JS.SYMBOLS" Name="canvaskit.js.symbols" Source="..\WebClient\canvaskit\canvaskit.js.symbols" />
+                            </Component>
+                            <Component Id="CANVASKIT.WASM" DiskId="1" Guid="6C71CADD-920D-49D0-B4FF-8D174CA897F1">
                                 <File Id="CANVASKIT.WASM" Name="canvaskit.wasm" Source="..\WebClient\canvaskit\canvaskit.wasm" />
                             </Component>
-                            <Directory Id="PROFILING" Name="profiling">
-                                <Component Id="CANVASKIT.JS_1" DiskId="1" Guid="08E0E285-D96B-4228-A73F-AACD134F27CB">
-                                    <File Id="CANVASKIT.JS_1" Name="canvaskit.js" Source="..\WebClient\canvaskit\profiling\canvaskit.js" />
+                            <Component Id="SKWASM.JS" DiskId="1" Guid="65CA1AD8-0D2D-4746-B07C-7C51A6F76330">
+                                <File Id="SKWASM.JS" Name="skwasm.js" Source="..\WebClient\canvaskit\skwasm.js" />
+                            </Component>
+                            <Component Id="SKWASM.JS.SYMBOLS" DiskId="1" Guid="802A0FC4-F5F4-4D85-A26F-374ADE3882B2">
+                                <File Id="SKWASM.JS.SYMBOLS" Name="skwasm.js.symbols" Source="..\WebClient\canvaskit\skwasm.js.symbols" />
+                            </Component>
+                            <Component Id="SKWASM.WASM" DiskId="1" Guid="780188B9-ACC9-46C3-A5F5-60923A4DB036">
+                                <File Id="SKWASM.WASM" Name="skwasm.wasm" Source="..\WebClient\canvaskit\skwasm.wasm" />
+                            </Component>
+                            <Component Id="SKWASM.WORKER.JS" DiskId="1" Guid="A0E664D7-6358-4903-8C93-C33F0B37F386">
+                                <File Id="SKWASM.WORKER.JS" Name="skwasm.worker.js" Source="..\WebClient\canvaskit\skwasm.worker.js" />
+                            </Component>
+                            <Directory Id="CHROMIUM" Name="chromium">
+                                <Component Id="CANVASKIT.JS_1" DiskId="1" Guid="313F261E-52D7-4475-82C1-6E95C8DD4037">
+                                    <File Id="CANVASKIT.JS_1" Name="canvaskit.js" Source="..\WebClient\canvaskit\chromium\canvaskit.js" />
                                 </Component>
-                                <Component Id="CANVASKIT.WASM_1" DiskId="1" Guid="EDC4C220-FFE1-4B98-9783-89753AD768E8">
-                                    <File Id="CANVASKIT.WASM_1" Name="canvaskit.wasm" Source="..\WebClient\canvaskit\profiling\canvaskit.wasm" />
+                                <Component Id="CANVASKIT.JS.SYMBOLS_1" DiskId="1" Guid="A1364963-436D-4CD7-B6A3-D4CEDD4ABD21">
+                                    <File Id="CANVASKIT.JS.SYMBOLS_1" Name="canvaskit.js.symbols" Source="..\WebClient\canvaskit\chromium\canvaskit.js.symbols" />
+                                </Component>
+                                <Component Id="CANVASKIT.WASM_1" DiskId="1" Guid="0FF1D124-287B-40CC-97D0-080BDEB6B07A">
+                                    <File Id="CANVASKIT.WASM_1" Name="canvaskit.wasm" Source="..\WebClient\canvaskit\chromium\canvaskit.wasm" />
                                 </Component>
                             </Directory>
                         </Directory>
                         <Directory Id="ICONS" Name="icons">
-                            <Component Id="ICON_192.PNG" DiskId="1" Guid="3547E807-2509-4C5E-8A44-1802336F21A1">
+                            <Component Id="ICON_192.PNG" DiskId="1" Guid="73FB1252-E3DF-4189-8963-4596C5929E15">
                                 <File Id="ICON_192.PNG" Name="Icon-192.png" Source="..\WebClient\icons\Icon-192.png" />
                             </Component>
-                            <Component Id="ICON_512.PNG" DiskId="1" Guid="6AB3B89D-D93A-49F9-A112-4AE0B59B6311">
+                            <Component Id="ICON_512.PNG" DiskId="1" Guid="EA18A15C-FEFD-42A4-810C-A81AAB6456A1">
                                 <File Id="ICON_512.PNG" Name="Icon-512.png" Source="..\WebClient\icons\Icon-512.png" />
                             </Component>
-                            <Component Id="ICON_MASKABLE_192.PNG" DiskId="1" Guid="B75A042E-8E75-47B9-8534-62E10C238A86">
+                            <Component Id="ICON_MASKABLE_192.PNG" DiskId="1" Guid="958A2357-5F79-49E5-8361-FD1052DC071F">
                                 <File Id="ICON_MASKABLE_192.PNG" Name="Icon-maskable-192.png" Source="..\WebClient\icons\Icon-maskable-192.png" />
                             </Component>
-                            <Component Id="ICON_MASKABLE_512.PNG" DiskId="1" Guid="4B4B5928-512D-434A-B8D8-84A301EFB5BA">
+                            <Component Id="ICON_MASKABLE_512.PNG" DiskId="1" Guid="DC0E4DAF-63D2-4DB0-9D58-E03471593884">
                                 <File Id="ICON_MASKABLE_512.PNG" Name="Icon-maskable-512.png" Source="..\WebClient\icons\Icon-maskable-512.png" />
                             </Component>
                         </Directory>
@@ -140,6 +191,21 @@
             <ComponentRef Id="ICON_512.PNG" />
             <ComponentRef Id="ICON_MASKABLE_192.PNG" />
             <ComponentRef Id="ICON_MASKABLE_512.PNG" />
+            <ComponentRef Id="FLUTTER.JS" />
+            <ComponentRef Id="FLUTTER_BOOTSTRAP.JS" />
+            <ComponentRef Id="ASSETMANIFEST.BIN" />
+            <ComponentRef Id="ASSETMANIFEST.BIN.JSON" />
+            <ComponentRef Id="TODOCHAT.ICO" />
+            <ComponentRef Id="TODOCHAT_LOGO.PNG" />
+            <ComponentRef Id="CANCEL.PNG" />
+            <ComponentRef Id="COMPLETED.PNG" />
+            <ComponentRef Id="INK_SPARKLE.FRAG" />
+            <ComponentRef Id="CANVASKIT.JS.SYMBOLS" />
+            <ComponentRef Id="SKWASM.JS" />
+            <ComponentRef Id="SKWASM.JS.SYMBOLS" />
+            <ComponentRef Id="SKWASM.WASM" />
+            <ComponentRef Id="SKWASM.WORKER.JS" />
+            <ComponentRef Id="CANVASKIT.JS.SYMBOLS_1" />
         </Feature>
         <Icon Id="StartMenuIcon.exe" SourceFile="..\todochat_server.exe" />
     </Product>

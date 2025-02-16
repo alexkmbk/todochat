@@ -63,9 +63,7 @@ class EditMessageBox extends StatelessWidget {
         if (msglist.quotedText.isNotEmpty) const Divider(),
         Row(
           children: [
-            ActionsMenu(
-              msglist: msglist,
-            ),
+            ActionsMenu(),
             Expanded(
               child: CallbackShortcuts(
                 bindings: {

@@ -139,8 +139,13 @@ void listenWs(TasksState taskListProvider, BuildContext context) {
           var message = Message.fromJson(wsMsg.data);
           msgListProvider.updateItem(message);
         } else if (wsMsg.command == "deleteMessage") {
-          var message = Message.fromJson(wsMsg.data);
-          msgListProvider.deleteItem(message.ID);
+          var data = wsMsg.data;
+          if (data is List) {
+            final message = Message.fromJson(data[0]);
+            final updatedTask = Task.fromJson(data[1]);
+            msgListProvider.deleteItem(message.ID, updatedTask);
+            taskListProvider.updateItem(updatedTask);
+          }
         } else if (wsMsg.command == "createTask") {
           var task = Task.fromJson(wsMsg.data);
           taskListProvider.addItem(task);

@@ -57,6 +57,10 @@ class TaskListState extends State<TaskList> {
               scrollController: scrollController,
               itemCount: provider.items.length,
               isLoading: provider.loading,
+              separatorBuilder: (context, index) => const Divider(
+                height: 0.0,
+                thickness: 0.0,
+              ),
               onFetchData: () {
                 provider.requestTasks(context);
               },

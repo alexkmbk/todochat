@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:todochat/models/message.dart';
-import 'package:todochat/models/task.dart';
 import 'package:todochat/state/msglist_provider.dart';
 import 'package:todochat/todochat.dart';
 
 import 'customWidgets.dart';
 
 class ActionsMenu extends StatelessWidget {
-  final MsgListProvider msglist;
-
-  const ActionsMenu({Key? key, required this.msglist}) : super(key: key);
+  const ActionsMenu({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final task = msglist.task as Task;
+    final msglist = Provider.of<MsgListProvider>(context, listen: true);
+    final task = msglist.task;
 
     List<PopupMenuItem> items = [
       if (!task.completed)
@@ -25,7 +24,7 @@ class ActionsMenu extends StatelessWidget {
             onTap: () {
               msglist.createMessage(
                   text: "",
-                  task: msglist.task,
+                  task: task,
                   messageAction: MessageAction.CompleteTaskAction);
               msglist.task.completed = true;
             }),
@@ -45,7 +44,7 @@ class ActionsMenu extends StatelessWidget {
             onTap: () {
               msglist.createMessage(
                   text: "",
-                  task: msglist.task,
+                  task: task,
                   messageAction: MessageAction.RemoveCompletedLabelAction);
               msglist.task.completed = false;
             }),
@@ -58,7 +57,7 @@ class ActionsMenu extends StatelessWidget {
             onTap: () {
               msglist.createMessage(
                   text: "",
-                  task: msglist.task,
+                  task: task,
                   messageAction: MessageAction.CancelTaskAction);
               msglist.task.cancelled = true;
             }),
@@ -71,7 +70,7 @@ class ActionsMenu extends StatelessWidget {
             onTap: () {
               msglist.createMessage(
                   text: "",
-                  task: msglist.task,
+                  task: task,
                   messageAction: MessageAction.ReopenTaskAction);
               msglist.task.cancelled = false;
               msglist.task.completed = false;
@@ -85,7 +84,7 @@ class ActionsMenu extends StatelessWidget {
             onTap: () {
               msglist.createMessage(
                   text: "",
-                  task: msglist.task,
+                  task: task,
                   messageAction: MessageAction.RemoveInHand);
               msglist.task.inHand = false;
             }),
@@ -97,9 +96,7 @@ class ActionsMenu extends StatelessWidget {
             ),
             onTap: () {
               msglist.createMessage(
-                  text: "",
-                  task: msglist.task,
-                  messageAction: MessageAction.InHand);
+                  text: "", task: task, messageAction: MessageAction.InHand);
               msglist.task.inHand = true;
               msglist.task.completed = false;
               msglist.task.closed = false;
@@ -223,7 +220,9 @@ Widget getMessageActionDescription(Message message) {
         const WidgetSpan(
           alignment: PlaceholderAlignment.middle,
           child: const Label(
-            text: "In hand",
+            text: "In Hand",
+            icon: Icon(Icons.handshake),
+            textColor: Colors.green,
             backgroundColor: inHandTaskColor,
           ),
         ),

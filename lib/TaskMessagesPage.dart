@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:todochat/msglist_appbar.dart';
-import 'main_menu.dart';
-import 'package:provider/provider.dart';
 import 'msglist.dart';
-import 'state/msglist_provider.dart';
 import 'todochat.dart';
 
 class TaskMessagesPage extends StatefulWidget {

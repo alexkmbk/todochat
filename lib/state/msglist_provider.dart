@@ -193,8 +193,11 @@ class MsgListProvider extends ChangeNotifier {
     return updated;
   }
 
-  void deleteItem(int messageID) async {
+  void deleteItem(int messageID, [Task? updatedTask]) async {
     items.removeWhere((item) => item.ID == messageID);
+    if (updatedTask != null) {
+      task = updatedTask;
+    }
     notifyListeners();
   }
 

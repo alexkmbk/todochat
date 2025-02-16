@@ -77,9 +77,9 @@ func SendWSUpdateMessage(message *Message) {
 	WSHub.broadcast <- &WSMessage{"updateMessage", message, 0}
 }
 
-func SendDeleteMessage(message *Message) {
-
-	WSHub.broadcast <- &WSMessage{"deleteMessage", message, 0}
+func SendDeleteMessage(message *Message, task *Task) {
+	data := []interface{}{message, task}
+	WSHub.broadcast <- &WSMessage{"deleteMessage", data, 0}
 }
 
 func SendDeleteTask(task *Task) {
