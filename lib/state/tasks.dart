@@ -49,8 +49,10 @@ class TasksState extends ChangeNotifier {
     }
   }
 
-  void setCurrentTask(Task? currentTask, BuildContext context) {
+  bool setCurrentTask(Task? currentTask, BuildContext context) {
+    bool changed = false;
     if (this.currentTask != currentTask) {
+      changed = true;
       this.currentTask = currentTask;
 
       if (context.mounted) {
@@ -68,6 +70,7 @@ class TasksState extends ChangeNotifier {
         settings.setInt("currentTaskID", currentTaskID);
       }
     }
+    return changed;
   }
 
   void setCurrentProject(Project? currentProject, BuildContext context,
