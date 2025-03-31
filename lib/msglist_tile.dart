@@ -22,14 +22,12 @@ class MsgListTile extends StatefulWidget {
       required this.onDismissed,
       required this.isCurrentUser,
       required this.msgListProvider,
-      required this.index,
-      required this.messageTextFieldFocusNode})
+      required this.index})
       : super(key: key);
   final Message message;
   final bool isCurrentUser;
   final MsgListProvider msgListProvider;
   final int index;
-  final FocusNode messageTextFieldFocusNode;
 
   //double progress = 1.0;
   /*final String text;
@@ -146,13 +144,18 @@ class _MsgListTileState extends State<MsgListTile> {
         onReply: () {
           msgListProvider.quotedText = message.text;
           msgListProvider.currentParentMessageID = message.ID;
+          widget.msgListProvider.messageTextFieldFocusNode.unfocus();
+          msgListProvider.setEditBoxFocus = true;
           msgListProvider.refresh();
+          //widget.msgListProvider.messageTextFieldFocusNode.requestFocus();
         },
         onDelete: () => msgListProvider.deleteMesage(message.ID),
         onQuoteSelection: (selectedText) async {
           msgListProvider.quotedText = selectedText;
           msgListProvider.currentParentMessageID = message.ID;
           //searchFocusNode.unfocus();
+          widget.msgListProvider.messageTextFieldFocusNode.unfocus();
+          msgListProvider.setEditBoxFocus = true;
           msgListProvider.refresh();
         },
         onEdit: () {
@@ -161,6 +164,9 @@ class _MsgListTileState extends State<MsgListTile> {
           msgListProvider.messageInputController.text = message.text;
           msgListProvider.editingMessage = message;
           msgListProvider.refresh();
+        },
+        onTapOnQuotedMessage: () {
+          msgListProvider.jumpTo(message.parentMessageID);
         },
       );
     } else if (widget.message.isTaskDescriptionItem) {
@@ -184,12 +190,16 @@ class _MsgListTileState extends State<MsgListTile> {
         onReply: () {
           msgListProvider.quotedText = msgListProvider.task.description;
           msgListProvider.currentParentMessageID = message.ID;
+          widget.msgListProvider.messageTextFieldFocusNode.unfocus();
+          msgListProvider.setEditBoxFocus = true;
           msgListProvider.refresh();
         },
         onQuoteSelection: (selectedText) async {
           msgListProvider.quotedText = selectedText;
           msgListProvider.currentParentMessageID = message.ID;
           //searchFocusNode.unfocus();
+          widget.msgListProvider.messageTextFieldFocusNode.unfocus();
+          msgListProvider.setEditBoxFocus = true;
           msgListProvider.refresh();
         },
       );
@@ -251,8 +261,10 @@ class _MsgListTileState extends State<MsgListTile> {
                       widget.message.ID;
                   //messageTextFieldFocusNode.dispose();
 
-                  searchFocusNode.unfocus();
-                  widget.messageTextFieldFocusNode.requestFocus();
+                  //searchFocusNode.unfocus();
+                  //FocusScope.of(context).requestFocus(widget.msgListProvider);
+                  widget.msgListProvider.messageTextFieldFocusNode.unfocus();
+                  msgListProvider.setEditBoxFocus = true;
                   widget.msgListProvider.refresh();
                 },
                 width: widget.message.smallImageWidth.toDouble(),

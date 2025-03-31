@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:todochat/main_menu.dart';
 import 'package:todochat/state/msglist_provider.dart';
 import 'package:todochat/todochat.dart';
 

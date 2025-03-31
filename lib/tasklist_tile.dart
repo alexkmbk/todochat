@@ -392,7 +392,7 @@ class TaskListTile extends StatelessWidget {
       task.unreadMessages = 0;
       refresh = true;
     }
-    refresh = refresh || taskListProvider.setCurrentTask(task, context);
+    refresh = taskListProvider.setCurrentTask(task, context) || refresh;
 
     if (!isDesktopMode) {
       openTask(context, task);

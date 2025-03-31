@@ -13,17 +13,33 @@ import 'msglist_actions_menu.dart';
 import 'customWidgets.dart';
 import 'utils.dart';
 
-class EditMessageBox extends StatelessWidget {
+class EditMessageBox extends StatefulWidget {
   final MsgListProvider msglist;
-  final messageTextFieldFocusNode;
 
-  EditMessageBox(
-      {required this.msglist,
-      required this.messageTextFieldFocusNode,
-      super.key});
+  EditMessageBox({required this.msglist, super.key});
+
+  @override
+  State<EditMessageBox> createState() => _EditMessageBoxState();
+}
+
+class _EditMessageBoxState extends State<EditMessageBox> {
+  @override
+  void dispose() {
+    // widget.msglist.messageTextFieldFocusNode.unfocus();
+    // widget.msglist.messageTextFieldFocusNode.dispose();
+    // widget.msglist.messageInputController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.msglist.setEditBoxFocus) {
+        widget.msglist.setEditBoxFocus = false;
+        FocusScope.of(context).unfocus();
+        widget.msglist.messageTextFieldFocusNode.requestFocus();
+      }
+    });
     return // Edit message box
         //   Padding(
         // padding: const EdgeInsets.only(bottom: 10),
@@ -34,33 +50,33 @@ class EditMessageBox extends StatelessWidget {
         color: Colors.grey[200],
       ),
       child: Column(children: [
-        if (msglist.quotedText.isNotEmpty ||
-            msglist.parentsmallImageName.isNotEmpty)
+        if (widget.msglist.quotedText.isNotEmpty ||
+            widget.msglist.parentsmallImageName.isNotEmpty)
           Row(children: [
-            if (msglist.parentsmallImageName.isNotEmpty)
+            if (widget.msglist.parentsmallImageName.isNotEmpty)
               networkImage(
-                  '${serverURI.scheme}://${serverURI.authority}/FileStorage/${msglist.parentsmallImageName}',
+                  '${serverURI.scheme}://${serverURI.authority}/FileStorage/${widget.msglist.parentsmallImageName}',
                   height: Platform().isAndroid ? 30 : 60),
             Expanded(
                 child: Text(
-              msglist.quotedText,
+              widget.msglist.quotedText,
               style: const TextStyle(color: Colors.grey),
             )),
             SizedBox(
                 //width: 20,
                 child: IconButton(
                     onPressed: () {
-                      msglist.quotedText = "";
-                      msglist.parentsmallImageName = "";
-                      if (msglist.editMode) {
-                        msglist.editMode = false;
-                        msglist.messageInputController.text = "";
+                      widget.msglist.quotedText = "";
+                      widget.msglist.parentsmallImageName = "";
+                      if (widget.msglist.editMode) {
+                        widget.msglist.editMode = false;
+                        widget.msglist.messageInputController.text = "";
                       }
-                      msglist.refresh();
+                      widget.msglist.refresh();
                     },
                     icon: const Icon(Icons.close)))
           ]),
-        if (msglist.quotedText.isNotEmpty) const Divider(),
+        if (widget.msglist.quotedText.isNotEmpty) const Divider(),
         Row(
           children: [
             ActionsMenu(),
@@ -69,24 +85,24 @@ class EditMessageBox extends StatelessWidget {
                 bindings: {
                   const SingleActivator(LogicalKeyboardKey.enter,
                       control: false): () {
-                    if (msglist.messageInputController.text.isNotEmpty) {
-                      if (msglist.editMode) {
-                        msglist.updateMessage(
-                            text: msglist.messageInputController.text);
+                    if (widget.msglist.messageInputController.text.isNotEmpty) {
+                      if (widget.msglist.editMode) {
+                        widget.msglist.updateMessage(
+                            text: widget.msglist.messageInputController.text);
                       } else
-                        msglist.createMessage(
-                            text: msglist.messageInputController.text,
-                            task: msglist.task);
-                      msglist.messageInputController.text = "";
+                        widget.msglist.createMessage(
+                            text: widget.msglist.messageInputController.text,
+                            task: widget.msglist.task);
+                      widget.msglist.messageInputController.text = "";
                     }
                   },
                   const SingleActivator(LogicalKeyboardKey.escape,
                       control: false): () {
-                    if (msglist.quotedText.isNotEmpty ||
-                        msglist.parentsmallImageName.isNotEmpty) {
-                      msglist.quotedText = "";
-                      msglist.parentsmallImageName = "";
-                      msglist.refresh();
+                    if (widget.msglist.quotedText.isNotEmpty ||
+                        widget.msglist.parentsmallImageName.isNotEmpty) {
+                      widget.msglist.quotedText = "";
+                      widget.msglist.parentsmallImageName = "";
+                      widget.msglist.refresh();
                     }
                   },
                   const SingleActivator(LogicalKeyboardKey.keyV, control: true):
@@ -169,18 +185,19 @@ class EditMessageBox extends StatelessWidget {
                         data.text != null &&
                         data.text!.trim().isNotEmpty) {
                       String text = data.text ?? "";
-                      msglist.messageInputController.text =
-                          msglist.messageInputController.text + text.trim();
-                      msglist.messageInputController.selection =
+                      widget.msglist.messageInputController.text =
+                          widget.msglist.messageInputController.text +
+                              text.trim();
+                      widget.msglist.messageInputController.selection =
                           TextSelection.fromPosition(TextPosition(
-                              offset:
-                                  msglist.messageInputController.text.length));
+                              offset: widget
+                                  .msglist.messageInputController.text.length));
                     } else {
                       final bytes = await Pasteboard.image;
                       if (bytes != null) {
-                        msglist.addUploadingItem(
+                        widget.msglist.addUploadingItem(
                             Message(
-                                taskID: msglist.task.ID,
+                                taskID: widget.msglist.task.ID,
                                 userID: currentUserID,
                                 fileName: "clipboard_image.png",
                                 loadingFile: true,
@@ -192,9 +209,9 @@ class EditMessageBox extends StatelessWidget {
                           for (final file in files) {
                             var fileData = await readFile(file);
                             if (fileData.isNotEmpty) {
-                              msglist.addUploadingItem(
+                              widget.msglist.addUploadingItem(
                                   Message(
-                                      taskID: msglist.task.ID,
+                                      taskID: widget.msglist.task.ID,
                                       userID: currentUserID,
                                       fileName: path.basename(file),
                                       loadingFile: true,
@@ -225,9 +242,9 @@ class EditMessageBox extends StatelessWidget {
                               }
 
                               if (response.statusCode == 200) {
-                                msglist.addUploadingItem(
+                                widget.msglist.addUploadingItem(
                                     Message(
-                                        taskID: msglist.task.ID,
+                                        taskID: widget.msglist.task.ID,
                                         userID: currentUserID,
                                         fileName: "clipboard_image.png",
                                         loadingFile: true,
@@ -235,10 +252,11 @@ class EditMessageBox extends StatelessWidget {
                                     response.bodyBytes);
                               }
                             } else {
-                              msglist.messageInputController.text = html.trim();
-                              msglist.messageInputController.selection =
+                              widget.msglist.messageInputController.text =
+                                  html.trim();
+                              widget.msglist.messageInputController.selection =
                                   TextSelection.fromPosition(TextPosition(
-                                      offset: msglist
+                                      offset: widget.msglist
                                           .messageInputController.text.length));
                             }
                           }
@@ -248,13 +266,13 @@ class EditMessageBox extends StatelessWidget {
                   },
                 },
                 child: TextField(
-                  focusNode: messageTextFieldFocusNode,
+                  focusNode: widget.msglist.messageTextFieldFocusNode,
                   autofocus: (!isDesktopMode &&
-                          msglist.quotedText.isEmpty &&
-                          msglist.parentsmallImageName.isEmpty)
+                          widget.msglist.quotedText.isEmpty &&
+                          widget.msglist.parentsmallImageName.isEmpty)
                       ? false
                       : true,
-                  controller: msglist.messageInputController,
+                  controller: widget.msglist.messageInputController,
                   keyboardType: TextInputType.multiline,
                   maxLines: null,
                   decoration: const InputDecoration(
@@ -271,15 +289,15 @@ class EditMessageBox extends StatelessWidget {
             ),
             IconButton(
               onPressed: () {
-                if (msglist.messageInputController.text.isNotEmpty) {
-                  if (msglist.editMode) {
-                    msglist.updateMessage(
-                        text: msglist.messageInputController.text);
+                if (widget.msglist.messageInputController.text.isNotEmpty) {
+                  if (widget.msglist.editMode) {
+                    widget.msglist.updateMessage(
+                        text: widget.msglist.messageInputController.text);
                   } else
-                    msglist.createMessage(
-                        text: msglist.messageInputController.text,
-                        task: msglist.task);
-                  msglist.messageInputController.text = "";
+                    widget.msglist.createMessage(
+                        text: widget.msglist.messageInputController.text,
+                        task: widget.msglist.task);
+                  widget.msglist.messageInputController.text = "";
                 }
               },
               tooltip: 'New message',
@@ -302,28 +320,28 @@ class EditMessageBox extends StatelessWidget {
 
                   if (fileName.isNotEmpty) {
                     var res = await readFile(fileName);
-                    msglist.addUploadingItem(
+                    widget.msglist.addUploadingItem(
                         Message(
-                            taskID: msglist.task.ID,
+                            taskID: widget.msglist.task.ID,
                             userID: currentUserID,
                             fileName: path.basename(fileName),
                             loadingFile: true,
                             isImage: isImageFile(fileName)),
                         res);
-                    msglist.messageInputController.text = "";
+                    widget.msglist.messageInputController.text = "";
                   }
                 } else if (result.files.single.bytes != null &&
                     result.files.single.bytes!.isNotEmpty) {
                   var fileName = result.files.single.name;
-                  msglist.addUploadingItem(
+                  widget.msglist.addUploadingItem(
                       Message(
-                          taskID: msglist.task.ID,
+                          taskID: widget.msglist.task.ID,
                           userID: currentUserID,
                           fileName: path.basename(fileName),
                           loadingFile: true,
                           isImage: isImageFile(fileName)),
                       result.files.single.bytes!);
-                  msglist.messageInputController.text = "";
+                  widget.msglist.messageInputController.text = "";
                 }
               },
               tooltip: 'Add file',

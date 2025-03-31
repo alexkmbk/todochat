@@ -67,6 +67,7 @@ class TileMenu {
     if (items.isEmpty) return;
 
     showMenu(
+      requestFocus: false,
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
         Radius.circular(10.0),

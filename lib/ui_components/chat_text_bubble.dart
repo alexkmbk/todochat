@@ -40,7 +40,7 @@ class ChatTextBubble extends StatefulWidget {
 
 class _ChatTextBubbleState extends State<ChatTextBubble> {
   bool editMode = false;
-  final FocusNode focusNode = FocusNode();
+  //final FocusNode focusNode = FocusNode();
   String selectedText = "";
 
   // TextSelection textWidgetSelection =
@@ -171,9 +171,14 @@ class _ChatTextBubbleState extends State<ChatTextBubble> {
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             if (widget.leading != null) widget.leading!,
             if (widget.quotedText != null && widget.quotedText!.isNotEmpty)
+              //   Text(
+              //     widget.quotedText ?? "",
+              //     style: const TextStyle(color: Colors.grey),
+              //   ),
               MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: Listener(
+                  behavior: HitTestBehavior.translucent,
                   onPointerDown: (value) {
                     if (widget.onTapOnQuotedMessage != null)
                       widget.onTapOnQuotedMessage!();
@@ -207,8 +212,8 @@ class _ChatTextBubbleState extends State<ChatTextBubble> {
                   if (selection.start != selection.end)
                     selectedText =
                         widget.text.substring(selection.start, selection.end);
-                  else
-                    selectedText = "";
+                  // else if (cause != SelectionChangedCause.tap)
+                  //   selectedText = "";
                 },
                 contextMenuBuilder: null,
               ),

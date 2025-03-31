@@ -49,15 +49,17 @@ class MsgListProvider extends ChangeNotifier {
   int currentParentMessageID = 0;
   bool editMode = false;
   final messageInputController = TextEditingController();
+  final messageTextFieldFocusNode = FocusNode();
+  bool setEditBoxFocus = false;
   Message? editingMessage;
 
   void jumpTo(int messageID) {
     if (messageID == 0) return;
     var index = items.indexWhere((element) => element.ID == messageID);
-    if (index >= 0 && scrollController != null) {
+    if (index >= 0) {
       try {
-        scrollController!
-            .scrollToIndex(index, preferPosition: AutoScrollPosition.end);
+        scrollController.scrollToIndex(index,
+            preferPosition: AutoScrollPosition.end);
       } catch (e) {}
     }
   }
@@ -122,7 +124,6 @@ class MsgListProvider extends ChangeNotifier {
       text: message.text,
       fileData: loadingFileData,
       fileName: message.fileName,
-      msgListProvider: this,
       tempID: message.tempID,
     );
     notifyListeners();
@@ -421,7 +422,6 @@ class MsgListProvider extends ChangeNotifier {
 
   Future<bool> createMessageWithFile(
       {required String text,
-      required MsgListProvider msgListProvider,
       Uint8List? fileData,
       String fileName = "",
       bool isTaskDescriptionItem = false,
@@ -439,7 +439,7 @@ class MsgListProvider extends ChangeNotifier {
 
     final res = await createMessage(
         text: text,
-        task: msgListProvider.task,
+        task: task,
         tempID: tempID,
         fileName: fileName,
         isImage: isImage,
@@ -459,7 +459,7 @@ class MsgListProvider extends ChangeNotifier {
     request.headers["content-type"] = "application/json; charset=utf-8";
 
     Message message = Message(
-        taskID: msgListProvider.task.ID,
+        taskID: task.ID,
         text: text,
         fileName: path.basename(fileName),
         isImage: isImage,
@@ -475,17 +475,17 @@ class MsgListProvider extends ChangeNotifier {
       streamedResponse = await request.send();
     } catch (e) {
       uploadingFiles.remove(tempID);
-      msgListProvider.refresh();
+      refresh();
       return false;
     }
 
     //uploadingFiles.remove(tempID);
     if (streamedResponse.statusCode == 200) {
-      msgListProvider.refresh();
+      refresh();
       return true;
     }
     uploadingFiles.remove(tempID);
-    msgListProvider.refresh();
+    refresh();
     return false;
   }
 }

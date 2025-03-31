@@ -18,8 +18,6 @@ class MsgList extends StatefulWidget {
 }
 
 class _MsgListState extends State<MsgList> {
-  final messageTextFieldFocusNode = FocusNode();
-
   @override
   void initState() {
     super.initState();
@@ -32,13 +30,12 @@ class _MsgListState extends State<MsgList> {
       if (msglist.task.ID == 0) {
         return const Center(child: Text("No any task was selected"));
       } else {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (msglist.foundMessageID > 0 && msglist.items.length > 1) {
+        if (msglist.foundMessageID > 0 && msglist.items.length > 1) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
             msglist.jumpTo(msglist.foundMessageID);
             msglist.foundMessageID = 0;
-          }
-        });
-
+          });
+        }
         if (msglist.loading) {
           return const Align(
               alignment: Alignment.center,
@@ -71,7 +68,6 @@ class _MsgListState extends State<MsgList> {
                       isCurrentUser: item.userID == currentUserID,
                       message: item,
                       msgListProvider: msglist,
-                      messageTextFieldFocusNode: messageTextFieldFocusNode,
                       onDismissed: (direction) async {
                         if (await msglist.deleteMesage(item.ID)) {
                           msglist.deleteItem(item.ID);
@@ -83,7 +79,6 @@ class _MsgListState extends State<MsgList> {
           ),
           EditMessageBox(
             msglist: msglist,
-            messageTextFieldFocusNode: messageTextFieldFocusNode,
           ),
         ]);
       }
