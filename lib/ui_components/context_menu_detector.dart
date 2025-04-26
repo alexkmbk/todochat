@@ -26,6 +26,9 @@ class _ContextMenuDetectorState extends State<ContextMenuDetector> {
           if (event.kind == PointerDeviceKind.mouse &&
               event.buttons == kSecondaryMouseButton) {
             widget.onContextMenu?.call(event.position);
+          } else if (event.kind == PointerDeviceKind.mouse &&
+              event.buttons == kPrimaryMouseButton) {
+            widget.onTap?.call();
           }
         },
         child: widget.child,

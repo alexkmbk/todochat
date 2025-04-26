@@ -392,14 +392,30 @@ class _MsgListTileState extends State<MsgListTile> {
       //             imageProvider: res.image, fileSize: message.fileSize)));
       //}
     } else if (message.localFileName.isNotEmpty) {
-      var res = await widget.msgListProvider
-          .getFile(message.localFileName, context: context);
-      if (res.isNotEmpty) {
-        var localFullName = await saveInDownloads(res, message.fileName);
-        if (localFullName.isNotEmpty) {
-          OpenFileInApp(localFullName);
-        }
+      final ProgressDialog pd = ProgressDialog(context: context);
+      pd.show(max: 100, msg: 'File Downloading...');
+      final List<int> fileData =
+          []; // Use a List<int> for dynamic data addition
+      try {
+        await widget.msgListProvider.getFile(widget.message.localFileName,
+            context: context, onData: (value) {
+          fileData.addAll(value);
+        }, onDone: () async {
+          pd.close();
+          if (fileData.isNotEmpty) {
+            final localFullName = await saveInDownloads(
+                Uint8List.fromList(fileData), message.fileName);
+            if (localFullName.isNotEmpty) {
+              OpenFileInApp(localFullName);
+            }
+          }
+        });
+      } catch (error) {
+        pd.close();
+        toast("Error downloading file: $error", context);
       }
+      // var res = await widget.msgListProvider
+      //     .getFile(message.localFileName, context: context);
     }
   }
 }
