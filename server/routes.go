@@ -95,7 +95,7 @@ func GetRoutesHandler(DebugMode bool) http.Handler {
 		WS.ServeWs(WS.WSHub, w, r, DebugMode)
 	}).Methods("GET")
 	//router.HandleFunc("/echo", WS.Echo).Methods("GET")
-	router.HandleFunc("/getFile", CommonHandler(Messages.GetFile)).Methods("GET")
+	router.HandleFunc("/getFile", CommonHandler(Messages.GetFile)).Methods("POST")
 
 	// File server
 

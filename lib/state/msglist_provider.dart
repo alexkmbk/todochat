@@ -298,7 +298,7 @@ class MsgListProvider extends ChangeNotifier {
     }
 
     http.MultipartRequest request = http.MultipartRequest(
-        'GET',
+        'POST',
         HTTPClient.setUriProperty(serverURI,
             path: 'getFile',
             queryParameters: {"localFileName": localFileName}));
