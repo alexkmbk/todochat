@@ -36,7 +36,7 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
         Flexible(
             //fit: FlexFit.tight,
             //flex: 6,
-            child: const ProjectField())
+            child: ProjectField())
       ]);
     } else if (showSearch) {
       return SearchField(
@@ -50,6 +50,8 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
   @override
   Widget build(BuildContext context) {
     final taskListProvider = Provider.of<TasksState>(context, listen: false);
+    //final settingsState = context.watch<SettingsState>();
+
     return AppBar(
       //toolbarHeight: 10, //MediaQuery.of(context).size.height * .1,
       backgroundColor: const Color.fromARGB(240, 255, 255, 255),
@@ -123,19 +125,19 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
               height: 35,
               child: ElevatedButton(
                 style: ButtonStyle(
-                    shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                    shape: WidgetStateProperty.all(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(7))),
-                    elevation: MaterialStateProperty.resolveWith<double>(
-                      (Set<MaterialState> states) {
+                    elevation: WidgetStateProperty.resolveWith<double>(
+                      (Set<WidgetState> states) {
                         // if the button is pressed the elevation is 10.0, if not
                         // it is 5.0
-                        if (states.contains(MaterialState.pressed)) {
+                        if (states.contains(WidgetState.pressed)) {
                           return 10.0;
                         }
                         return 5.0;
                       },
                     ),
-                    backgroundColor: MaterialStateProperty.all(Colors.green)),
+                    backgroundColor: WidgetStateProperty.all(Colors.green)),
                 /*style: OutlinedButton.styleFrom(
                   fixedSize: const Size(60, 30),
                   side: const BorderSide(width: 1.0, color: Colors.white),
@@ -177,7 +179,8 @@ class ProjectField extends StatefulWidget {
 class _ProjectFieldState extends State<ProjectField> {
   @override
   Widget build(BuildContext context) {
-    var tasks = context.read<TasksState>();
+    final tasks = context.read<TasksState>();
+    //final settings = context.watch<SettingsState>();
     return Padding(
         padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
         child: Align(

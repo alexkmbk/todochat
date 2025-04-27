@@ -17,8 +17,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'todochat.dart';
 
-Timer? timer;
-
 void main() {
   runApp(AppLifecyclePage(child: MyApp()));
   // runApp(
@@ -87,7 +85,7 @@ class MyApp extends StatelessWidget {
                 .primary, //  <-- this auto selects the right color
           ),
           cardColor: Colors.white,
-          dialogBackgroundColor: Colors.white,
+          dialogTheme: const DialogThemeData(backgroundColor: Colors.white),
           textTheme: Theme.of(context).textTheme.apply(
                 fontSizeFactor: 1.0,
                 fontSizeDelta: 2.0,
@@ -132,14 +130,15 @@ class _MyHomePageState extends State<MyHomePage> {
     return Consumer<SettingsState>(
       builder: (context, provider, child) {
         if (appInitialized) {
-          return const TasksPage();
+          return TasksPage();
         } else {
           return FutureBuilder<bool>(
-            future: initApp(context), // function where you call your api
+            future:
+                provider.initApp(context), // function where you call your api
             builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
               // AsyncSnapshot<Your object type>
               if (snapshot.data != null && snapshot.data as bool) {
-                return const TasksPage();
+                return TasksPage();
               } else {
                 return Container(
                     decoration: const BoxDecoration(
@@ -282,100 +281,5 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       },
     );
-  }
-
-  Future<bool> initApp(BuildContext context) async {
-    if (appInitialized) return true;
-
-    if (timer != null) {
-      timer!.cancel();
-    }
-    appInitialized = false;
-    sessionID = "";
-    if (ws != null) {
-      ws!.sink.close(1001);
-      ws = null;
-      httpClient.close();
-      isWSConnected = false;
-    }
-    settings = await SharedPreferences.getInstance();
-
-    var screenModeIndex =
-        settings.getInt("ScreenMode") ?? ScreenModes.Auto.index;
-
-    isDesktopMode = GetDesktopMode(ScreenModes.values[screenModeIndex]);
-
-    var sessionID_ = settings.getString("sessionID");
-    if (sessionID_ == null) {
-      sessionID = "";
-    } else
-      sessionID = sessionID_;
-
-    var httpScheme = settings.getString("httpScheme");
-    var host = settings.getString("host");
-    var port = settings.getInt("port");
-    autoLogin = settings.getBool("autoLogin") ?? true;
-    if (isWeb() && (host == null || host.isEmpty)) {
-      host = Uri.base.host;
-      port = Uri.base.port;
-      httpScheme = Uri.base.scheme;
-    }
-
-    if (port == null || port == 0) {
-      port = null;
-    }
-    //var isServerURI = true;
-    if (host == null || host.isEmpty) {
-      isServerURI = await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => SettingsPage(
-                  key: UniqueKey(),
-                  restartAppOnChange: false,
-                )),
-      );
-    } else {
-      serverURI = Uri(scheme: httpScheme, host: host, port: port);
-    }
-    bool login = false;
-    if (sessionID.isNotEmpty && autoLogin) {
-      httpClient.defaultHeaders = {"sessionID": sessionID};
-      try {
-        login = await checkLogin();
-      } catch (e) {
-        return Future.error(e.toString());
-      }
-    }
-    if (!login) {
-      await openLoginPage(context);
-    }
-
-    final tasks = context.read<TasksState>();
-
-    if (isServerURI && sessionID.isNotEmpty) {
-      connectWebSocketChannel(serverURI).then((value) {
-        listenWs(tasks, context);
-      });
-    }
-
-    final projectID = settings.getInt("projectID") ?? 0;
-
-    Project? currentProject;
-    currentProject = (await getProject(projectID));
-    if (currentProject == null || currentProject.isEmpty) {
-      currentProject = await requestFirstItem();
-    }
-
-    tasks.showClosed = settings.getBool("showClosed") ?? true;
-    tasks.currentTaskID = settings.getInt("currentTaskID") ?? 0;
-    tasks.setCurrentProject(currentProject, context, false);
-
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      reconnect(tasks, context);
-    });
-
-    appInitialized = true;
-
-    return true;
   }
 }

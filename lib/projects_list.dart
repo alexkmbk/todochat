@@ -4,9 +4,7 @@ import 'package:http/src/response.dart';
 import 'package:todochat/models/project.dart';
 import 'package:todochat/ui_components/confirm_detele_dlg.dart';
 import 'HttpClient.dart';
-import 'customWidgets.dart';
 import 'utils.dart';
-import 'main_menu.dart';
 import 'LoginRegistrationPage.dart';
 
 import 'todochat.dart';

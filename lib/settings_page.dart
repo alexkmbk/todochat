@@ -244,10 +244,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
     if (changed && widget.restartAppOnChange) {
       //RestartWidget.restartApp(context);
+      Navigator.pop(context, true);
       context.read<SettingsState>().redrawWidgetTree(context);
-    }
-
-    Navigator.pop(context, true);
+    } else
+      Navigator.pop(context, true);
   }
 
   Future<bool> checkConnection(Uri uri) async {

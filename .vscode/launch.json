@@ -8,6 +8,7 @@
             "name": "todochat",
             "request": "launch",
             "type": "dart",
+            "flutterMode": "debug",
             //"args": ["--dart-entrypoint-args", "value1", "--arg2", "value2"],
             /*"toolArgs": [
                 "--dart-define",

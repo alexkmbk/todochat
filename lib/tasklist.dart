@@ -8,11 +8,8 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:todochat/models/task.dart';
 import 'package:todochat/state/settings.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
-//import 'package:scroll_to_index/scroll_to_index.dart';
-
 import 'HttpClient.dart';
 import 'TaskMessagesPage.dart';
-import 'customWidgets.dart';
 import 'todochat.dart';
 import 'state/tasks.dart';
 import 'tasklist_tile.dart';

@@ -9,6 +9,7 @@ import 'package:todochat/models/task.dart';
 import 'package:todochat/state/settings.dart';
 import 'package:todochat/state/tasks.dart';
 import 'package:todochat/utils.dart';
+import 'package:web_socket_channel/status.dart' as status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'state/msglist_provider.dart';
 import 'todochat.dart';
@@ -100,7 +101,7 @@ Future<void> connectWebSocketChannel(Uri serverURI) async {
     await Future.delayed(const Duration(seconds: 2));
   }*/
   if (ws != null) {
-    ws!.sink.close();
+    ws!.sink.close(status.normalClosure);
     ws = null;
   }
   //Future.delayed(const Duration(seconds: 1)).then((value) {
