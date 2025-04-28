@@ -51,6 +51,12 @@ class _ProjectsPageState extends State<ProjectsPage> {
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Dialog(
       // shape: RoundedRectangleBorder(

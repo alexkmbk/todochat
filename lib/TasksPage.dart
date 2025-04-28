@@ -6,18 +6,8 @@ import 'TaskMessagesPage.dart';
 import 'todochat.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
-class TasksPage extends StatefulWidget {
+class TasksPage extends StatelessWidget {
   const TasksPage({Key? key}) : super(key: key);
-
-  @override
-  State<TasksPage> createState() => _TasksPageState();
-}
-
-class _TasksPageState extends State<TasksPage> {
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
