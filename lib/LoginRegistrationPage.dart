@@ -118,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                         TextButton(
                             child: const Text("Settings"),
                             onPressed: () {
-                              openSettings(context, restartAppOnChange: true);
+                              openSettings(context);
                             }),
                         TextButton(
                             child: const Text("Registration"),

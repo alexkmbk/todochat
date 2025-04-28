@@ -67,7 +67,7 @@ class TaskListState extends State<TaskList> {
                       key: ValueKey(index),
                       controller: scrollController,
                       index: index,
-                      highlightColor: Colors.black.withOpacity(0.1),
+                      highlightColor: Colors.black.withValues(alpha: 0.1),
                       child: TaskListTile(
                           index: index,
                           task: provider.items[index],

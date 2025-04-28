@@ -13,12 +13,11 @@ import 'utils.dart';
 //import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 //import 'package:sticky_headers/sticky_headers.dart';
 
-Future<bool> openSettings(BuildContext context,
-    {bool restartAppOnChange = true}) async {
+Future<bool> openSettings(BuildContext context) async {
   switch (await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
-        return SettingsPage(restartAppOnChange: restartAppOnChange);
+        return SettingsPage();
       })) {
     case true:
       return true;
@@ -30,9 +29,7 @@ Future<bool> openSettings(BuildContext context,
 }
 
 class SettingsPage extends StatefulWidget {
-  final bool restartAppOnChange;
-  const SettingsPage({Key? key, required this.restartAppOnChange})
-      : super(key: key);
+  const SettingsPage({Key? key}) : super(key: key);
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -41,6 +38,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   ScreenModes screenMode = ScreenModes.Auto;
   bool changed = false;
+  bool serverChanged = false;
   bool registrationMode = false;
   final serverAddressController = TextEditingController();
 
@@ -237,17 +235,18 @@ class _SettingsPageState extends State<SettingsPage> {
       settings.setInt("port", serverURI.port);
 
       changed = true;
+      serverChanged = true;
     }
 
     settings.setInt("ScreenMode", screenMode.index);
     isDesktopMode = GetDesktopMode(ScreenModes.values[screenMode.index]);
 
-    if (changed && widget.restartAppOnChange) {
+    if (changed) {
       //RestartWidget.restartApp(context);
-      Navigator.pop(context, true);
-      context.read<SettingsState>().redrawWidgetTree(context);
+      Navigator.pop(context, true); // if true - redraw widget tree
+      context.read<SettingsState>().redrawWidgetTree(context, serverChanged);
     } else
-      Navigator.pop(context, true);
+      Navigator.pop(context, false);
   }
 
   Future<bool> checkConnection(Uri uri) async {

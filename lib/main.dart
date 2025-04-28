@@ -142,7 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
               } else {
                 return Container(
                     decoration: const BoxDecoration(
-                      gradient: LinearGradient(
+                      gradient: const LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [Colors.white, Colors.white],
@@ -163,60 +163,11 @@ class _MyHomePageState extends State<MyHomePage> {
                             const SizedBox(
                               height: 50,
                             ),
-                            /*RichText(
-                              text: TextSpan(children: [
-                            TextSpan(
-                              text: "ToDo\n",
-                              style: GoogleFonts.righteous(
-                                  fontSize: 56, color: Colors.green),
-                            ),
-                            TextSpan(
-                              text: "Chat",
-                              style: GoogleFonts.righteous(
-                                  height: 1.0,
-                                  fontSize: 56,
-                                  color: Colors.orangeAccent),
-                              //00116d
-                              //1a6ce3
-                              /*TextStyle(
-                                height: 1.0,
-                                color: Colors.orangeAccent,
-                                fontSize: 50,
-                                fontWeight: FontWeight.bold)*/
-                            ),
-                          ])),*/
-                            Image.asset(
-                              "assets/images/todochat_logo.png",
+                            const Image(
+                              image:
+                                  AssetImage("assets/images/todochat_logo.png"),
                               width: 200,
                             ),
-                            // TextInCircle(
-                            //   width: 200,
-                            //   color: Colors.white,
-                            //   borderColor: Colors.green,
-                            //   textWidget: TextSpan(
-                            //     children: [
-                            //       TextSpan(
-                            //         text: "ToDo\n",
-                            //         style: GoogleFonts.righteous(
-                            //             fontSize: 56, color: Colors.green),
-                            //       ),
-                            //       TextSpan(
-                            //         text: "Chat",
-                            //         style: GoogleFonts.righteous(
-                            //             height: 1.0,
-                            //             fontSize: 56,
-                            //             color: Colors.orangeAccent),
-                            //         //00116d
-                            //         //1a6ce3
-                            //         /*TextStyle(
-                            //       height: 1.0,
-                            //       color: Colors.orangeAccent,
-                            //       fontSize: 50,
-                            //       fontWeight: FontWeight.bold)*/
-                            //       ),
-                            //     ],
-                            //   ),
-                            // ),
                             const Spacer(),
                             if (snapshot.hasError &&
                                 snapshot.connectionState !=
@@ -245,15 +196,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                 height: 50,
                                 child: ElevatedButton(
                                     style: OutlinedButton.styleFrom(
-                                      backgroundColor: const Color.fromARGB(
-                                          255, 20, 125, 199),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(15)),
-                                    ),
+                                        backgroundColor:
+                                            Color.fromARGB(255, 20, 125, 199),
+                                        shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(15)))),
                                     onPressed: () async {
-                                      final res = await openSettings(context,
-                                          restartAppOnChange: true);
+                                      final redraw =
+                                          await openSettings(context);
                                       // await Navigator.push(
                                       //   context,
                                       //   MaterialPageRoute(
@@ -262,7 +212,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       //             restartAppOnChange: true,
                                       //           )),
                                       // );
-                                      if (res) setState(() {});
+                                      if (redraw) setState(() {});
                                     },
                                     child: const Text(
                                       "Settings",

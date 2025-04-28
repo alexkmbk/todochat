@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:todochat/state/tasks.dart';
 import 'package:todochat/taskpage_appbar.dart';
 import 'package:todochat/tasks_floating_button.dart';
 import 'tasklist.dart';
@@ -37,7 +36,6 @@ class _TasksPageState extends State<TasksPage> {
 }
 
 class Body extends StatelessWidget {
-  //final TasksState taskListProvider;
   const Body({Key? key}) : super(key: key);
 
   @override
@@ -54,13 +52,13 @@ class Body extends StatelessWidget {
               )),
           child: MultiSplitView(
             initialAreas: [
-              Area(flex: 0.4, builder: (context, area) => TaskList()),
+              Area(flex: 0.4, builder: (context, area) => const TaskList()),
               Area(builder: (context, area) => const TaskMessagesPage())
             ],
           ));
     } else {
       return Center(
-        child: TaskList(),
+        child: const TaskList(),
       );
     }
   }

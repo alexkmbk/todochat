@@ -17,25 +17,27 @@ class SettingsState extends ChangeNotifier {
   Timer? timer;
   bool forceTaskRequest = false;
 
-  void redrawWidgetTree(BuildContext context) {
-    logoff();
-    forceTaskRequest = true;
-    appInitialized = false;
-    final tasklist = context.read<TasksState>();
-    tasklist.clear(context);
-    final currentProject = Project();
-    settings.setInt("projectID", currentProject.ID);
-    settings.setInt("currentTaskID", 0);
-    settings.setString("sessionID", "");
-    tasklist.project = currentProject;
+  void redrawWidgetTree(BuildContext context, [initialize = true]) {
+    if (initialize) {
+      logoff();
+      forceTaskRequest = true;
+      appInitialized = false;
+      final tasklist = context.read<TasksState>();
+      tasklist.clear(context);
+      final currentProject = Project();
+      settings.setInt("projectID", currentProject.ID);
+      settings.setInt("currentTaskID", 0);
+      settings.setString("sessionID", "");
+      tasklist.project = currentProject;
 
-    openLoginPage(context).then((value) {
-      if (value) {
-        notifyListeners();
-      }
-    });
-    //initApp(context);
-    //tasklist.refresh();
+      openLoginPage(context).then((value) {
+        if (value) {
+          notifyListeners();
+        }
+      });
+    } else {
+      notifyListeners();
+    }
   }
 
   Future<bool> initApp(BuildContext context) async {
@@ -81,14 +83,11 @@ class SettingsState extends ChangeNotifier {
     }
     //var isServerURI = true;
     if (host == null || host.isEmpty) {
-      isServerURI = await Navigator.push(
+      await Navigator.push(
         context,
-        MaterialPageRoute(
-            builder: (context) => SettingsPage(
-                  key: UniqueKey(),
-                  restartAppOnChange: false,
-                )),
+        MaterialPageRoute(builder: (context) => SettingsPage(key: UniqueKey())),
       );
+      return false;
     } else {
       serverURI = Uri(scheme: httpScheme, host: host, port: port);
     }

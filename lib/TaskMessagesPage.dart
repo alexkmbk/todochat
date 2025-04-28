@@ -15,7 +15,7 @@ class TaskMessagesPage extends StatelessWidget {
     } else {
       return Scaffold(
           appBar: isDesktopMode ? null : const MessagesAppBar(),
-          body: Center(
+          body: const Center(
             child: const MsgList(),
           ));
     }

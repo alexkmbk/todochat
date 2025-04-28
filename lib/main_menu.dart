@@ -39,7 +39,7 @@ class MainMenu extends StatelessWidget {
         child: const Text("Settings"),
         onTap: () async {
           await Future.delayed(Duration.zero);
-          await openSettings(context, restartAppOnChange: true);
+          await openSettings(context);
         },
       ),
       PopupMenuItem(
