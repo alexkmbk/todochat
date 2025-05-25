@@ -173,18 +173,10 @@ packages:
     dependency: "direct main"
     description:
       name: drop_down_search_field
-      sha256: "42d592a155fa3dce21852a6ce90242445a320f570ea48988e7a0b0aac90beb02"
+      sha256: feea7c396e4de1e57c1ec5575f8e8c0e6c7a73d491f2d1c2e58b1241adffa72c
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.2+2"
-  dropdown_button2:
-    dependency: "direct main"
-    description:
-      name: dropdown_button2
-      sha256: b0fe8d49a030315e9eef6c7ac84ca964250155a6224d491c1365061bc974a9e1
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.3.9"
+    version: "1.1.3"
   easy_image_viewer:
     dependency: "direct main"
     description:

@@ -1,14 +1,11 @@
-import 'dart:io';
 import 'dart:math';
+//import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:todochat/ui_components/confirm_detele_dlg.dart';
-import 'utils.dart';
-import 'package:simple_gesture_detector/simple_gesture_detector.dart';
 
 class TextFieldEx extends StatelessWidget {
   final TextEditingController? controller;
@@ -31,133 +28,175 @@ class TextFieldEx extends StatelessWidget {
   final double? width;
   final List<String>? choiceList;
 
-  const TextFieldEx(
-      {this.controller,
-      this.hintText,
-      this.labelText,
-      this.autofillHints,
-      this.border,
-      this.choiceList,
-      this.fillColor,
-      this.focusNode,
-      this.keyboardType = TextInputType.text,
-      this.obscureText = false,
-      this.onChanged,
-      this.onCleared,
-      this.onFieldSubmitted,
-      this.prefixIcon,
-      this.showClearButton = true,
-      this.textAlign = TextAlign.left,
-      this.textInputAction,
-      this.validator,
-      this.width,
-      Key? key})
-      : super(key: key);
+  const TextFieldEx({
+    this.controller,
+    this.hintText,
+    this.labelText,
+    this.autofillHints,
+    this.border,
+    this.choiceList,
+    this.fillColor,
+    this.focusNode,
+    this.keyboardType = TextInputType.text,
+    this.obscureText = false,
+    this.onChanged,
+    this.onCleared,
+    this.onFieldSubmitted,
+    this.prefixIcon,
+    this.showClearButton = true,
+    this.textAlign = TextAlign.left,
+    this.textInputAction,
+    this.validator,
+    this.width,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final decoration = InputDecoration(
+      isDense: true,
+      filled: fillColor == null ? false : true,
+      fillColor: fillColor,
+      labelText: labelText,
+      hintText: hintText,
+      hintStyle: const TextStyle(color: Colors.grey),
+      enabledBorder: const OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.grey),
+      ),
+      focusedBorder: const OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.lightBlue, width: 2),
+      ),
+      border: border ??
+          const OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.grey),
+          ),
+      prefixIcon: prefixIcon,
+      suffixIcon:
+          showClearButton || (choiceList != null && choiceList!.isNotEmpty)
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // if (choiceList != null && choiceList.isNotEmpty)
+                    //   PopupMenuButton<String>(
+                    //       padding: EdgeInsets.zero,
+                    //       constraints: BoxConstraints(),
+                    //       onSelected: (String value) {},
+                    //       icon: Icon(Icons.arrow_drop_down),
+                    //       itemBuilder: (BuildContext bc) {
+                    //         var addresses =
+                    //             settings.getStringList("addresses");
+                    //         if (addresses != null && addresses.isNotEmpty) {
+                    //           return addresses
+                    //               .map((String item) => PopupMenuItem<String>(
+                    //                     value: item,
+                    //                     child: Text(item),
+                    //                   ))
+                    //               .toList();
+                    //         } else
+                    //           return new List.empty();
+                    //       }),
+                    IconButton(
+                      focusNode: FocusNode(skipTraversal: true),
+                      onPressed: () {
+                        controller?.clear();
+                        if (onCleared != null) onCleared!();
+                      },
+                      icon: const Icon(Icons.clear),
+                    ),
+                  ],
+                )
+              : null,
+    );
     final padding = Padding(
       padding: const EdgeInsets.all(8.0),
-      child: DropDownSearchFormField(
-        textFieldConfiguration: TextFieldConfiguration(
-          focusNode: focusNode,
-          autofillHints: autofillHints,
-          textAlign: textAlign,
-          decoration: InputDecoration(
-            isDense: true,
-            filled: fillColor == null ? false : true,
-            fillColor: fillColor,
-            labelText: labelText,
-            hintText: hintText,
-            hintStyle: const TextStyle(color: Colors.grey),
-            enabledBorder: const OutlineInputBorder(
-              borderSide: const BorderSide(color: Colors.grey),
+      child: choiceList == null || choiceList!.isEmpty
+          ? TextField(
+              focusNode: focusNode,
+              autofillHints: autofillHints,
+              textAlign: textAlign,
+              decoration: decoration,
+              controller: controller,
+              onEditingComplete: () {
+                if (controller != null &&
+                    controller!.text.isEmpty &&
+                    onCleared != null) {
+                  onCleared!.call();
+                  return;
+                }
+              },
+              onChanged: (value) => () {
+                if (value.isEmpty && onCleared != null) {
+                  onCleared!.call();
+                  return;
+                }
+                onChanged?.call(value);
+              },
+              onSubmitted: onFieldSubmitted,
+              keyboardType: keyboardType,
+              obscureText: obscureText,
+              autofocus: true,
+              textInputAction: textInputAction ?? TextInputAction.next,
+            )
+          : DropDownSearchFormField(
+              textFieldConfiguration: TextFieldConfiguration(
+                focusNode: focusNode,
+                autofillHints: autofillHints,
+                textAlign: textAlign,
+                decoration: decoration,
+                controller: controller,
+                onEditingComplete: () {
+                  if (controller != null &&
+                      controller!.text.isEmpty &&
+                      onCleared != null) {
+                    onCleared!.call();
+                    return;
+                  }
+                },
+                onChanged: (value) => () {
+                  if (value.isEmpty && onCleared != null) {
+                    onCleared!.call();
+                    return;
+                  }
+                  onChanged?.call(value);
+                },
+                onSubmitted: onFieldSubmitted,
+                keyboardType: keyboardType,
+                obscureText: obscureText,
+                autofocus: true,
+                textInputAction: textInputAction ?? TextInputAction.next,
+              ),
+              hideOnEmpty: true,
+              suggestionsCallback: (pattern) {
+                if (choiceList == null || pattern.isEmpty)
+                  return List.empty();
+                else {
+                  return choiceList!
+                      .where(
+                        (element) =>
+                            element.contains(pattern) && element != pattern,
+                      )
+                      .toList();
+                }
+              },
+              itemBuilder: (context, itemData) {
+                return ListTile(title: Text(itemData.toString()));
+              },
+              onSuggestionSelected: (suggestion) {
+                if (controller != null)
+                  controller!.text = suggestion.toString();
+                if (onChanged != null) onChanged!(suggestion.toString());
+                if (onFieldSubmitted != null)
+                  onFieldSubmitted!(suggestion.toString());
+              },
+              validator: validator,
             ),
-            focusedBorder: const OutlineInputBorder(
-              borderSide: const BorderSide(color: Colors.lightBlue, width: 2),
-            ),
-            border: border ??
-                const OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-            prefixIcon: prefixIcon,
-            suffixIcon: showClearButton ||
-                    (choiceList != null && choiceList!.isNotEmpty)
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                        // if (choiceList != null && choiceList.isNotEmpty)
-                        //   PopupMenuButton<String>(
-                        //       padding: EdgeInsets.zero,
-                        //       constraints: BoxConstraints(),
-                        //       onSelected: (String value) {},
-                        //       icon: Icon(Icons.arrow_drop_down),
-                        //       itemBuilder: (BuildContext bc) {
-                        //         var addresses =
-                        //             settings.getStringList("addresses");
-                        //         if (addresses != null && addresses.isNotEmpty) {
-                        //           return addresses
-                        //               .map((String item) => PopupMenuItem<String>(
-                        //                     value: item,
-                        //                     child: Text(item),
-                        //                   ))
-                        //               .toList();
-                        //         } else
-                        //           return new List.empty();
-                        //       }),
-                        IconButton(
-                          focusNode: FocusNode(skipTraversal: true),
-                          onPressed: () {
-                            controller?.clear();
-                            if (onCleared != null) onCleared!();
-                          },
-                          icon: const Icon(Icons.clear),
-                        )
-                      ])
-                : null,
-          ),
-          controller: controller,
-          onChanged: onChanged,
-          onSubmitted: onFieldSubmitted,
-          keyboardType: keyboardType,
-          obscureText: obscureText,
-          autofocus: true,
-          textInputAction: textInputAction ?? TextInputAction.next,
-        ),
-        hideOnEmpty: true,
-        suggestionsCallback: (pattern) {
-          if (choiceList == null || pattern.isEmpty)
-            return List.empty();
-          else {
-            return choiceList!
-                .where((element) =>
-                    element.contains(pattern) && element != pattern)
-                .toList();
-          }
-        },
-        itemBuilder: (context, itemData) {
-          return ListTile(
-            title: Text(itemData.toString()),
-          );
-        },
-        onSuggestionSelected: (suggestion) {
-          if (controller != null) controller!.text = suggestion.toString();
-          if (onChanged != null) onChanged!(suggestion.toString());
-          if (onFieldSubmitted != null)
-            onFieldSubmitted!(suggestion.toString());
-        },
-        validator: validator,
-      ),
     );
 
     if (width == null) {
       return padding;
     }
-    return SizedBox(
-      width: width,
-      child: padding,
-    );
+    return SizedBox(width: width, child: padding);
   }
 }
 
@@ -178,19 +217,20 @@ class NetworkImageWithMenu extends StatefulWidget {
   final Uint8List? previewImageData;
   final List<PopupMenuEntry>? addMenuItems;
 
-  const NetworkImageWithMenu(this.src,
-      {this.headers,
-      this.onCopy,
-      this.onTap,
-      this.onReply,
-      this.onDelete,
-      this.onCopyOriginal,
-      this.width,
-      this.height,
-      this.previewImageData,
-      this.addMenuItems,
-      Key? key})
-      : super(key: key);
+  const NetworkImageWithMenu(
+    this.src, {
+    this.headers,
+    this.onCopy,
+    this.onTap,
+    this.onReply,
+    this.onDelete,
+    this.onCopyOriginal,
+    this.width,
+    this.height,
+    this.previewImageData,
+    this.addMenuItems,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<NetworkImageWithMenu> createState() => _NetworkImageWithMenuState();
@@ -204,9 +244,8 @@ class _NetworkImageWithMenuState extends State<NetworkImageWithMenu> {
     final y = details.globalPosition.dy;
     final res = await showMenu(
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-        Radius.circular(10.0),
-      )),
+        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+      ),
       popUpAnimationStyle: AnimationStyle.noAnimation,
       color: Colors.white,
       surfaceTintColor: Colors.white,
@@ -215,12 +254,13 @@ class _NetworkImageWithMenuState extends State<NetworkImageWithMenu> {
       items: [
         if (widget.onCopy != null)
           PopupMenuItem<String>(
-              child: const Text('Copy'),
-              onTap: () async {
-                if (widget.onCopy != null) {
-                  widget.onCopy!();
-                }
-              }),
+            child: const Text('Copy'),
+            onTap: () async {
+              if (widget.onCopy != null) {
+                widget.onCopy!();
+              }
+            },
+          ),
         if (widget.onCopyOriginal != null)
           const PopupMenuItem<String>(
             value: "CopyOriginal",
@@ -228,17 +268,15 @@ class _NetworkImageWithMenuState extends State<NetworkImageWithMenu> {
           ),
         if (widget.onReply != null)
           PopupMenuItem<String>(
-              child: const Text('Reply'),
-              onTap: () async {
-                if (widget.onReply != null) {
-                  widget.onReply!();
-                }
-              }),
-        if (widget.onDelete != null)
-          const PopupMenuItem<String>(
-            value: 'Delete',
-            child: Text('Delete'),
+            child: const Text('Reply'),
+            onTap: () async {
+              if (widget.onReply != null) {
+                widget.onReply!();
+              }
+            },
           ),
+        if (widget.onDelete != null)
+          const PopupMenuItem<String>(value: 'Delete', child: Text('Delete')),
       ],
     );
     if (res == "Delete") {
@@ -259,52 +297,61 @@ class _NetworkImageWithMenuState extends State<NetworkImageWithMenu> {
   Widget build(BuildContext context) {
     try {
       return GestureDetector(
-          onTap: widget.onTap,
-          onTapDown: (details) {
-            _tapDownDetails = details;
-          },
-          onSecondaryTapDown: (details) => onSecondaryTapDown(details, context),
-          onLongPress: () => _tapDownDetails != null
-              ? onSecondaryTapDown(_tapDownDetails!, context)
-              : null,
-          child: ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
-              child: Image.network(
-                widget.src,
+        onTap: widget.onTap,
+        onTapDown: (details) {
+          _tapDownDetails = details;
+        },
+        onSecondaryTapDown: (details) => onSecondaryTapDown(details, context),
+        onLongPress: () => _tapDownDetails != null
+            ? onSecondaryTapDown(_tapDownDetails!, context)
+            : null,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8.0),
+          child: Image.network(
+            widget.src,
+            height: widget.height,
+            headers: widget.headers,
+            errorBuilder: (
+              BuildContext context,
+              Object exception,
+              StackTrace? stackTrace,
+            ) {
+              return Image.asset(
+                'assets/images/image_error.png',
+                height: widget.height ?? 200,
+                width: widget.width,
+              );
+            },
+            loadingBuilder: (
+              BuildContext context,
+              Widget child,
+              ImageChunkEvent? loadingProgress,
+            ) {
+              if (loadingProgress == null) return child;
+              return SizedBox(
+                width: widget.width,
                 height: widget.height,
-                headers: widget.headers,
-                errorBuilder: (BuildContext context, Object exception,
-                    StackTrace? stackTrace) {
-                  return Image.asset(
-                    'assets/images/image_error.png',
-                    height: widget.height ?? 200,
-                    width: widget.width,
-                  );
-                },
-                loadingBuilder: (BuildContext context, Widget child,
-                    ImageChunkEvent? loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return SizedBox(
-                      width: widget.width,
-                      height: widget.height,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: widget.previewImageData != null
-                            ? Image.memory(
-                                widget.previewImageData!,
-                                width: widget.width,
-                                height: widget.height,
-                                fit: BoxFit.fill,
-                              )
-                            : null,
-                      )); /*CircularProgressIndicator(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: widget.previewImageData != null
+                      ? Image.memory(
+                          widget.previewImageData!,
+                          width: widget.width,
+                          height: widget.height,
+                          fit: BoxFit.fill,
+                        )
+                      : null,
+                ),
+              ); /*CircularProgressIndicator(
                     value: loadingProgress.expectedTotalBytes != null
                         ? loadingProgress.cumulativeBytesLoaded /
                             loadingProgress.expectedTotalBytes!
                         : null,
                   ),*/
-                },
-              )));
+            },
+          ),
+        ),
+      );
     } catch (e) {
       return Image.asset(
         'assets/images/image_error.png',
@@ -315,63 +362,68 @@ class _NetworkImageWithMenuState extends State<NetworkImageWithMenu> {
   }
 }
 
-Widget networkImage(String src,
-    {Map<String, String>? headers,
-    GestureTapCallback? onTap,
-    GestureTapCallback? onSecondaryTap,
-    GestureTapDownCallback? onSecondaryTapDown,
-    double? width,
-    double? height,
-    Uint8List? previewImageData}) {
+Widget networkImage(
+  String src, {
+  Map<String, String>? headers,
+  GestureTapCallback? onTap,
+  GestureTapCallback? onSecondaryTap,
+  GestureTapDownCallback? onSecondaryTapDown,
+  double? width,
+  double? height,
+  Uint8List? previewImageData,
+}) {
   TapDownDetails? tapDownDetails;
   try {
     return GestureDetector(
-        onTap: onTap,
-        onTapDown: (details) {
-          tapDownDetails = details;
-        },
-        onSecondaryTap: onSecondaryTap,
-        onSecondaryTapDown: onSecondaryTapDown,
-        onLongPress: () => onSecondaryTapDown != null && tapDownDetails != null
-            ? onSecondaryTapDown(tapDownDetails!)
-            : null,
-        child: ClipRRect(
-            borderRadius: BorderRadius.circular(8.0),
-            child: CachedNetworkImage(
-              fadeOutDuration: const Duration(milliseconds: 0),
-              fadeInDuration: const Duration(milliseconds: 0),
-              imageUrl: src,
+      onTap: onTap,
+      onTapDown: (details) {
+        tapDownDetails = details;
+      },
+      onSecondaryTap: onSecondaryTap,
+      onSecondaryTapDown: onSecondaryTapDown,
+      onLongPress: () => onSecondaryTapDown != null && tapDownDetails != null
+          ? onSecondaryTapDown(tapDownDetails!)
+          : null,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8.0),
+        child: CachedNetworkImage(
+          fadeOutDuration: const Duration(milliseconds: 0),
+          fadeInDuration: const Duration(milliseconds: 0),
+          imageUrl: src,
+          height: height,
+          httpHeaders: headers,
+          errorWidget: (context, url, error) {
+            return Image.asset(
+              'assets/images/image_error.png',
+              height: height ?? 200,
+              width: width,
+            );
+          },
+          placeholder: (context, url) {
+            return SizedBox(
+              width: width,
               height: height,
-              httpHeaders: headers,
-              errorWidget: (context, url, error) {
-                return Image.asset(
-                  'assets/images/image_error.png',
-                  height: height ?? 200,
-                  width: width,
-                );
-              },
-              placeholder: (context, url) {
-                return SizedBox(
-                    width: width,
-                    height: height,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8.0),
-                      // child: previewImageData != null
-                      //     ? Image.memory(
-                      //         previewImageData,
-                      //         width: width,
-                      //         height: height,
-                      //         fit: BoxFit.fill,
-                      //       )
-                      //     : null,
-                    )); /*CircularProgressIndicator(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8.0),
+                // child: previewImageData != null
+                //     ? Image.memory(
+                //         previewImageData,
+                //         width: width,
+                //         height: height,
+                //         fit: BoxFit.fill,
+                //       )
+                //     : null,
+              ),
+            ); /*CircularProgressIndicator(
                     value: loadingProgress.expectedTotalBytes != null
                         ? loadingProgress.cumulativeBytesLoaded /
                             loadingProgress.expectedTotalBytes!
                         : null,
                   ),*/
-              },
-            )));
+          },
+        ),
+      ),
+    );
   } catch (e) {
     return Image.asset(
       'assets/images/image_error.png',
@@ -381,25 +433,25 @@ Widget networkImage(String src,
   }
 }
 
-Widget memoryImage(Uint8List data,
-    {Map<String, String>? headers,
-    GestureTapCallback? onTap,
-    GestureLongPressCallback? onLongPress,
-    GestureTapCallback? onSecondaryTap,
-    double? width,
-    double? height}) {
+Widget memoryImage(
+  Uint8List data, {
+  Map<String, String>? headers,
+  GestureTapCallback? onTap,
+  GestureLongPressCallback? onLongPress,
+  GestureTapCallback? onSecondaryTap,
+  double? width,
+  double? height,
+}) {
   try {
     return GestureDetector(
-        onTap: onTap,
-        onLongPress: onLongPress,
-        onSecondaryTap: onSecondaryTap,
-        child: ClipRRect(
-            borderRadius: BorderRadius.circular(8.0),
-            child: Image.memory(
-              data,
-              width: width,
-              height: height,
-            )));
+      onTap: onTap,
+      onLongPress: onLongPress,
+      onSecondaryTap: onSecondaryTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8.0),
+        child: Image.memory(data, width: width, height: height),
+      ),
+    );
   } catch (e) {
     return const Placeholder();
   }
@@ -432,31 +484,36 @@ class ImageDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-        child: Stack(children: [
-      // PhotoView(
-      //   initialScale: PhotoViewComputedScale.covered,
-      //   imageProvider: imageProvider,
-      //   loadingBuilder: (context, event) => Center(
-      //     child: SizedBox(
-      //       width: 20.0,
-      //       height: 20.0,
-      //       child: CircularProgressIndicator(
-      //         value: calsProgress(event),
-      //       ),
-      //     ),
-      //   ),
-      // ),
-      Positioned(
-          right: -2,
-          top: -9,
-          child: IconButton(
+      child: Stack(
+        children: [
+          // PhotoView(
+          //   initialScale: PhotoViewComputedScale.covered,
+          //   imageProvider: imageProvider,
+          //   loadingBuilder: (context, event) => Center(
+          //     child: SizedBox(
+          //       width: 20.0,
+          //       height: 20.0,
+          //       child: CircularProgressIndicator(
+          //         value: calsProgress(event),
+          //       ),
+          //     ),
+          //   ),
+          // ),
+          Positioned(
+            right: -2,
+            top: -9,
+            child: IconButton(
               icon: Icon(
                 Icons.cancel,
                 color: Colors.white.withOpacity(0.5),
                 size: 18,
               ),
-              onPressed: () => Navigator.pop(context)))
-    ]));
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -495,14 +552,14 @@ class TextInCircle extends StatelessWidget {
   final Color? color;
   final Color? borderColor;
   final double borderWidth;
-  const TextInCircle(
-      {Key? key,
-      required this.textWidget,
-      this.width,
-      this.color,
-      this.borderColor,
-      this.borderWidth = 5})
-      : super(key: key);
+  const TextInCircle({
+    Key? key,
+    required this.textWidget,
+    this.width,
+    this.color,
+    this.borderColor,
+    this.borderWidth = 5,
+  }) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -513,13 +570,11 @@ class TextInCircle extends StatelessWidget {
         shape: BoxShape.circle,
         color: color,
         border: Border.all(
-            color: borderColor ?? Colors.blueAccent, width: borderWidth),
+          color: borderColor ?? Colors.blueAccent,
+          width: borderWidth,
+        ),
       ),
-      child: Center(
-          child: Text.rich(
-        textWidget,
-        textAlign: TextAlign.center,
-      )),
+      child: Center(child: Text.rich(textWidget, textAlign: TextAlign.center)),
     );
   }
 }
@@ -530,24 +585,27 @@ class NumberInStadium extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Align(
-        alignment: Alignment.topCenter,
-        child: Container(
-            padding: const EdgeInsets.only(left: 5, right: 5, bottom: 3),
-            decoration: BoxDecoration(
-                color: Colors.lightBlue,
-                shape: number < 10 ? BoxShape.circle : BoxShape.rectangle,
-                borderRadius: number < 10
-                    ? null
-                    : const BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        bottomLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
-                        bottomRight: Radius.circular(10),
-                      )),
-            child: Text(
-              number.toString(),
-              style: const TextStyle(color: Colors.white),
-            )));
+      alignment: Alignment.topCenter,
+      child: Container(
+        padding: const EdgeInsets.only(left: 5, right: 5, bottom: 3),
+        decoration: BoxDecoration(
+          color: Colors.lightBlue,
+          shape: number < 10 ? BoxShape.circle : BoxShape.rectangle,
+          borderRadius: number < 10
+              ? null
+              : const BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  bottomLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
+                  bottomRight: Radius.circular(10),
+                ),
+        ),
+        child: Text(
+          number.toString(),
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+    );
   }
 }
 
@@ -560,66 +618,63 @@ class Label extends StatelessWidget {
   final Icon? icon;
   static const TextStyle textStyle = const TextStyle(fontSize: 14, height: 1);
   static const shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(5)));
+    borderRadius: BorderRadius.all(Radius.circular(5)),
+  );
   static const padding = EdgeInsets.symmetric(horizontal: 10, vertical: 3);
 
-  const Label(
-      {Key? key,
-      this.text,
-      this.backgroundColor,
-      this.textColor,
-      this.onPressed,
-      this.clickableCursor = false,
-      this.icon})
-      : super(key: key);
+  const Label({
+    Key? key,
+    this.text,
+    this.backgroundColor,
+    this.textColor,
+    this.onPressed,
+    this.clickableCursor = false,
+    this.icon,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     if (onPressed != null || clickableCursor) {
       return AbsorbPointer(
-          child: ActionChip(
-        padding: padding,
-        visualDensity: const VisualDensity(horizontal: 0.0, vertical: -4),
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        shape: shape,
-        backgroundColor: backgroundColor,
-        onPressed: onPressed ?? () {},
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null)
-              Icon(icon!.icon,
+        child: ActionChip(
+          padding: padding,
+          visualDensity: const VisualDensity(horizontal: 0.0, vertical: -4),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          shape: shape,
+          backgroundColor: backgroundColor,
+          onPressed: onPressed ?? () {},
+          label: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null)
+                Icon(
+                  icon!.icon,
                   color: textColor,
-                  size: icon!.size != null ? icon!.size! / 1.5 : 20),
-            if (icon != null) const SizedBox(width: 4),
-            Text(
-              text ?? "",
-              style: TextStyle(color: textColor),
-            ),
-          ],
+                  size: icon!.size != null ? icon!.size! / 1.5 : 20,
+                ),
+              if (icon != null) const SizedBox(width: 4),
+              Text(text ?? "", style: TextStyle(color: textColor)),
+            ],
+          ),
         ),
-      ));
+      );
     } else {
       return UnconstrainedBox(
         child: Container(
           padding: padding,
-          decoration: ShapeDecoration(
-            color: backgroundColor,
-            shape: shape,
-          ),
+          decoration: ShapeDecoration(color: backgroundColor, shape: shape),
           alignment: Alignment.center,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (icon != null)
-                Icon(icon!.icon,
-                    color: textColor,
-                    size: icon!.size != null ? icon!.size! / 2 : 12),
+                Icon(
+                  icon!.icon,
+                  color: textColor,
+                  size: icon!.size != null ? icon!.size! / 2 : 12,
+                ),
               if (icon != null) const SizedBox(width: 4),
-              Text(
-                style: textStyle.copyWith(color: textColor),
-                text ?? "",
-              ),
+              Text(style: textStyle.copyWith(color: textColor), text ?? ""),
             ],
           ),
         ),
@@ -637,8 +692,10 @@ class AdjustableScrollController extends ScrollController {
             (scrollDirection == ScrollDirection.reverse
                 ? extraScrollSpeed
                 : -extraScrollSpeed);
-        scrollEnd = min(super.position.maxScrollExtent,
-            max(super.position.minScrollExtent, scrollEnd));
+        scrollEnd = min(
+          super.position.maxScrollExtent,
+          max(super.position.minScrollExtent, scrollEnd),
+        );
         jumpTo(scrollEnd);
       }
     });

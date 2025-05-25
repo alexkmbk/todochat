@@ -84,17 +84,20 @@ class _AppLifecyclePageOldState extends State<AppLifecyclePageOld>
       case AppLifecycleState.detached:
         _onDetached();
         break;
-      case AppLifecycleState.resumed:
-        _onResumed();
+      // case AppLifecycleState.resumed:
+      //   _onResumed();
+      //   break;
+      // case AppLifecycleState.inactive:
+      //   _onInactive();
+      //   break;
+      // case AppLifecycleState.hidden:
+      //   _onHidden();
+      //   break;
+      // case AppLifecycleState.paused:
+      //   _onPaused();
+      default:
+        // Handle other states if needed
         break;
-      case AppLifecycleState.inactive:
-        _onInactive();
-        break;
-      case AppLifecycleState.hidden:
-        _onHidden();
-        break;
-      case AppLifecycleState.paused:
-        _onPaused();
     }
   }
 
@@ -104,13 +107,13 @@ class _AppLifecyclePageOldState extends State<AppLifecyclePageOld>
     }
   }
 
-  void _onResumed() => print('resumed');
+  // void _onResumed() => print('resumed');
 
-  void _onInactive() => print('inactive');
+  // void _onInactive() => print('inactive');
 
-  void _onHidden() => print('hidden');
+  // void _onHidden() => print('hidden');
 
-  void _onPaused() => print('paused');
+  // void _onPaused() => print('paused');
 
   @override
   Widget build(BuildContext context) {

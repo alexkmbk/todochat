@@ -75,14 +75,14 @@ dependencies:
   easy_image_viewer: ^1.4.1
   #filter_list: ^1.0.2
   #dropdown_textfield: ^1.0.8
-  drop_down_search_field: ^1.0.0
+  drop_down_search_field: ^1.1.3
   #loadmore_listview: ^1.0.7
   very_good_infinite_list: ^0.9.0
   scroll_to_index: ^3.0.1
   #super_clipboard: ^0.8.24
   #bloc: ^8.1.4
   #flutter_bloc: ^8.1.5
-  dropdown_button2: ^2.3.9
+  #dropdown_button2: ^2.3.9
   choice: ^2.3.2
   flutter_settings_ui: ^3.0.1
   sticky_headers: ^0.3.0+2
