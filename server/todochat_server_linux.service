@@ -1,0 +1,13 @@
+[Unit]
+Description=ToDoChat Server
+After=network.target
+
+[Service]
+ExecStart=/opt/todochat/todochat_server_linux
+WorkingDirectory=/opt/todochat/
+Restart=always
+User=todochat
+Group=todochat
+
+[Install]
+WantedBy=multi-user.target
