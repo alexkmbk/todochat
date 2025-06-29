@@ -1,12 +1,12 @@
-package DB
+package db
 
 import (
 	"os"
 	"path/filepath"
 
-	. "todochat_server/App"
-
 	//"gorm.io/driver/sqlite"
+	"todochat_server/utils" // Assuming utils package is in the same directory structure
+
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
@@ -20,7 +20,7 @@ func InitDB_SQLite() bool {
 	if err == nil {
 		currentDir = filepath.Dir(exePath)
 	} else {
-		currentDir = GetCurrentDir()
+		currentDir = utils.GetCurrentDir()
 	}
 
 	/*f, err := os.Create("d:\\todochat.log")
@@ -39,7 +39,7 @@ func InitDB_SQLite() bool {
 	DBPAth := filepath.Join(currentDir, "gorm.db")
 	DB, err = gorm.Open(sqlite.Open("file:///"+DBPAth+"?cache=shared&_pragma=journal_mode(MEMORY)&_pragma=busy_timeout(20000)"), &gorm.Config{})
 	if err != nil {
-		Log(err)
+		utils.Log(err)
 		return false
 	}
 	return true

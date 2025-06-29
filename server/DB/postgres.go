@@ -1,9 +1,11 @@
-package DB
+package db
 
 import (
 	"fmt"
 	"time"
-	. "todochat_server/App"
+
+	"todochat_server/utils"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -48,7 +50,7 @@ func InitDB_Postges(DBMS string, DBUserName string, DBPassword string, DBName st
 
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		Log(err.Error())
+		utils.Log(err.Error())
 		return false
 	}
 

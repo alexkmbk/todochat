@@ -5,14 +5,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"todochat_server/App"
 	//. "todochat_server/DB"
-	"todochat_server/constrollers/Messages"
-	"todochat_server/constrollers/Sessions"
+	WS "todochat_server/WebSocked"
 
-	"todochat_server/constrollers/Projects"
-	"todochat_server/constrollers/Tasks"
-	WS "todochat_server/constrollers/WebSocked"
+	"todochat_server/handlers"
+
+	"todochat_server/utils"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -36,7 +34,7 @@ func WebClient(fs http.Handler) http.HandlerFunc {
 
 func CommonHandler(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		res, _ := Sessions.CheckSessionID(w, r, true)
+		res, _ := handlers.CheckSessionID(w, r, true)
 		if !res {
 			return
 		}
@@ -63,39 +61,41 @@ func GetRoutesHandler(DebugMode bool) http.Handler {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/healthz", App.Healthz).Methods("GET")
-	router.HandleFunc("/login", Sessions.Login).Methods("POST")
-	router.HandleFunc("/checkLogin", Sessions.CheckLogin).Methods("GET")
-	router.HandleFunc("/logoff", Sessions.Logoff).Methods("POST")
-	router.HandleFunc("/tasks", CommonHandler(Tasks.GetItems)).Methods("GET")
-	router.HandleFunc("/searchTasks", CommonHandler(Tasks.SearchItems)).Methods("GET")
-	router.HandleFunc("/markallread", CommonHandler(Tasks.MarkAllRead)).Methods("POST")
+	router.HandleFunc("/healthz", handlers.Healthz).Methods("GET")
+	router.HandleFunc("/login", handlers.Login).Methods("POST")
+	router.HandleFunc("/checkLogin", handlers.CheckLogin).Methods("GET")
+	router.HandleFunc("/logoff", handlers.Logoff).Methods("POST")
+	router.HandleFunc("/tasks", CommonHandler(handlers.GetTasks)).Methods("GET")
+	router.HandleFunc("/searchTasks", CommonHandler(handlers.SearchTasks)).Methods("GET")
+	router.HandleFunc("/markallread", CommonHandler(handlers.MarkAllRead)).Methods("POST")
 
-	router.HandleFunc("/todo", CommonHandler(Tasks.CreateItem)).Methods("POST")
-	router.HandleFunc("/updateTask", CommonHandler(Tasks.UpdateItem)).Methods("POST")
-	router.HandleFunc("/todo/{id}", CommonHandler(Tasks.UpdateItem)).Methods("POST")
-	router.HandleFunc("/todo/{id}", CommonHandler(Tasks.DeleteItem)).Methods("DELETE")
+	router.HandleFunc("/todo", CommonHandler(handlers.CreateTask)).Methods("POST")
+	router.HandleFunc("/updateTask", CommonHandler(handlers.UpdateTask)).Methods("POST")
+	router.HandleFunc("/todo/{id}", CommonHandler(handlers.UpdateTask)).Methods("POST")
+	router.HandleFunc("/todo/{id}", CommonHandler(handlers.DeleteTask)).Methods("DELETE")
+	router.HandleFunc("/todo/{id}", CommonHandler(handlers.GetTask)).Methods("GET")
 
-	router.HandleFunc("/messages", CommonHandler(Messages.GetMessages)).Methods("GET")
-	router.HandleFunc("/createMessage", CommonHandler(Messages.CreateMessage)).Methods("POST")
-	router.HandleFunc("/updateMessage", CommonHandler(Messages.UpdateMessage)).Methods("POST")
-	router.HandleFunc("/createMessageWithFile", CommonHandler(Messages.CreateMessageWithFile)).Methods("POST")
-	router.HandleFunc("/deleteMessage/{id}", CommonHandler(Messages.DeleteItem)).Methods("DELETE")
+	router.HandleFunc("/messages", CommonHandler(handlers.GetMessages)).Methods("GET")
+	router.HandleFunc("/message/{id}", CommonHandler(handlers.GetMessage)).Methods("GET")
+	router.HandleFunc("/createMessage", CommonHandler(handlers.CreateMessage)).Methods("POST")
+	router.HandleFunc("/updateMessage", CommonHandler(handlers.UpdateMessage)).Methods("POST")
+	router.HandleFunc("/createMessageWithFile", CommonHandler(handlers.CreateMessageWithFile)).Methods("POST")
+	router.HandleFunc("/deleteMessage/{id}", CommonHandler(handlers.DeleteMessage)).Methods("DELETE")
 
-	router.HandleFunc("/projects", CommonHandler(Projects.GetItems)).Methods("GET")
-	router.HandleFunc("/project/{id}", CommonHandler(Projects.GetItem)).Methods("GET")
-	router.HandleFunc("/createProject", CommonHandler(Projects.CreateItem)).Methods("POST")
-	router.HandleFunc("/updateProject", CommonHandler(Projects.UpdateItem)).Methods("POST")
-	router.HandleFunc("/deleteProject/{id}", CommonHandler(Projects.DeleteItem)).Methods("DELETE")
+	router.HandleFunc("/projects", CommonHandler(handlers.GetProjects)).Methods("GET")
+	router.HandleFunc("/project/{id}", CommonHandler(handlers.GetProject)).Methods("GET")
+	router.HandleFunc("/createProject", CommonHandler(handlers.CreateProject)).Methods("POST")
+	router.HandleFunc("/updateProject", CommonHandler(handlers.UpdateProject)).Methods("POST")
+	router.HandleFunc("/deleteProject/{id}", CommonHandler(handlers.DeleteProject)).Methods("DELETE")
 
-	router.HandleFunc("/registerNewUser", Sessions.RegisterNewUser).Methods("POST")
+	router.HandleFunc("/registerNewUser", handlers.RegisterNewUser).Methods("POST")
 
 	//router.HandleFunc("/initMessagesWS", WS.InitMessagesWS).Methods("GET")
 	router.HandleFunc("/initMessagesWS", func(w http.ResponseWriter, r *http.Request) {
 		WS.ServeWs(WS.WSHub, w, r, DebugMode)
 	}).Methods("GET")
 	//router.HandleFunc("/echo", WS.Echo).Methods("GET")
-	router.HandleFunc("/getFile", CommonHandler(Messages.GetFile)).Methods("POST")
+	router.HandleFunc("/getFile", CommonHandler(handlers.GetFile)).Methods("POST")
 
 	// File server
 
@@ -105,11 +105,33 @@ func GetRoutesHandler(DebugMode bool) http.Handler {
 	if err == nil {
 		currentDir = filepath.Dir(exePath)
 	} else {
-		currentDir = App.GetCurrentDir()
+		currentDir = utils.GetCurrentDir()
 	}
 
 	fs := http.StripPrefix("/FileStorage/", http.FileServer(http.Dir(filepath.Join(currentDir, "FileStorage"))))
 	router.PathPrefix("/FileStorage/").Handler(FileServer(fs))
+
+	webClientPath := filepath.Join(currentDir, "WebClient")
+	indexTemplatePath := filepath.Join(webClientPath, "index.html")
+
+	// // 1. /{id} → отдать index.html с внедрённым id
+	router.HandleFunc("/{id:\\d{6}}", func(w http.ResponseWriter, r *http.Request) {
+
+		// Читаем шаблон index.html
+		data, err := os.ReadFile(indexTemplatePath)
+		if err != nil {
+			http.Error(w, "Index not found", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(data))
+	}).Methods("GET")
+
+	// router.PathPrefix("/{id:\\d{6}}").Handler(
+	// 	WebClient(http.FileServer(http.Dir(filepath.Join(currentDir, "WebClient")))),
+	// ).Methods("GET")
+
 	router.PathPrefix("/").Handler(WebClient(http.FileServer(http.Dir(filepath.Join(currentDir, "WebClient"))))).Methods("GET")
 
 	router.PathPrefix("/").HandlerFunc(corsHandler).Methods("OPTIONS")

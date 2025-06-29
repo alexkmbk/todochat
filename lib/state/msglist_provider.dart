@@ -328,6 +328,31 @@ class MsgListProvider extends ChangeNotifier {
     return res;
   }
 
+// Get message by ID from server
+  Future<Message?> getMessageByID(int messageID) async {
+    if (sessionID == "") {
+      return null;
+    }
+
+    Response response;
+    try {
+      response = await HTTPClient.httpClient.get(
+          HTTPClient.setUriProperty(serverURI, path: 'message/$messageID'),
+          headers: {"sessionID": sessionID});
+    } catch (e) {
+      return null;
+    }
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body) as Map<String, dynamic>;
+      Message message = Message.fromJson(data);
+      if (message.taskID == task.ID) {
+        return message;
+      }
+    }
+    return null;
+  }
+
   Future<bool> createMessage(
       {required String text,
       required Task? task, // task could be different from the current one

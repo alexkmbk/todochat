@@ -4,23 +4,23 @@ import (
 	"flag"
 	"net/http"
 	"os"
-	"path/filepath"
 
-	"github.com/kardianos/service"
+	SystemService "github.com/kardianos/service"
 
 	"gopkg.in/ini.v1"
 
-	. "todochat_server/App"
-	"todochat_server/DB"
-	WS "todochat_server/constrollers/WebSocked"
+	WS "todochat_server/WebSocked"
+	"todochat_server/db"
+	"todochat_server/service"
+	"todochat_server/utils"
 	//"github.com/kardianos/service"
 )
 
-var logger service.Logger
+var logger SystemService.Logger
 
 type program struct{}
 
-func (p *program) Start(s service.Service) error {
+func (p *program) Start(s SystemService.Service) error {
 	// Start should not block. Do the actual work async.
 	go p.run()
 	return nil
@@ -42,27 +42,23 @@ func runMain() {
 
 	DebugMode := *DebugMode_
 	port := *port_
-	DB.DBMS = *DBMS_
+	db.DBMS = *DBMS_
 	DBUserName := *DBUserName_
 	DBPassword := *DBPassword_
 	DBName := *DBName_
 	DBHost := *DBHost_
 	DBPort := *DBPort_
 	DBTimeZone := *DBTimeZone_
-	DoLogs = *logs_
+	utils.DoLogs = *logs_
 	var err error
-
-	FileStoragePath = filepath.Join(GetCurrentDir(), "FileStorage")
-
-	if !FileExists(FileStoragePath) {
-		os.Mkdir(FileStoragePath, 0777)
-	}
 
 	//log.Info("FileStoragePath:" + FileStoragePath)
 
-	Log("Starting Todolist API server")
+	service.InitFileStorage()
 
-	DB.InitDB(DB.DBMS, DBUserName, DBPassword, DBName, DBHost, DBPort, DBTimeZone)
+	utils.Log("Starting Todolist API server")
+
+	db.InitDB(db.DBMS, DBUserName, DBPassword, DBName, DBHost, DBPort, DBTimeZone)
 
 	WS.WSHub = WS.NewHub()
 
@@ -93,7 +89,7 @@ func runMain() {
 func (p *program) run() {
 	runMain()
 }
-func (p *program) Stop(s service.Service) error {
+func (p *program) Stop(s SystemService.Service) error {
 	// Stop should not block. Return with a few seconds.
 	return nil
 }
@@ -126,11 +122,11 @@ func main() {
 
 	}
 
-	if DisableServiceMode || service.Interactive() {
+	if DisableServiceMode || SystemService.Interactive() {
 		runMain()
 	} else {
 
-		svcConfig := &service.Config{
+		svcConfig := &SystemService.Config{
 			Name:        "todochat",
 			DisplayName: "ToDoChat",
 			Description: "ToDoChat.",
@@ -138,13 +134,13 @@ func main() {
 		}
 
 		prg := &program{}
-		s, err := service.New(prg, svcConfig)
+		s, err := SystemService.New(prg, svcConfig)
 		if err != nil {
-			Log_fatal(err)
+			utils.Log_fatal(err)
 		}
 		logger, err = s.Logger(nil)
 		if err != nil {
-			Log_fatal(err)
+			utils.Log_fatal(err)
 		}
 		err = s.Run()
 		if err != nil {

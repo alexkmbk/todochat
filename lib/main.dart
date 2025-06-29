@@ -1,19 +1,14 @@
-import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:todochat/models/project.dart';
-import 'package:todochat/projects_list.dart';
 import 'package:todochat/state/projects.dart';
 import 'package:todochat/state/settings.dart';
 import 'package:todochat/state/tasks.dart';
-import 'package:todochat/utils.dart';
 import 'HttpClient.dart';
-import 'LoginRegistrationPage.dart';
 import 'settings_page.dart';
 import 'customWidgets.dart';
 import 'state/msglist_provider.dart';
 import 'TasksPage.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'todochat.dart';
 

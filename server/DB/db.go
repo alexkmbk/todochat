@@ -1,13 +1,14 @@
-package DB
+package db
 
 import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 
-	. "todochat_server/App"
-
 	//"gorm.io/driver/sqlite"
+
+	. "todochat_server/models"
+	"todochat_server/utils"
 
 	"gorm.io/gorm"
 )
@@ -64,7 +65,7 @@ func InitDB(DBMS string, DBUserName string, DBPassword string, DBName string, DB
 			return
 		}
 	} else {
-		Log(fmt.Sprintf("DBMS \"" + DBMS + "\" is not supported."))
+		utils.Log(fmt.Sprintf("DBMS \"" + DBMS + "\" is not supported."))
 		return
 	}
 

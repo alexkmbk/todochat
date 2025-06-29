@@ -376,7 +376,9 @@ Future<bool> openLoginPage(BuildContext context) async {
 Future<bool> login(
     {String? userName = "",
     String? password = "",
-    BuildContext? context}) async {
+    BuildContext? context,
+    Map? projects,
+    Map? unreadMessagesByProjects}) async {
   if (userName == null || userName.isEmpty) {
     if (!isWeb()) {
       const storage = FlutterSecureStorage();
@@ -403,7 +405,11 @@ Future<bool> login(
 
   http.Response response;
   try {
-    response = await httpClient.post(setUriProperty(serverURI, path: "login"),
+    response = await httpClient.post(
+        setUriProperty(serverURI, path: "login", queryParameters: {
+          'returnProjects': projects != null,
+          'returnUnreadMessages': unreadMessagesByProjects != null
+        }),
         body: jsonEncode({"UserName": userName, "passwordHash": passwordHash}));
   } catch (e) {
     return Future.error(e.toString());
@@ -475,11 +481,14 @@ Future<bool> login(
   return false;
 }
 
-Future<bool> checkLogin() async {
+Future<bool> checkLogin([Map? projects, Map? unreadMessagesByProjects]) async {
   http.Response response;
   try {
-    response =
-        await httpClient.get(setUriProperty(serverURI, path: "checkLogin"));
+    response = await httpClient
+        .get(setUriProperty(serverURI, path: "checkLogin", queryParameters: {
+      'returnProjects': projects != null,
+      'returnUnreadMessages': unreadMessagesByProjects != null
+    }));
   } catch (e) {
     return Future.error(e.toString());
   }

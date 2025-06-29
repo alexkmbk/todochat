@@ -176,13 +176,21 @@ class _AppLifecyclePageState extends State<AppLifecyclePage> {
     }
   }
 
-  void _onResumed() => print('resumed');
+  void _onResumed() {
+    // print('resumed');
+  }
 
-  void _onInactive() => print('inactive');
+  void _onInactive() {
+    //print('inactive');
+  }
 
-  void _onHidden() => print('hidden');
+  void _onHidden() {
+//print('hidden');
+  }
 
-  void _onPaused() => print('paused');
+  void _onPaused() {
+//print('paused');
+  }
 
   @override
   Widget build(BuildContext context) {

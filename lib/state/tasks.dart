@@ -206,6 +206,26 @@ class TasksState extends ChangeNotifier {
     }
   }
 
+// Get task by ID from server
+  Future<Task?> getTaskByID(int taskID) async {
+    if (sessionID == "") {
+      return null;
+    }
+
+    Response response;
+
+    response =
+        await httpClient.get(setUriProperty(serverURI, path: 'todo/$taskID'));
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      var task = Task.fromJson(data);
+      return task;
+    }
+
+    return null;
+  }
+
   void deleteItem(int taskID, BuildContext context) async {
     var index = items.indexWhere((item) => item.ID == taskID);
     if (index >= 0) {

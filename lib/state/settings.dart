@@ -5,9 +5,12 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todochat/HttpClient.dart';
 import 'package:todochat/LoginRegistrationPage.dart';
+import 'package:todochat/models/message.dart';
 import 'package:todochat/models/project.dart';
+import 'package:todochat/models/task.dart';
 import 'package:todochat/projects_list.dart';
 import 'package:todochat/settings_page.dart';
+import 'package:todochat/state/msglist_provider.dart';
 import 'package:todochat/state/tasks.dart';
 import 'package:todochat/todochat.dart';
 import 'package:todochat/utils.dart';
@@ -72,10 +75,19 @@ class SettingsState extends ChangeNotifier {
     var host = settings.getString("host");
     var port = settings.getInt("port");
     autoLogin = settings.getBool("autoLogin") ?? true;
+
+    String taskId = "";
+
     if (isWeb() && (host == null || host.isEmpty)) {
       host = Uri.base.host;
       port = Uri.base.port;
       httpScheme = Uri.base.scheme;
+    }
+    if (isWeb()) {
+      final segments = Uri.base.pathSegments;
+      if (segments.isNotEmpty) {
+        taskId = segments[0];
+      }
     }
 
     if (port == null || port == 0) {
@@ -92,10 +104,12 @@ class SettingsState extends ChangeNotifier {
       serverURI = Uri(scheme: httpScheme, host: host, port: port);
     }
     bool login = false;
+    Map projects = {};
+    Map unreadMessages = {};
     if (sessionID.isNotEmpty && autoLogin) {
       httpClient.defaultHeaders = {"sessionID": sessionID};
       try {
-        login = await checkLogin();
+        login = await checkLogin(projects, unreadMessages);
       } catch (e) {
         return Future.error(e.toString());
       }
@@ -112,7 +126,30 @@ class SettingsState extends ChangeNotifier {
       });
     }
 
-    final projectID = settings.getInt("projectID") ?? 0;
+    Task? task;
+    int projectID = 0;
+
+    if (isWeb() && taskId.isNotEmpty && login) {
+      // convert to int and remove leading zeros
+      taskId = taskId.replaceAll(RegExp(r'^0+'), '');
+      final taskIdInt = int.tryParse(taskId);
+
+      if (taskIdInt != null) {
+        task = await tasks.getTaskByID(taskIdInt);
+        if (task != null && task.projectID == 0) {
+          task = null;
+        }
+      }
+    }
+
+    if (task != null) {
+      projectID = task.projectID;
+      tasks.currentTaskID = task.ID;
+    } else {
+      // If no project ID is provided, we can request the first project.
+      projectID = settings.getInt("projectID") ?? 0;
+      tasks.currentTaskID = settings.getInt("currentTaskID") ?? 0;
+    }
 
     Project? currentProject;
     currentProject = (await getProject(projectID));
@@ -121,7 +158,6 @@ class SettingsState extends ChangeNotifier {
     }
 
     tasks.showClosed = settings.getBool("showClosed") ?? true;
-    tasks.currentTaskID = settings.getInt("currentTaskID") ?? 0;
     tasks.setCurrentProject(currentProject, context, forceTaskRequest);
 
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
