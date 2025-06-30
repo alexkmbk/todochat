@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+
 	//"gorm.io/driver/sqlite"
 	. "todochat_server/models"
 	"todochat_server/service"
@@ -25,40 +26,23 @@ func CheckLogin(w http.ResponseWriter, r *http.Request) {
 	res, user := CheckSessionID(w, r, true)
 	if res {
 
-		decoder := json.NewDecoder(r.Body)
-		var data map[string]string
-
-		err := decoder.Decode(&data)
-		if err != nil {
-			http.Error(w, "Json parsing error", http.StatusBadRequest)
-			return
-		}
+		query := r.URL.Query()
 
 		res := map[string]interface{}{
 			"username": user.Name,
 			"userid":   user.ID}
-		if data["returnUnreadMessages"] == "true" {
+		if query.Get("returnUnreadMessages") == "true" {
 			res["unreadMessagesByProjects"] = service.GetUnreadMessagesByProjects()
 		}
-		if data["returnProjects"] == "true" {
-			res["projects"] = service.GetProjectsList()
+		if query.Get("returnProjects") == "true" {
+			res["projects"] = service.GetProjects(0)
 		}
 
-		json.NewEncoder(w).Encode(data)
+		json.NewEncoder(w).Encode(res)
 	}
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-
-	/*sessionID := createNewSession()
-	io.WriteString(w, "{\"sessionID\":\""+sessionID.String()+"\"}")
-	return*/
-
-	/*var params LoginParams
-	err := json.NewDecoder(r.Body).Decode(&params)
-	if err != nil {
-		log.Fatal(err)
-	}*/
 
 	decoder := json.NewDecoder(r.Body)
 	var data map[string]string
@@ -86,12 +70,15 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			sessionID := service.CreateNewSession(user)
 			res := make(map[string]interface{})
 			res["SessionID"] = sessionID
+			res["UserID"] = user.ID
 
-			if data["returnUnreadMessages"] == "true" {
+			query := r.URL.Query()
+
+			if query.Get("returnUnreadMessages") == "true" {
 				res["unreadMessagesByProjects"] = service.GetUnreadMessagesByProjects()
 			}
-			if data["returnProjects"] == "true" {
-				res["projects"] = service.GetProjectsList()
+			if query.Get("returnProjects") == "true" {
+				res["projects"] = service.GetProjects(0)
 			}
 
 			json.NewEncoder(w).Encode(res)

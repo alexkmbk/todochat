@@ -46,9 +46,9 @@ func GetProjects(limit int) []Project {
 	return items
 }
 
-func GetProjectsList() []map[int64]string {
-	// getting list of projects with names
-	var projects []map[int64]string
-	DB.Table("projects").Select("id, Description").Scan(&projects)
-	return projects
-}
+// func GetProjectsList() map[string]interface{} {
+// 	// getting list of projects with names
+// 	var projects map[string]interface{}
+// 	DB.Table("projects").Select("ID, Description").Scan(&projects)
+// 	return projects
+// }

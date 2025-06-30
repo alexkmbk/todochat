@@ -104,7 +104,7 @@ class SettingsState extends ChangeNotifier {
       serverURI = Uri(scheme: httpScheme, host: host, port: port);
     }
     bool login = false;
-    Map projects = {};
+    List<Project> projects = [];
     Map unreadMessages = {};
     if (sessionID.isNotEmpty && autoLogin) {
       httpClient.defaultHeaders = {"sessionID": sessionID};
@@ -152,9 +152,14 @@ class SettingsState extends ChangeNotifier {
     }
 
     Project? currentProject;
-    currentProject = (await getProject(projectID));
+    if (projects.isNotEmpty) {
+      currentProject = projects.where((p) => p.ID == projectID).firstOrNull;
+    }
     if (currentProject == null || currentProject.isEmpty) {
-      currentProject = await requestFirstItem();
+      currentProject = (await getProject(projectID));
+      if (currentProject == null || currentProject.isEmpty) {
+        currentProject = await requestFirstItem();
+      }
     }
 
     tasks.showClosed = settings.getBool("showClosed") ?? true;

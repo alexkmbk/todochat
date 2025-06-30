@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
+import 'package:todochat/models/project.dart';
 import 'package:todochat/state/tasks.dart';
 
 import 'HttpClient.dart';
@@ -405,11 +406,12 @@ Future<bool> login(
 
   http.Response response;
   try {
+    final params = {
+      'returnProjects': (projects != null).toString(),
+      'returnUnreadMessages': (unreadMessagesByProjects != null).toString()
+    };
     response = await httpClient.post(
-        setUriProperty(serverURI, path: "login", queryParameters: {
-          'returnProjects': projects != null,
-          'returnUnreadMessages': unreadMessagesByProjects != null
-        }),
+        setUriProperty(serverURI, path: "login", queryParameters: params),
         body: jsonEncode({"UserName": userName, "passwordHash": passwordHash}));
   } catch (e) {
     return Future.error(e.toString());
@@ -481,13 +483,14 @@ Future<bool> login(
   return false;
 }
 
-Future<bool> checkLogin([Map? projects, Map? unreadMessagesByProjects]) async {
+Future<bool> checkLogin(
+    [List<Project>? projects, Map? unreadMessagesByProjects]) async {
   http.Response response;
   try {
     response = await httpClient
         .get(setUriProperty(serverURI, path: "checkLogin", queryParameters: {
-      'returnProjects': projects != null,
-      'returnUnreadMessages': unreadMessagesByProjects != null
+      'returnProjects': (projects != null).toString(),
+      'returnUnreadMessages': (unreadMessagesByProjects != null).toString()
     }));
   } catch (e) {
     return Future.error(e.toString());
@@ -498,6 +501,15 @@ Future<bool> checkLogin([Map? projects, Map? unreadMessagesByProjects]) async {
     try {
       currentUserName = data["username"];
       currentUserID = data["userid"];
+      final projectsData = data["projects"];
+
+      if (projects != null) {
+        for (var item in projectsData) {
+          projects
+              .add(Project(Description: item["Description"], ID: item["ID"]));
+        }
+      }
+      unreadMessagesByProjects = data["unreadMessagesByProjects"];
     } catch (e) {}
     return true;
   }
