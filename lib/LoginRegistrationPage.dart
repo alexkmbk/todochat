@@ -378,7 +378,7 @@ Future<bool> login(
     {String? userName = "",
     String? password = "",
     BuildContext? context,
-    Map? projects,
+    Project? project,
     Map? unreadMessagesByProjects}) async {
   if (userName == null || userName.isEmpty) {
     if (!isWeb()) {
@@ -407,7 +407,7 @@ Future<bool> login(
   http.Response response;
   try {
     final params = {
-      'returnProjects': (projects != null).toString(),
+      'getProject': (project != null).toString(),
       'returnUnreadMessages': (unreadMessagesByProjects != null).toString()
     };
     response = await httpClient.post(
@@ -426,6 +426,15 @@ Future<bool> login(
     currentUserID = data["UserID"];
     currentUserName = userName;
     httpClient.defaultHeaders = {"sessionID": sessionID};
+
+    if (project != null) {
+      var project_ = Project.fromJson(data["project"]);
+      project.ID = project_.ID;
+      project.Description = project_.Description;
+    }
+
+    unreadMessagesByProjects =
+        data["UnreadMessagesByProjects"] as Map<Project, int>?;
 
     settings.setString("sessionID", sessionID);
 
@@ -484,12 +493,12 @@ Future<bool> login(
 }
 
 Future<bool> checkLogin(
-    [List<Project>? projects, Map? unreadMessagesByProjects]) async {
+    {Project? project, Map? unreadMessagesByProjects}) async {
   http.Response response;
   try {
     response = await httpClient
         .get(setUriProperty(serverURI, path: "checkLogin", queryParameters: {
-      'returnProjects': (projects != null).toString(),
+      'getProject': (project != null).toString(),
       'returnUnreadMessages': (unreadMessagesByProjects != null).toString()
     }));
   } catch (e) {
@@ -501,13 +510,10 @@ Future<bool> checkLogin(
     try {
       currentUserName = data["username"];
       currentUserID = data["userid"];
-      final projectsData = data["projects"];
-
-      if (projects != null) {
-        for (var item in projectsData) {
-          projects
-              .add(Project(Description: item["Description"], ID: item["ID"]));
-        }
+      if (project != null) {
+        var project_ = Project.fromJson(data["project"]);
+        project.ID = project_.ID;
+        project.Description = project_.Description;
       }
       unreadMessagesByProjects = data["unreadMessagesByProjects"];
     } catch (e) {}

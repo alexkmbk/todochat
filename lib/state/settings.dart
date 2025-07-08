@@ -104,12 +104,14 @@ class SettingsState extends ChangeNotifier {
       serverURI = Uri(scheme: httpScheme, host: host, port: port);
     }
     bool login = false;
-    List<Project> projects = [];
+    Project currentProject = Project(ID: settings.getInt("projectID") ?? 0);
+
     Map unreadMessages = {};
     if (sessionID.isNotEmpty && autoLogin) {
       httpClient.defaultHeaders = {"sessionID": sessionID};
       try {
-        login = await checkLogin(projects, unreadMessages);
+        login = await checkLogin(
+            project: currentProject, unreadMessagesByProjects: unreadMessages);
       } catch (e) {
         return Future.error(e.toString());
       }
@@ -127,7 +129,6 @@ class SettingsState extends ChangeNotifier {
     }
 
     Task? task;
-    int projectID = 0;
 
     if (isWeb() && taskId.isNotEmpty && login) {
       // convert to int and remove leading zeros
@@ -143,23 +144,14 @@ class SettingsState extends ChangeNotifier {
     }
 
     if (task != null) {
-      projectID = task.projectID;
       tasks.currentTaskID = task.ID;
+      currentProject = await getProject(task.projectID) ?? Project();
     } else {
-      // If no project ID is provided, we can request the first project.
-      projectID = settings.getInt("projectID") ?? 0;
       tasks.currentTaskID = settings.getInt("currentTaskID") ?? 0;
     }
 
-    Project? currentProject;
-    if (projects.isNotEmpty) {
-      currentProject = projects.where((p) => p.ID == projectID).firstOrNull;
-    }
-    if (currentProject == null || currentProject.isEmpty) {
-      currentProject = (await getProject(projectID));
-      if (currentProject == null || currentProject.isEmpty) {
-        currentProject = await requestFirstItem();
-      }
+    if (currentProject.isEmpty) {
+      currentProject = await requestFirstItem() ?? Project();
     }
 
     tasks.showClosed = settings.getBool("showClosed") ?? true;

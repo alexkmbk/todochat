@@ -16,12 +16,39 @@ import (
 )
 
 // Get unread messages by projects
-func GetUnreadMessagesByProjects() []map[int64]int64 {
-	// getting count of unread messages by projects
-	var data []map[int64]int64
-	DB.Table("messages").Select("messages.project_id, COUNT(messages.id) as count").Where("messages.seen = false").Group("messages.project_id").Scan(&data)
+func GetUnreadMessagesByProjects(userID int64) []map[Project]int64 {
+	var results []map[Project]int64
 
-	return data
+	rows, err := DB.Table("messages").
+		Select("messages.project_id, projects.Description, COUNT(messages.id) as messages_count").
+		Joins("JOIN projects ON messages.project_id = projects.id").
+		Where("messages.user_id = ? AND NOT messages.ID IN (select seen_messages.message_id from seen_messages where seen_messages.user_id = ?)", userID, userID).
+		Group("messages.project_id, projects.Description").
+		Rows()
+	if err != nil {
+		//utils.Log_warn("Error fetching unread messages by projects:", err)
+		return results
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var projectID int64
+		var projectName string
+		var messagesCount int64
+
+		if err := rows.Scan(&projectID, &projectName, &messagesCount); err != nil {
+			//utils.Log_warn("Error scanning row:", err)
+			continue
+		}
+
+		project := Project{
+			ID:          projectID,
+			Description: projectName,
+		}
+		results = append(results, map[Project]int64{project: messagesCount})
+	}
+
+	return results
 }
 
 func GetMessages(userID int64, taskID int64, lastID int64, limit int) []*Message {

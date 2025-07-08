@@ -9,6 +9,7 @@ import (
 	//"gorm.io/driver/sqlite"
 	. "todochat_server/models"
 	"todochat_server/service"
+	"todochat_server/utils"
 	//"todochat_server/constrollers/Messages"
 	//"todochat_server/handlers" // Importing handlers to use GetUnreadMessagesByProjects
 )
@@ -32,10 +33,30 @@ func CheckLogin(w http.ResponseWriter, r *http.Request) {
 			"username": user.Name,
 			"userid":   user.ID}
 		if query.Get("returnUnreadMessages") == "true" {
-			res["unreadMessagesByProjects"] = service.GetUnreadMessagesByProjects()
+			res["unreadMessagesByProjects"] = service.GetUnreadMessagesByProjects(user.ID)
 		}
-		if query.Get("returnProjects") == "true" {
-			res["projects"] = service.GetProjects(0)
+		if query.Get("getProject") == "true" {
+			projectID := query.Get("projectID")
+			if projectID != "" {
+				project, err := service.GetProjectByID(utils.ToInt64(projectID))
+				if err != nil {
+					res["project"] = project
+				} else {
+					projects := service.GetProjects(1)
+					if len(projects) > 0 {
+						res["project"] = projects[0]
+					} else {
+						res["project"] = nil
+					}
+				}
+			} else {
+				projects := service.GetProjects(1)
+				if len(projects) > 0 {
+					res["project"] = projects[0]
+				} else {
+					res["project"] = nil
+				}
+			}
 		}
 
 		json.NewEncoder(w).Encode(res)
@@ -75,12 +96,31 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			query := r.URL.Query()
 
 			if query.Get("returnUnreadMessages") == "true" {
-				res["unreadMessagesByProjects"] = service.GetUnreadMessagesByProjects()
+				res["unreadMessagesByProjects"] = service.GetUnreadMessagesByProjects(user.ID)
 			}
-			if query.Get("returnProjects") == "true" {
-				res["projects"] = service.GetProjects(0)
+			if query.Get("getProject") == "true" {
+				projectID := query.Get("projectID")
+				if projectID != "" {
+					project, err := service.GetProjectByID(utils.ToInt64(projectID))
+					if err != nil {
+						res["project"] = project
+					} else {
+						projects := service.GetProjects(1)
+						if len(projects) > 0 {
+							res["project"] = projects[0]
+						} else {
+							res["project"] = nil
+						}
+					}
+				} else {
+					projects := service.GetProjects(1)
+					if len(projects) > 0 {
+						res["project"] = projects[0]
+					} else {
+						res["project"] = nil
+					}
+				}
 			}
-
 			json.NewEncoder(w).Encode(res)
 			//io.WriteString(w, "{\"sessionID\":\""+sessionID.String()+"\",\"userID\":\""+strconv.Itoa(user.ID)+"\"}")
 		}
