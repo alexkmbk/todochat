@@ -16,8 +16,8 @@ import (
 )
 
 // Get unread messages by projects
-func GetUnreadMessagesByProjects(userID int64) []map[Project]int64 {
-	var results []map[Project]int64
+func GetUnreadMessagesByProjects(userID int64) []UnreadMessagesByProjects {
+	var results []UnreadMessagesByProjects
 
 	rows, err := DB.Table("messages").
 		Select("messages.project_id, projects.Description, COUNT(messages.id) as messages_count").
@@ -38,14 +38,17 @@ func GetUnreadMessagesByProjects(userID int64) []map[Project]int64 {
 
 		if err := rows.Scan(&projectID, &projectName, &messagesCount); err != nil {
 			//utils.Log_warn("Error scanning row:", err)
-			continue
+			//continue
+			project := Project{
+				ID:          projectID,
+				Description: projectName,
+			}
+			results = append(results, UnreadMessagesByProjects{
+				Project:       project,
+				MessagesCount: messagesCount,
+			})
 		}
-
-		project := Project{
-			ID:          projectID,
-			Description: projectName,
-		}
-		results = append(results, map[Project]int64{project: messagesCount})
+		//results = append(results, {project: messagesCount})
 	}
 
 	return results

@@ -110,3 +110,8 @@ type Project struct {
 	ID          int64  `gorm:"primary_key"`
 	Description string `gorm:"size:100"`
 }
+
+type UnreadMessagesByProjects struct {
+	Project       Project `json:"project"`
+	MessagesCount int64   `json:"messagesCount"`
+}
