@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:todochat/models/message.dart';
 import 'package:todochat/models/task.dart';
-import 'package:todochat/state/settings.dart';
+import 'package:todochat/state/app.dart';
 import 'package:todochat/state/tasks.dart';
 import 'package:todochat/utils.dart';
 import 'package:web_socket_channel/status.dart' as status;
@@ -180,14 +180,14 @@ void listenWs(TasksState taskListProvider, BuildContext context) {
         if (kDebugMode) {
           print(error.toString());
         }
-        context.read<SettingsState>().redrawWidgetTree(context);
+        context.read<AppState>().redrawWidgetTree(context);
       });
     } catch (e) {
       if (kDebugMode) {
         print(e.toString());
       }
-      Future.delayed(const Duration(seconds: 2)).then(
-          (value) => context.read<SettingsState>().redrawWidgetTree(context));
+      Future.delayed(const Duration(seconds: 2))
+          .then((value) => context.read<AppState>().redrawWidgetTree(context));
     }
   }
 }
@@ -213,12 +213,12 @@ Future<void> reconnect(TasksState taskListProvider, BuildContext context,
               listenWs(taskListProvider, context);
             });
           } else {
-            context.read<SettingsState>().redrawWidgetTree(context);
+            context.read<AppState>().redrawWidgetTree(context);
           }
         });
       }
     }).onError((error, stackTrace) {
-      context.read<SettingsState>().redrawWidgetTree(context);
+      context.read<AppState>().redrawWidgetTree(context);
     });
   }
 }

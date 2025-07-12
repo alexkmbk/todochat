@@ -5,7 +5,7 @@ import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:todochat/models/task.dart';
-import 'package:todochat/state/settings.dart';
+import 'package:todochat/state/app.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
 import 'HttpClient.dart';
 import 'TaskMessagesPage.dart';
@@ -87,7 +87,7 @@ Future<bool> updateTask(BuildContext context, Task task) async {
         setUriProperty(serverURI, path: 'updateTask'),
         body: jsonEncode(task));
   } catch (e) {
-    context.read<SettingsState>().redrawWidgetTree(context);
+    context.read<AppState>().redrawWidgetTree(context);
     return false;
   }
 

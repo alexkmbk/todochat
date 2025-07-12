@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-import 'package:todochat/state/settings.dart';
+import 'package:todochat/state/app.dart';
 import 'package:todochat/ui_components/radioselect_dialog.dart';
 import 'HttpClient.dart';
 import 'customWidgets.dart';
@@ -244,7 +244,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (changed) {
       //RestartWidget.restartApp(context);
       Navigator.pop(context, true); // if true - redraw widget tree
-      context.read<SettingsState>().redrawWidgetTree(context, serverChanged);
+      context.read<AppState>().redrawWidgetTree(context, serverChanged);
     } else
       Navigator.pop(context, false);
   }

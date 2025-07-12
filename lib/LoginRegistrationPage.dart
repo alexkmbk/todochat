@@ -10,6 +10,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:todochat/models/project.dart';
+import 'package:todochat/state/app.dart';
 import 'package:todochat/state/tasks.dart';
 
 import 'HttpClient.dart';
@@ -143,7 +144,8 @@ class _LoginPageState extends State<LoginPage> {
                     await login(
                         userName: userNameController.text,
                         password: passwordController.text,
-                        context: context)) {
+                        context: context,
+                        returnUnreadMessages: true)) {
                   isLoginPageOpen = false;
                   Navigator.pop(context, true);
                 }
@@ -318,6 +320,8 @@ class _RegistrationPagePageState extends State<RegistrationPage> {
 
     return false;
   }
+
+  provider(BuildContext context, {required bool listen}) {}
 }
 
 // Future<bool> showLoginPage(BuildContext context) async {
@@ -336,21 +340,15 @@ class _RegistrationPagePageState extends State<RegistrationPage> {
 // }
 
 Future<bool> openRegistrationPage(BuildContext context) async {
-  switch (await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return Scaffold(
-          body: RegistrationPage(),
-          backgroundColor: Colors.transparent,
-        );
-      })) {
-    case true:
-      return true;
-    case false:
-    case null:
-      return false;
-  }
-  return false;
+  return await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return Scaffold(
+              body: RegistrationPage(),
+              backgroundColor: Colors.transparent,
+            );
+          }) ??
+      false;
 }
 
 Future<bool> openLoginPage(BuildContext context) async {
@@ -379,7 +377,7 @@ Future<bool> login(
     String? password = "",
     BuildContext? context,
     Project? project,
-    Map? unreadMessagesByProjects}) async {
+    returnUnreadMessages = false}) async {
   if (userName == null || userName.isEmpty) {
     if (!isWeb()) {
       const storage = FlutterSecureStorage();
@@ -408,7 +406,7 @@ Future<bool> login(
   try {
     final params = {
       'getProject': (project != null).toString(),
-      'returnUnreadMessages': (unreadMessagesByProjects != null).toString()
+      'returnUnreadMessages': returnUnreadMessages.toString()
     };
     response = await httpClient.post(
         setUriProperty(serverURI, path: "login", queryParameters: params),
@@ -433,8 +431,13 @@ Future<bool> login(
       project.Description = project_.Description;
     }
 
-    unreadMessagesByProjects =
-        data["UnreadMessagesByProjects"] as Map<Project, int>?;
+    var list = data["unreadMessagesByProjects"] as List<dynamic>? ?? [];
+
+    unreadMessagesByProjects = {
+      for (var item in list)
+        Project.fromJson(item["project"] as Map<String, dynamic>):
+            item["messagesCount"] as int
+    };
 
     settings.setString("sessionID", sessionID);
 
@@ -445,12 +448,15 @@ Future<bool> login(
     }
 
     if (userChanged && context != null) {
+      Provider.of<AppState>(context, listen: false)
+          .redrawWidgetTree(context, true, false);
+
       // final msgListProvider =
       //     Provider.of<MsgListProvider>(context, listen: false);
 
-      final taskListProvider = Provider.of<TasksState>(context, listen: false);
-      taskListProvider.clear(context);
-      taskListProvider.requestTasks(context);
+      // final taskListProvider = Provider.of<TasksState>(context, listen: false);
+      // taskListProvider.clear(context);
+      // taskListProvider.requestTasks(context);
       //if (isDesktopMode) {
       //msgListProvider.refresh();
       //}
@@ -493,13 +499,13 @@ Future<bool> login(
 }
 
 Future<bool> checkLogin(
-    {Project? project, Map? unreadMessagesByProjects}) async {
+    {Project? project, returnUnreadMessages = false}) async {
   http.Response response;
   try {
     response = await httpClient
         .get(setUriProperty(serverURI, path: "checkLogin", queryParameters: {
       'getProject': (project != null).toString(),
-      'returnUnreadMessages': (unreadMessagesByProjects != null).toString()
+      'returnUnreadMessages': returnUnreadMessages.toString()
     }));
   } catch (e) {
     return Future.error(e.toString());
@@ -515,8 +521,18 @@ Future<bool> checkLogin(
         project.ID = project_.ID;
         project.Description = project_.Description;
       }
-      unreadMessagesByProjects = data["unreadMessagesByProjects"];
-    } catch (e) {}
+      var list = data["unreadMessagesByProjects"] as List<dynamic>? ?? [];
+
+      unreadMessagesByProjects = {
+        for (var item in list)
+          Project.fromJson(item["project"] as Map<String, dynamic>):
+              item["messagesCount"] as int
+      };
+      {}
+      ;
+    } catch (e) {
+      debugPrint('Error parsing unreadMessagesByProjects: $e');
+    }
     return true;
   }
 

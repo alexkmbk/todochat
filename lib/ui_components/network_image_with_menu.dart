@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:todochat/customWidgets.dart';
 import 'package:todochat/ui_components/confirm_detele_dlg.dart';
 
 class CachedNetworkImageWithMenu extends StatefulWidget {

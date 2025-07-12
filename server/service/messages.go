@@ -35,8 +35,8 @@ func GetUnreadMessagesByProjects(userID int64) []UnreadMessagesByProjects {
 		var projectID int64
 		var projectName string
 		var messagesCount int64
-
-		if err := rows.Scan(&projectID, &projectName, &messagesCount); err != nil {
+		err := rows.Scan(&projectID, &projectName, &messagesCount)
+		if err == nil {
 			//utils.Log_warn("Error scanning row:", err)
 			//continue
 			project := Project{

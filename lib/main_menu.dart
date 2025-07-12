@@ -17,6 +17,7 @@ class MainMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context_) {
     var context = NavigationService.navigatorKey.currentContext ?? context_;
+    //var app = context.watch()<AppState>();
 
     List<PopupMenuEntry> mainMenuCommonItems = [
       if (currentUserName.isNotEmpty)

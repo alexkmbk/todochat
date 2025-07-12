@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:todochat/state/projects.dart';
-import 'package:todochat/state/settings.dart';
+import 'package:todochat/state/app.dart';
 import 'package:todochat/state/tasks.dart';
 import 'HttpClient.dart';
 import 'settings_page.dart';
@@ -59,7 +59,7 @@ class MyApp extends StatelessWidget {
           create: (context) => ProjectsState(),
         ),
         ChangeNotifierProvider(
-          create: (context) => SettingsState(),
+          create: (context) => AppState(),
         ),
       ],
       child: MaterialApp(
@@ -122,14 +122,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SettingsState>(
-      builder: (context, provider, child) {
-        if (appInitialized) {
+    return Consumer<AppState>(
+      builder: (context, app, child) {
+        if (app.appInitialized) {
           return TasksPage();
         } else {
           return FutureBuilder<bool>(
-            future:
-                provider.initApp(context), // function where you call your api
+            future: app.init(context), // Initialize the app state
             builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
               // AsyncSnapshot<Your object type>
               if (snapshot.data != null && snapshot.data as bool) {
