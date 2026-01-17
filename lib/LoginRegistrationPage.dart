@@ -11,6 +11,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:todochat/models/project.dart';
 import 'package:todochat/state/app.dart';
+import 'package:todochat/state/appbar.dart';
 import 'package:todochat/state/tasks.dart';
 
 import 'HttpClient.dart';
@@ -145,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
                         userName: userNameController.text,
                         password: passwordController.text,
                         context: context,
-                        returnUnreadMessages: true)) {
+                        updateUnreadMessages: true)) {
                   isLoginPageOpen = false;
                   Navigator.pop(context, true);
                 }
@@ -352,32 +353,26 @@ Future<bool> openRegistrationPage(BuildContext context) async {
 }
 
 Future<bool> openLoginPage(BuildContext context) async {
-  switch (await showDialog<bool>(
-    context: context,
-    builder: (context) => ScaffoldMessenger(
-      child: Builder(
-        builder: (context) => Scaffold(
-          body: LoginPage(),
-          backgroundColor: Colors.transparent,
+  return await showDialog<bool>(
+        context: context,
+        builder: (context) => ScaffoldMessenger(
+          child: Builder(
+            builder: (context) => Scaffold(
+              body: LoginPage(),
+              backgroundColor: Colors.transparent,
+            ),
+          ),
         ),
-      ),
-    ),
-  )) {
-    case true:
-      return true;
-    case false:
-    case null:
-      return false;
-  }
-  return false;
+      ) ??
+      false;
 }
 
 Future<bool> login(
     {String? userName = "",
     String? password = "",
-    BuildContext? context,
+    required BuildContext context,
     Project? project,
-    returnUnreadMessages = false}) async {
+    updateUnreadMessages = false}) async {
   if (userName == null || userName.isEmpty) {
     if (!isWeb()) {
       const storage = FlutterSecureStorage();
@@ -406,7 +401,7 @@ Future<bool> login(
   try {
     final params = {
       'getProject': (project != null).toString(),
-      'returnUnreadMessages': returnUnreadMessages.toString()
+      'returnUnreadMessages': updateUnreadMessages.toString()
     };
     response = await httpClient.post(
         setUriProperty(serverURI, path: "login", queryParameters: params),
@@ -433,11 +428,12 @@ Future<bool> login(
 
     var list = data["unreadMessagesByProjects"] as List<dynamic>? ?? [];
 
-    unreadMessagesByProjects = {
+    var appBarState = Provider.of<AppBarState>(context, listen: false);
+    appBarState.updateUnread({
       for (var item in list)
         Project.fromJson(item["project"] as Map<String, dynamic>):
             item["messagesCount"] as int
-    };
+    });
 
     settings.setString("sessionID", sessionID);
 
@@ -499,13 +495,15 @@ Future<bool> login(
 }
 
 Future<bool> checkLogin(
-    {Project? project, returnUnreadMessages = false}) async {
+    {required BuildContext context,
+    Project? project,
+    updateUnreadMessages = false}) async {
   http.Response response;
   try {
     response = await httpClient
         .get(setUriProperty(serverURI, path: "checkLogin", queryParameters: {
       'getProject': (project != null).toString(),
-      'returnUnreadMessages': returnUnreadMessages.toString()
+      'returnUnreadMessages': updateUnreadMessages.toString()
     }));
   } catch (e) {
     return Future.error(e.toString());
@@ -513,26 +511,26 @@ Future<bool> checkLogin(
 
   if (response.statusCode == 200) {
     final data = jsonDecode(response.body);
-    try {
-      currentUserName = data["username"];
-      currentUserID = data["userid"];
-      if (project != null) {
-        var project_ = Project.fromJson(data["project"]);
-        project.ID = project_.ID;
-        project.Description = project_.Description;
-      }
-      var list = data["unreadMessagesByProjects"] as List<dynamic>? ?? [];
-
-      unreadMessagesByProjects = {
-        for (var item in list)
-          Project.fromJson(item["project"] as Map<String, dynamic>):
-              item["messagesCount"] as int
-      };
-      {}
-      ;
-    } catch (e) {
-      debugPrint('Error parsing unreadMessagesByProjects: $e');
+    //try {
+    currentUserName = data["username"];
+    currentUserID = data["userid"];
+    if (project != null) {
+      var project_ = Project.fromJson(data["project"]);
+      project.ID = project_.ID;
+      project.Description = project_.Description;
     }
+    var list = data["unreadMessagesByProjects"] as List<dynamic>? ?? [];
+
+    var appBarState = Provider.of<AppBarState>(context, listen: false);
+    appBarState.updateUnread({
+      for (var item in list)
+        Project.fromJson(item["project"] as Map<String, dynamic>):
+            item["messagesCount"] as int
+    });
+
+    // } catch (e) {
+    //   debugPrint('Error parsing unreadMessagesByProjects: $e');
+    // }
     return true;
   }
 

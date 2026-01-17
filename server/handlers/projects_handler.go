@@ -90,3 +90,19 @@ func GetProjects(w http.ResponseWriter, r *http.Request) {
 	m["items"] = service.GetProjects(limit)
 	json.NewEncoder(w).Encode(m)
 }
+
+func GetProjectsWithUnreadMessages(w http.ResponseWriter, r *http.Request) {
+
+	utils.Log("Get projects with unread messages")
+
+	res, user := CheckSessionID(w, r, true)
+	if !res {
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	m := make(map[string]interface{})
+	m["items"] = service.GetProjectsWithUnreadMessages(user.ID)
+	json.NewEncoder(w).Encode(m)
+}

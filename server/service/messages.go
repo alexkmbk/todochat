@@ -131,9 +131,9 @@ func GetMessagesDB(SessionID uuid.UUID, lastID int64, limit int64, taskID int64,
 	return messages
 }
 
-func CreateMessage(userID int64, message *Message) {
+func CreateMessage(userID int64, message *Message, checkTempID bool) {
 
-	if message.TempID != "" {
+	if checkTempID && message.TempID != "" {
 		foundMessage := &Message{}
 		result := DB.Where("Temp_ID = ?", message.TempID).First(&foundMessage)
 		if result.Error != nil {

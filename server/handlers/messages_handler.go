@@ -150,7 +150,7 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	service.CreateMessage(userID, &message)
+	service.CreateMessage(userID, &message, false)
 
 	// user, success := GetUserByID(userID)
 	// if success {
@@ -336,7 +336,7 @@ func CreateMessageWithFile(w http.ResponseWriter, r *http.Request) {
 	message.SmallImageName = smallImageFileName
 	message.FileSize = fileSize
 
-	service.CreateMessage(userID, &message)
+	service.CreateMessage(userID, &message, true)
 	// foundMessage := &Message{}
 	// result := DB.Where("Temp_ID = ?", message.TempID).First(&foundMessage)
 	// if result.Error != nil {

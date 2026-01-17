@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todochat/LoginRegistrationPage.dart';
-import 'package:todochat/models/project.dart';
 
 Uri serverURI = Uri();
 String sessionID = "";
@@ -9,7 +8,6 @@ bool autoLogin = true;
 bool isDesktopMode = false;
 double screenWidth = 0;
 double screenHeight = 0;
-Map<Project, int> unreadMessagesByProjects = {};
 
 int currentUserID = 0;
 String currentUserName = "";

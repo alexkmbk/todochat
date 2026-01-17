@@ -10,17 +10,12 @@ import (
 	"todochat_server/utils"
 )
 
-func CreateTask(userID int64, projectID int64, description string) {
+func CreateTask(userID int64, projectID int64, task *Task) {
 
 	utils.Log("Add new TodoItem. Saving to database.")
-	task := &Task{Description: description,
-		Completed:     false,
-		Closed:        false,
-		Cancelled:     false,
-		InHand:        false,
-		Creation_date: time.Now(),
-		AuthorID:      userID,
-		ProjectID:     projectID}
+	task.Creation_date = time.Now()
+	task.AuthorID = userID
+	task.ProjectID = projectID
 
 	user, success := GetUserByID(userID)
 	if success {
@@ -34,7 +29,6 @@ func CreateTask(userID int64, projectID int64, description string) {
 	if DB.Limit(1).Find(&seenTask).RowsAffected == 0 {
 		DB.Create(&seenTask)
 	}
-
 }
 
 func MarkAllRead(UserID int64) {

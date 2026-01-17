@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:todochat/constants.dart';
 import 'package:todochat/searchField.dart';
 import 'package:provider/provider.dart';
+import 'package:todochat/state/appbar.dart';
 import 'package:todochat/state/tasks.dart';
 import 'main_menu.dart';
 import 'projects_list.dart';
@@ -21,43 +22,17 @@ class TasksPageAppBar extends StatefulWidget implements PreferredSizeWidget {
 class _TasksPageAppBarState extends State<TasksPageAppBar> {
   TextEditingController searchController = TextEditingController();
   bool showSearch = isDesktopMode;
-  Widget getAppBarTitle() {
-    if (isDesktopMode) {
-      return Row(children: [
-        Flexible(
-            fit: FlexFit.tight,
-            flex: 4,
-            child: SearchField(
-              searchController: searchController,
-            )),
-        const Text(
-          "Project: ",
-          style: const TextStyle(fontSize: 15, color: Colors.black),
-        ),
-        Flexible(
-            //fit: FlexFit.tight,
-            //flex: 6,
-            child: ProjectField())
-      ]);
-    } else if (showSearch) {
-      return SearchField(
-        searchController: searchController,
-      );
-    } else {
-      return ProjectField();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final taskListProvider = Provider.of<TasksState>(context, listen: false);
-    //final settingsState = context.watch<SettingsState>();
 
     return AppBar(
       //toolbarHeight: 10, //MediaQuery.of(context).size.height * .1,
       backgroundColor: const Color.fromARGB(240, 255, 255, 255),
       //title: Text("ToDo Chat"),
-      title: getAppBarTitle(),
+      title: AppBarTitle(
+          searchController: searchController, showSearch: showSearch),
       /*const Expanded(
               child: TextField(
                   style: TextStyle(color: Colors.white),
@@ -167,6 +142,45 @@ class _TasksPageAppBarState extends State<TasksPageAppBar> {
           )
       ],
     );
+  }
+}
+
+class AppBarTitle extends StatelessWidget {
+  const AppBarTitle({
+    super.key,
+    required this.searchController,
+    required this.showSearch,
+  });
+
+  final TextEditingController searchController;
+  final bool showSearch;
+
+  @override
+  Widget build(BuildContext context) {
+    if (isDesktopMode) {
+      return Row(children: [
+        Flexible(
+            fit: FlexFit.tight,
+            flex: 4,
+            child: SearchField(
+              searchController: searchController,
+            )),
+        const Text(
+          "Project: ",
+          style: const TextStyle(fontSize: 15, color: Colors.black),
+        ),
+        Flexible(
+            //fit: FlexFit.tight,
+            //flex: 6,
+            child: const ProjectField())
+      ]);
+    } else if (showSearch) {
+      return SearchField(
+        searchController: searchController,
+      );
+    } else {
+      return ProjectField();
+    }
   }
 }
 

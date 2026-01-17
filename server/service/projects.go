@@ -46,6 +46,44 @@ func GetProjects(limit int) []Project {
 	return items
 }
 
+// Get unread messages by projects
+func GetProjectsWithUnreadMessages(userID int64) []UnreadMessagesByProjects {
+	var results []UnreadMessagesByProjects
+
+	rows, err := DB.Table("projects").
+		Select("projects.id, projects.Description, COUNT(case when messages.id IN (select seen_messages.message_id from seen_messages where seen_messages.user_id = ?) THEN 1 ELSE 0 END) as messages_count").
+		Joins("LEFT JOIN messages ON messages.project_id = projects.id AND messages.user_id = ?").
+		Group("projects.id, projects.Description").
+		Rows()
+	if err != nil {
+		//utils.Log_warn("Error fetching unread messages by projects:", err)
+		return results
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var projectID int64
+		var projectName string
+		var messagesCount int64
+		err := rows.Scan(&projectID, &projectName, &messagesCount)
+		if err == nil {
+			//utils.Log_warn("Error scanning row:", err)
+			//continue
+			project := Project{
+				ID:          projectID,
+				Description: projectName,
+			}
+			results = append(results, UnreadMessagesByProjects{
+				Project:       project,
+				MessagesCount: messagesCount,
+			})
+		}
+		//results = append(results, {project: messagesCount})
+	}
+
+	return results
+}
+
 // func GetProjectsList() map[string]interface{} {
 // 	// getting list of projects with names
 // 	var projects map[string]interface{}

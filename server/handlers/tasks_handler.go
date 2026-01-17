@@ -33,12 +33,11 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "JSON parse error", http.StatusInternalServerError)
 	} else {
-		description := task.Description
-		service.CreateTask(projectID, userID, description)
+		service.CreateTask(userID, projectID, &task)
 		utils.Log("Add new TodoItem. Saving to database.")
 
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		json.NewEncoder(w).Encode(task)
+		json.NewEncoder(w).Encode(&task)
 
 		go WS.SendTask(&task)
 

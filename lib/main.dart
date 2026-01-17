@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:todochat/state/appbar.dart';
 import 'package:todochat/state/projects.dart';
 import 'package:todochat/state/app.dart';
 import 'package:todochat/state/tasks.dart';
@@ -60,6 +61,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (context) => AppState(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => AppBarState(),
         ),
       ],
       child: MaterialApp(

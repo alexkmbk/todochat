@@ -199,14 +199,14 @@ Future<void> reconnect(TasksState taskListProvider, BuildContext context,
       isServerURI &&
       sessionID.isNotEmpty) {
     connectWebSocketInProcess = true;
-    checkLogin().then((isLogin) {
+    checkLogin(context: context).then((isLogin) {
       if (isLogin) {
         connectWebSocketChannel(serverURI).then((value) {
           connectWebSocketInProcess = false;
           listenWs(taskListProvider, context);
         });
       } else {
-        login().then((isLogin) async {
+        login(context: context).then((isLogin) async {
           if (isLogin) {
             connectWebSocketChannel(serverURI).then((value) {
               connectWebSocketInProcess = false;

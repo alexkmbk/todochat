@@ -20,9 +20,15 @@ class Project {
   bool get isEmpty => ID == 0;
   bool get isNotEmpty => !isEmpty;
 
-  Project.fromJson(Map<String, dynamic> json)
-      : ID = json['ID'],
-        Description = json['Description'];
+  factory Project.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return Project();
+    }
+    return Project(
+      ID: json['ID'] ?? 0,
+      Description: json['Description'] ?? '',
+    );
+  }
 
   Project.from(Project project)
       : ID = project.ID,
