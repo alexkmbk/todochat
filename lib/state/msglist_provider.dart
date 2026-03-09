@@ -78,7 +78,6 @@ class MsgListProvider extends ChangeNotifier {
     items.clear();
     offset = 0;
     lastID = 0;
-    loading = false;
     quotedText = "";
     parentsmallImageName = "";
     currentParentMessageID = 0;
@@ -103,11 +102,10 @@ class MsgListProvider extends ChangeNotifier {
         }
       }
     }
-    loading = false;
     if (data.length > 0) {
       lastID = data[data.length - 1]["ID"];
-      notifyListeners();
     }
+    notifyListeners();
   }
 
   void addUploadingItem(Message message, Uint8List loadingFileData) {
@@ -161,6 +159,7 @@ class MsgListProvider extends ChangeNotifier {
           items.indexWhere((element) => element.tempID == message.tempID);
       if (foundIndex >= 0) {
         items[foundIndex] = message;
+        notifyListeners();
       } else if (!message.loadinInProcess ||
           uploadingFiles.containsKey(message.tempID)) {
         items.insert(0, message);
@@ -194,7 +193,7 @@ class MsgListProvider extends ChangeNotifier {
     return updated;
   }
 
-  void deleteItem(int messageID, [Task? updatedTask]) async {
+  void deleteItem(int messageID, Task updatedTask) async {
     items.removeWhere((item) => item.ID == messageID);
     if (updatedTask != null) {
       task = updatedTask;
@@ -202,7 +201,7 @@ class MsgListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> deleteMesage(int messageID) async {
+  Future<bool> deleteMesage(int messageID, TasksState tasks) async {
     if (sessionID == "") {
       return false;
     }
@@ -220,27 +219,38 @@ class MsgListProvider extends ChangeNotifier {
     }
 
     if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      bool? deleted = data["deleted"];
+      if (deleted != null && deleted) {
+        final updatedTask = Task.fromJson(data["task"]);
+        deleteItem(messageID, updatedTask);
+        tasks.updateItem(updatedTask);
+      }
+
       return true;
     }
 
     return false;
   }
 
-  Future<bool> requestMessages(
-      TasksState taskListProvider, BuildContext context) async {
+  Future<bool> requestMessages(TasksState tasks, BuildContext context) async {
     if (loading) {
       return false;
     }
 
-    if (ws == null) {
-      await Future.delayed(const Duration(seconds: 2));
-    }
+    // if (ws == null) {
+    //   await Future.delayed(const Duration(seconds: 2));
+    // }
 
     loading = true;
 
     if (sessionID == "") {
       loading = false;
       return false;
+    }
+
+    if (loading && items.isEmpty) {
+      notifyListeners();
     }
 
     Response response;
@@ -269,7 +279,7 @@ class MsgListProvider extends ChangeNotifier {
     }
 
     if (doReconnect) {
-      await reconnect(taskListProvider, context, true);
+      await reconnect(tasks, context, true);
       if (ws != null) {
         ws!.sink.add(jsonEncode({
           "sessionID": sessionID,
@@ -506,8 +516,12 @@ class MsgListProvider extends ChangeNotifier {
 
     //uploadingFiles.remove(tempID);
     if (streamedResponse.statusCode == 200) {
-      refresh();
-      return true;
+      try {
+        Response response = await Response.fromStream(streamedResponse);
+        var data = jsonDecode(response.body) as Map<String, dynamic>;
+        Message message = Message.fromJson(data);
+        addItem(message);
+      } catch (e) {}
     }
     uploadingFiles.remove(tempID);
     refresh();

@@ -406,7 +406,13 @@ class TasksState extends ChangeNotifier {
     }
 
     if (response.statusCode == 200 && response.body != "") {
-      var data = jsonDecode(response.body);
+      var data;
+      try {
+        data = jsonDecode(response.body);
+      } catch (e) {
+        loading = false;
+        return;
+      }
 
       var tasks = data["tasks"];
 

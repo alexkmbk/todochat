@@ -2,9 +2,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pasteboard/pasteboard.dart';
+import 'package:provider/provider.dart';
 import 'package:sn_progress_dialog/sn_progress_dialog.dart';
 import 'package:todochat/constants.dart';
 import 'package:todochat/models/message.dart';
+import 'package:todochat/state/tasks.dart';
 import 'package:todochat/ui_components/chat_text_bubble.dart';
 import 'package:todochat/ui_components/context_menu_detector.dart';
 import 'package:todochat/ui_components/network_image_with_menu.dart';
@@ -122,7 +124,8 @@ class _MsgListTileState extends State<MsgListTile> {
         MessageAction.CreateUpdateMessageAction) {
       return ChatTextBubble(
         leading: getMessageActionDescription(widget.message),
-        onDelete: () => widget.msgListProvider.deleteMesage(widget.message.ID),
+        onDelete: () => widget.msgListProvider.deleteMesage(
+            widget.message.ID, Provider.of<TasksState>(context, listen: false)),
         backgroundColor: const Color.fromARGB(255, 228, 232, 233),
       );
 
@@ -150,7 +153,8 @@ class _MsgListTileState extends State<MsgListTile> {
           msgListProvider.refresh();
           //widget.msgListProvider.messageTextFieldFocusNode.requestFocus();
         },
-        onDelete: () => msgListProvider.deleteMesage(message.ID),
+        onDelete: () => msgListProvider.deleteMesage(
+            message.ID, Provider.of<TasksState>(context, listen: false)),
         onQuoteSelection: (selectedText) async {
           msgListProvider.quotedText = selectedText;
           msgListProvider.currentParentMessageID = message.ID;
@@ -252,8 +256,9 @@ class _MsgListTileState extends State<MsgListTile> {
                     Pasteboard.writeImage(Uint8List.fromList(fileData));
                   });
                 },
-                onDelete: () =>
-                    widget.msgListProvider.deleteMesage(widget.message.ID),
+                onDelete: () => widget.msgListProvider.deleteMesage(
+                    widget.message.ID,
+                    Provider.of<TasksState>(context, listen: false)),
                 onReply: () {
                   widget.msgListProvider.parentsmallImageName =
                       widget.message.smallImageName;
@@ -278,8 +283,9 @@ class _MsgListTileState extends State<MsgListTile> {
               TileMenu.show(
                 context: context,
                 position: position,
-                onDelete: () =>
-                    widget.msgListProvider.deleteMesage(widget.message.ID),
+                onDelete: () => widget.msgListProvider.deleteMesage(
+                    widget.message.ID,
+                    Provider.of<TasksState>(context, listen: false)),
                 addMenuItems: [
                   if (Platform().isWindows)
                     PopupMenuItem<String>(

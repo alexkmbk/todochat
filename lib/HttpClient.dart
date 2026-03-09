@@ -20,6 +20,18 @@ import 'package:provider/provider.dart';
 var connectWebSocketInProcess = false;
 var isServerURI = true;
 
+/// если true, то мы уже несколько раз пытались и сервер недоступен;
+/// reconnect() будет просто выходить, пока флаг не сбросится.
+bool wsUnavailable = false;
+
+/// сколько неудачных попыток было подряд.
+int wsReconnectAttempts = 0;
+
+/// после _max_ попыток ставим `wsUnavailable = true` и ждём
+/// [wsReconnectCooldown] перед сбросом.
+const int maxWsReconnectAttempts = 3;
+const Duration wsReconnectCooldown = Duration(seconds: 10);
+
 var httpClient = HttpClient();
 WebSocketChannel? ws;
 bool isWSConnected = false;
@@ -96,28 +108,36 @@ class MultipartRequest extends http.MultipartRequest {
 }
 
 Future<void> connectWebSocketChannel(Uri serverURI) async {
-  /*if (wsConnectionSince.elapsedMilliseconds < 2000) {
-    await Future.delayed(const Duration(seconds: 2));
-  }*/
-  if (ws != null) {
-    ws!.sink.close(status.normalClosure);
-    ws = null;
-  }
-  //Future.delayed(const Duration(seconds: 1)).then((value) {
-  var scheme = serverURI.scheme == "http" ? "ws" : "wss";
-  ws = WebSocketChannel.connect(
-      setUriProperty(serverURI, scheme: scheme, path: "initMessagesWS"));
-  wsConnectionSince = Stopwatch()..start();
-  isWSConnected = true;
-  /*if (ws != null) {
-    ws!.sink.add(jsonEncode({"command": "init", "sessionID": sessionID}));
-  }*/
-  //listenWs();
-  //ws!.sink.add(jsonEncode({"command": "init", "sessionID": sessionID}));
-  //});
+  try {
+    if (ws != null) {
+      ws!.sink.close(status.normalClosure);
+      ws = null;
+    }
 
-  /*ws = WebSocketChannel.connect(
-          Uri.parse('ws://' + serverURI.authority + "/initMessagesWS"));*/
+    var scheme = serverURI.scheme == "http" ? "ws" : "wss";
+    final wsURI = Uri.parse('$scheme://${serverURI.host}/initMessagesWS');
+
+    ws = WebSocketChannel.connect(wsURI);
+
+    wsConnectionSince = Stopwatch()..start();
+    isWSConnected = true;
+
+    // подключились успешно – сброс флагов
+    wsUnavailable = false;
+    wsReconnectAttempts = 0;
+  } catch (e) {
+    // не удалось установить соединение
+    wsReconnectAttempts++;
+    if (wsReconnectAttempts >= maxWsReconnectAttempts) {
+      wsUnavailable = true;
+      // по истечении таймаута позволим снова пробовать
+      Future.delayed(wsReconnectCooldown, () {
+        wsUnavailable = false;
+        wsReconnectAttempts = 0;
+      });
+    }
+    rethrow; // оставить для логов/ошибок выше, если нужно
+  }
 }
 
 StreamSubscription? subscription;
@@ -180,7 +200,7 @@ void listenWs(TasksState taskListProvider, BuildContext context) {
         if (kDebugMode) {
           print(error.toString());
         }
-        context.read<AppState>().redrawWidgetTree(context);
+        //context.read<AppState>().redrawWidgetTree(context);
       });
     } catch (e) {
       if (kDebugMode) {
@@ -194,6 +214,14 @@ void listenWs(TasksState taskListProvider, BuildContext context) {
 
 Future<void> reconnect(TasksState taskListProvider, BuildContext context,
     [force = false]) async {
+  if (wsUnavailable) {
+    // сервер давно недоступен, не дергаем
+    if (kDebugMode) {
+      print('WS unavailable, пропускаем reconnect');
+    }
+    return;
+  }
+
   if (!connectWebSocketInProcess &&
       (!isWSConnected || force) &&
       isServerURI &&
@@ -204,6 +232,8 @@ Future<void> reconnect(TasksState taskListProvider, BuildContext context,
         connectWebSocketChannel(serverURI).then((value) {
           connectWebSocketInProcess = false;
           listenWs(taskListProvider, context);
+        }).catchError((_) {
+          connectWebSocketInProcess = false;
         });
       } else {
         login(context: context).then((isLogin) async {
@@ -211,6 +241,8 @@ Future<void> reconnect(TasksState taskListProvider, BuildContext context,
             connectWebSocketChannel(serverURI).then((value) {
               connectWebSocketInProcess = false;
               listenWs(taskListProvider, context);
+            }).catchError((_) {
+              connectWebSocketInProcess = false;
             });
           } else {
             context.read<AppState>().redrawWidgetTree(context);
@@ -218,6 +250,7 @@ Future<void> reconnect(TasksState taskListProvider, BuildContext context,
         });
       }
     }).onError((error, stackTrace) {
+      connectWebSocketInProcess = false;
       context.read<AppState>().redrawWidgetTree(context);
     });
   }

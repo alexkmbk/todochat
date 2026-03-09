@@ -20,9 +20,9 @@ class AppState extends ChangeNotifier {
   bool appInitialized = false;
 
   void redrawWidgetTree(BuildContext context,
-      [initialize = true, logoff = true]) {
+      [initialize = true, doLogoff = true]) {
     if (initialize) {
-      if (logoff) {
+      if (doLogoff) {
         logoff();
       }
 
@@ -33,9 +33,9 @@ class AppState extends ChangeNotifier {
       final currentProject = Project();
       settings.setInt("projectID", currentProject.ID);
       settings.setInt("currentTaskID", 0);
-      settings.setString("sessionID", "");
       tasklist.project = currentProject;
-      if (logoff) {
+      if (doLogoff) {
+        settings.setString("sessionID", "");
         openLoginPage(context).then((value) {
           if (value) {
             notifyListeners();
@@ -77,7 +77,7 @@ class AppState extends ChangeNotifier {
         sessionID = sessionID_;
     }
 
-    var httpScheme = settings.getString("httpScheme");
+    var httpScheme = settings.getString("httpScheme") ?? "http";
     var host = settings.getString("host");
     var port = settings.getInt("port");
     autoLogin = settings.getBool("autoLogin") ?? true;
@@ -108,6 +108,13 @@ class AppState extends ChangeNotifier {
       return false;
     } else {
       serverURI = Uri(scheme: httpScheme, host: host, port: port);
+      if (serverURI.port == 0) {
+        if (serverURI.scheme.isEmpty || serverURI.scheme == "http") {
+          serverURI = setUriProperty(serverURI, port: 80);
+        } else if (serverURI.scheme == "https") {
+          serverURI = setUriProperty(serverURI, port: 443);
+        }
+      }
     }
     bool login = false;
     Project currentProject = Project(ID: settings.getInt("projectID") ?? 0);
@@ -115,10 +122,7 @@ class AppState extends ChangeNotifier {
     if (sessionID.isNotEmpty && autoLogin) {
       httpClient.defaultHeaders = {"sessionID": sessionID};
       try {
-        login = await checkLogin(
-            context: context,
-            project: currentProject,
-            updateUnreadMessages: true);
+        login = await checkLogin(context: context, updateUnreadMessages: true);
       } catch (e) {
         return Future.error(e.toString());
       }
@@ -130,9 +134,9 @@ class AppState extends ChangeNotifier {
     final tasks = context.read<TasksState>();
 
     if (isServerURI && sessionID.isNotEmpty) {
-      connectWebSocketChannel(serverURI).then((value) {
-        listenWs(tasks, context);
-      });
+      // connectWebSocketChannel(serverURI).then((value) {
+      //   listenWs(tasks, context);
+      // });
     }
 
     Task? task;
@@ -155,6 +159,9 @@ class AppState extends ChangeNotifier {
       currentProject = await getProject(task.projectID) ?? Project();
     } else {
       tasks.currentTaskID = settings.getInt("currentTaskID") ?? 0;
+      if (currentProject.ID != 0 && currentProject.Description.isEmpty) {
+        currentProject = await getProject(currentProject.ID) ?? Project();
+      }
     }
 
     if (currentProject.isEmpty) {
@@ -164,9 +171,10 @@ class AppState extends ChangeNotifier {
     tasks.showClosed = settings.getBool("showClosed") ?? true;
     tasks.setCurrentProject(currentProject, context, forceTaskRequest);
 
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      reconnect(tasks, context);
-    });
+    //reconnect(tasks, context);
+    // timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    //   reconnect(tasks, context);
+    // });
 
     appInitialized = true;
     forceTaskRequest = false;

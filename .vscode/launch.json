@@ -21,6 +21,12 @@
             "type": "dart",
             "flutterMode": "profile",
             //"args": ["arg1", "arg2", "arg3"]
-        }
+        },
+        {
+      "name": "Flutter Web (No CORS)",
+      "request": "launch",
+      "type": "dart",
+      "args": ["--web-browser-flag", "--disable-web-security"],
+    }
     ]
 }

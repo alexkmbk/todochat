@@ -110,9 +110,10 @@ class _MsgListState extends State<MsgList> {
                               message: item,
                               msgListProvider: msglist,
                               onDismissed: (direction) async {
-                                if (await msglist.deleteMesage(item.ID)) {
-                                  msglist.deleteItem(item.ID);
-                                }
+                                msglist.deleteMesage(
+                                    item.ID,
+                                    Provider.of<TasksState>(context,
+                                        listen: false));
                               },
                             ));
                       },

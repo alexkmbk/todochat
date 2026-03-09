@@ -230,6 +230,13 @@ class _SettingsPageState extends State<SettingsPage> {
 
     if (serverURI.getFullPath() != serverURItemp.getFullPath()) {
       serverURI = serverURItemp;
+      if (serverURI.port == 0) {
+        if (serverURI.scheme.isEmpty || serverURI.scheme == "http") {
+          serverURI = setUriProperty(serverURI, port: 80);
+        } else if (serverURI.scheme == "https") {
+          serverURI = setUriProperty(serverURI, port: 443);
+        }
+      }
       settings.setString("httpScheme", serverURI.scheme);
       settings.setString("host", serverURI.host);
       settings.setInt("port", serverURI.port);
@@ -265,8 +272,8 @@ class _SettingsPageState extends State<SettingsPage> {
             port: 80,
             path: "healthz");
       } else {
-        uriHealthz =
-            Uri(scheme: uri.scheme, host: uri.host, port: 443, path: "healthz");
+        uriHealthz = Uri(
+            scheme: uri.scheme, host: uri.host, port: null, path: "healthz");
       }
     } else {
       uriHealthz = Uri(scheme: uri.scheme, host: uri.host, path: "healthz");

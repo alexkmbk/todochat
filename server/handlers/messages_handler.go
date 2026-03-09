@@ -430,6 +430,10 @@ func DeleteMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	io.WriteString(w, `{"deleted": true}`)
+	response := map[string]interface{}{
+		"deleted": true,
+		"task":    task,
+	}
+	json.NewEncoder(w).Encode(response)
 	go WS.SendDeleteMessage(message, task)
 }

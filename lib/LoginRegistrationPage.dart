@@ -374,7 +374,7 @@ Future<bool> login(
     Project? project,
     updateUnreadMessages = false}) async {
   if (userName == null || userName.isEmpty) {
-    if (!isWeb()) {
+    if (!isWeb() || serverURI.scheme != "https") {
       const storage = FlutterSecureStorage();
       userName = await storage.read(key: "userName");
       password = await storage.read(key: "password");
@@ -495,16 +495,14 @@ Future<bool> login(
 }
 
 Future<bool> checkLogin(
-    {required BuildContext context,
-    Project? project,
-    updateUnreadMessages = false}) async {
+    {required BuildContext context, updateUnreadMessages = false}) async {
   http.Response response;
   try {
-    response = await httpClient
-        .get(setUriProperty(serverURI, path: "checkLogin", queryParameters: {
-      'getProject': (project != null).toString(),
-      'returnUnreadMessages': updateUnreadMessages.toString()
-    }));
+    response = await httpClient.get(setUriProperty(serverURI,
+        path: "checkLogin",
+        queryParameters: {
+          'returnUnreadMessages': updateUnreadMessages.toString()
+        }));
   } catch (e) {
     return Future.error(e.toString());
   }
@@ -514,11 +512,6 @@ Future<bool> checkLogin(
     //try {
     currentUserName = data["username"];
     currentUserID = data["userid"];
-    if (project != null) {
-      var project_ = Project.fromJson(data["project"]);
-      project.ID = project_.ID;
-      project.Description = project_.Description;
-    }
     var list = data["unreadMessagesByProjects"] as List<dynamic>? ?? [];
 
     var appBarState = Provider.of<AppBarState>(context, listen: false);
