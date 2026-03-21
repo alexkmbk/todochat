@@ -91,7 +91,6 @@ class Message {
       case MessageAction.RemoveInHand:
         messageActionInt = 7;
         break;
-      default:
     }
     return {
       'ID': ID,

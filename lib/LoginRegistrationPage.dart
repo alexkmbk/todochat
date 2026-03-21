@@ -443,7 +443,7 @@ Future<bool> login(
       await storage.write(key: "password", value: password);
     }
 
-    if (userChanged && context != null) {
+    if (userChanged) {
       Provider.of<AppState>(context, listen: false)
           .redrawWidgetTree(context, true, false);
 
@@ -464,13 +464,9 @@ Future<bool> login(
     } else {
       print('Request failed with status: ${response.statusCode}.');*/
   } else if (response.statusCode == 404) {
-    if (context != null) {
       toast("Couldn't connect to the server", context);
-    }
   } else if (response.statusCode == 401) {
-    if (context != null) {
       toast("Wrong password or user name.", context);
-    }
   }
   /*var client = HttpClient();
     try {
