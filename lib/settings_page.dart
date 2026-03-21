@@ -25,7 +25,6 @@ Future<bool> openSettings(BuildContext context) async {
     case null:
       return false;
   }
-  return false;
 }
 
 class SettingsPage extends StatefulWidget {

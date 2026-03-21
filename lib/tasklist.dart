@@ -1,13 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:todochat/models/task.dart';
-import 'package:todochat/state/app.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
-import 'HttpClient.dart';
 import 'TaskMessagesPage.dart';
 import 'todochat.dart';
 import 'state/tasks.dart';
