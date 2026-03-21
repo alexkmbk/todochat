@@ -75,29 +75,6 @@ class TaskListState extends State<TaskList> {
   }
 }
 
-Future<bool> updateTask(BuildContext context, Task task) async {
-  if (sessionID == "") {
-    return false;
-  }
-
-  Response response;
-
-  try {
-    response = await httpClient.post(
-        setUriProperty(serverURI, path: 'updateTask'),
-        body: jsonEncode(task));
-  } catch (e) {
-    context.read<AppState>().redrawWidgetTree(context);
-    return false;
-  }
-
-  if (response.statusCode == 200) {
-    return true;
-  }
-
-  return false;
-}
-
 void openTask(BuildContext context, Task task) async {
   final msgListProvider = Provider.of<MsgListProvider>(context, listen: false);
   msgListProvider.isOpen = true;

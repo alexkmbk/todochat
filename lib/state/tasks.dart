@@ -376,6 +376,29 @@ class TasksState extends ChangeNotifier {
     }
   }
 
+Future<bool> updateTask(BuildContext context, Task task) async {
+  if (sessionID == "") {
+    return false;
+  }
+
+  Response response;
+
+  try {
+    response = await httpClient.post(
+        setUriProperty(serverURI, path: 'updateTask'),
+        body: jsonEncode(task));
+  } catch (e) {
+    return false;
+  }
+
+  if (response.statusCode == 200) {
+    updateItem(task);
+    return true;
+  }
+
+  return false;
+}
+
   Future<void> requestTasks(BuildContext context,
       [bool forceRefresh = false]) async {
     List<Task> res = [];

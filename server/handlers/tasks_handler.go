@@ -87,7 +87,7 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 	} else {
 		service.UpdateTask(&task)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		io.WriteString(w, `{"updated": true}`)
+		json.NewEncoder(w).Encode(&task)
 		go WS.SendUpdateTask(&task, 0)
 	}
 }
@@ -104,7 +104,7 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Record Not Found", http.StatusNotFound)
 	} else {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		io.WriteString(w, `{"deleted": true}`)
+		json.NewEncoder(w).Encode(&task)
 		go WS.SendDeleteTask(task)
 	}
 

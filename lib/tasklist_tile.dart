@@ -109,7 +109,7 @@ class TaskListTile extends StatelessWidget {
                                               tempTask.description.length - 1);
                                     }
                                     var res =
-                                        await updateTask(context, tempTask);
+                                        await taskListProvider.updateTask(context, tempTask);
                                     if (res) {
                                       task.description = tempTask.description;
                                       task.editMode = false;
